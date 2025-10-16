@@ -74,10 +74,25 @@ public class MenuMapper {
     private MenuResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem) {
         MenuResponse.MenuItemResponse response = new MenuResponse.MenuItemResponse();
         response.setPublicId(menuItem.getPublicId());
-        if (menuItem.getProduct() != null) {
-            response.setProductName(menuItem.getProduct().getName());
-            response.setPrice(menuItem.getProduct().getPrice());
+        
+        if (menuItem.getProducts() != null && !menuItem.getProducts().isEmpty()) {
+            // Concatenate product names for combo display
+            String productNames = menuItem.getProducts().stream()
+                    .map(p -> p.getName())
+                    .collect(Collectors.joining(", "));
+            response.setProductName(productNames);
+            
+            // Use bundle price if set, otherwise sum all product prices
+            if (menuItem.getBundlePrice() != null) {
+                response.setPrice(menuItem.getBundlePrice());
+            } else {
+                Long totalPrice = menuItem.getProducts().stream()
+                        .mapToLong(p -> p.getPrice() != null ? p.getPrice() : 0)
+                        .sum();
+                response.setPrice(totalPrice);
+            }
         }
+        
         response.setPosition(menuItem.getDisplayOrder());
         return response;
     }

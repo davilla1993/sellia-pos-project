@@ -1,22 +1,19 @@
 package com.follysitou.sellia_backend.model;
 
-import com.follysitou.sellia_backend.enums.MenuType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "menu_items", indexes = {
-        @Index(name = "idx_menu_item_menu", columnList = "menuId"),
-        @Index(name = "idx_menu_item_product", columnList = "productId")
+        @Index(name = "idx_menu_item_menu", columnList = "menuId")
 })
 @Data
 @Builder
@@ -28,16 +25,25 @@ public class MenuItem extends BaseEntity {
     @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "menu_item_products",
+            joinColumns = @JoinColumn(name = "menu_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    @Builder.Default
+    private Set<Product> products = new HashSet<>();
 
     @Column(nullable = false)
     private Integer displayOrder = 0;
 
     @Min(value = 0L, message = "Price override cannot be negative")
-    @Column
+    @Column(name = "price_override")
     private Long priceOverride;
+
+    @Min(value = 0L, message = "Bundle price cannot be negative")
+    @Column(name = "bundle_price")
+    private Long bundlePrice;
 
     @Column(nullable = false)
     private Boolean available = true;

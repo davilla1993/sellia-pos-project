@@ -119,8 +119,8 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping(value = "/{publicId}", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/{publicId}", consumes = "multipart/form-data")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable String publicId,
             @Valid @ModelAttribute ProductUpdateRequest request) {
@@ -128,8 +128,8 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{publicId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{publicId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable String publicId) {
         productService.deleteProduct(publicId);
         return ResponseEntity.noContent().build();
