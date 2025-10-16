@@ -12,7 +12,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -27,7 +27,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpServletResponse.SC_UNAUTHORIZED)
                 .error("Authentification requise")
                 .message(ErrorMessages.TOKEN_MISSING)

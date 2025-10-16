@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+
 
 @Component
 @RequiredArgsConstructor
@@ -62,7 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpServletResponse.SC_UNAUTHORIZED)
                 .error("Authentification requise")
                 .message(message)

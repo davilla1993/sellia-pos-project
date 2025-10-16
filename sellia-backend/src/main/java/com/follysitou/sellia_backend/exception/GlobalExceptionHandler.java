@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +19,6 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
                 .message(ex.getMessage())
@@ -34,7 +32,6 @@ public class GlobalExceptionHandler {
             ValidationException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Validation Error")
                 .message(ex.getMessage())
@@ -53,7 +50,6 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage())
         );
         ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Validation Error")
                 .message("Invalid input")
@@ -68,7 +64,6 @@ public class GlobalExceptionHandler {
             UnauthorizedException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .error("Unauthorized")
                 .message(ex.getMessage())
@@ -82,7 +77,6 @@ public class GlobalExceptionHandler {
             ForbiddenException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
                 .error("Forbidden")
                 .message(ex.getMessage())
@@ -96,7 +90,6 @@ public class GlobalExceptionHandler {
             ConflictException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflict")
                 .message(ex.getMessage())
@@ -110,7 +103,6 @@ public class GlobalExceptionHandler {
             BusinessException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Business Error")
                 .message(ex.getMessage())
@@ -124,7 +116,6 @@ public class GlobalExceptionHandler {
             NoHandlerFoundException ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
                 .message("Endpoint not found")
@@ -138,7 +129,6 @@ public class GlobalExceptionHandler {
             Exception ex,
             WebRequest request) {
         ApiError error = ApiError.builder()
-                .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")
                 .message("An unexpected error occurred")

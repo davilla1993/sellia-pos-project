@@ -58,7 +58,7 @@ public class ProductMapper {
             product.setAvailable(request.getAvailable());
         }
         if (request.getPreparationTime() != null) {
-            product.setPreparationTime(Integer.valueOf(request.getPreparationTime()));
+            product.setPreparationTime(request.getPreparationTime());
         }
         if (request.getIsVip() != null) {
             product.setIsVip(request.getIsVip());
