@@ -1,0 +1,115 @@
+spring:
+  application:
+    name: sellia-api
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sellia_db
+    username: postgres
+    password: toor
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # Jackson Configuration
+  jackson:
+    time-zone: UTC
+    date-format: dd-MM-yyyy HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Application Configuration
+app:
+  jwt:
+    secret: SevvwQ3vogESlsvgFTgBoXqfnbVeSsJiC917Mi7ZprAloOegCz5NNEuWwktK4qqoT0DDAPzsvtEBm0XLmUBNIQ==
+    access-token-expiration: 900000  # 15 minutes in milliseconds
+    refresh-token-expiration: 432000000  # 5 days in milliseconds
+  
+  upload-dir: ./uploads
+  qr-codes-dir: ./uploads/qrcodes
+  products-images-dir: ./uploads/products
+  receipts-dir: ./uploads/receipts
+  
+  # Default Admin Configuration
+  admin:
+    email: admin@sellia.com
+    password: Admin123!
+    first-name: Admin
+    last-name: System
+
+# Logging Configuration
+logging:
+  level:
+    com.follysitou.sellia_backend: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Development Profile
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:h2:mem:sellia_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  # Flyway disabled in dev to use hibernate auto-ddl
+  flyway:
+    enabled: false
+
+# Production Profile
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  
+logging:
+  level:
+    root: INFO

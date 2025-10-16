@@ -1,0 +1,1065 @@
+{
+  "info": {
+    "name": "Sellia POS API - Phase 1, 2, 3",
+    "description": "Collection complète pour tester l'API Sellia POS (Authentification, Produits/Catégories, Menus, Tables, Commandes)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. AUTHENTIFICATION",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin123!@#\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. UTILISATEURS",
+      "item": [
+        {
+          "name": "Créer Utilisateur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"caissier1\",\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont\",\n  \"email\": \"caissier1@sellia.com\",\n  \"password\": \"Caissier123!@#\",\n  \"roleId\": 2,\n  \"phoneNumber\": \"+237123456789\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tous les utilisateurs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer utilisateur par ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Modifier utilisateur",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont Updated\",\n  \"phoneNumber\": \"+237987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Changer mot de passe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Caissier123!@#\",\n  \"newPassword\": \"NewPassword123!@#\",\n  \"confirmPassword\": \"NewPassword123!@#\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Réinitialiser mot de passe (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"ResetPassword123!@#\",\n  \"confirmPassword\": \"ResetPassword123!@#\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Désactiver utilisateur (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Activer utilisateur (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "activate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. CATEGORIES",
+      "item": [
+        {
+          "name": "Créer catégorie (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Plats Principaux\",\n  \"description\": \"Plats principaux de la carte\",\n  \"icon\": \"🍽️\",\n  \"displayOrder\": 1,\n  \"available\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer toutes les catégories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer catégories actives",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/active/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "active", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer catégories ordonnées",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/ordered/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "ordered", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer catégorie par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{{categoryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Modifier catégorie (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Plats Principaux Updated\",\n  \"displayOrder\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{{categoryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer catégorie (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{{categoryId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. PRODUITS",
+      "item": [
+        {
+          "name": "Créer produit (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Steak Frites\",\n  \"description\": \"Steak savoureux avec frites croustillantes\",\n  \"price\": 15000,\n  \"discountPrice\": 12000,\n  \"categoryId\": 1,\n  \"imageUrl\": \"https://example.com/steak.jpg\",\n  \"available\": true,\n  \"preparationTime\": 20,\n  \"isVip\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tous les produits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer produits disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/available/list?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "available", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer produits par catégorie",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/category/1?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "category", "1"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Chercher produits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/search?name=Steak&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Steak"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer produits par gamme de prix",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/price-range?minPrice=5000&maxPrice=20000&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "price-range"],
+              "query": [
+                {
+                  "key": "minPrice",
+                  "value": "5000"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "20000"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer produit par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          }
+        },
+        {
+          "name": "Modifier produit (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Steak Premium\",\n  \"price\": 18000,\n  \"preparationTime\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer produit (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. MENUS",
+      "item": [
+        {
+          "name": "Créer menu (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Menu du Jour\",\n  \"description\": \"Spécialité du jour\",\n  \"menuType\": \"STANDARD\",\n  \"active\": true,\n  \"startDate\": \"2025-10-16T00:00:00\",\n  \"endDate\": \"2025-10-17T23:59:59\",\n  \"imageUrl\": \"https://example.com/menu.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menus",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tous les menus",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menus actifs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus/active/list?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "active", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menus courants (valides à present)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus/current/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "current", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menus par type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus/type/STANDARD?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "type", "STANDARD"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menus actifs par type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus/type/VIP/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "type", "VIP", "active"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menu par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menus/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Modifier menu (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Menu du Jour Updated\",\n  \"description\": \"Nouvelle spécialité du jour\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menus/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Activer menu (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menus/{{menuId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "{{menuId}}", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Désactiver menu (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menus/{{menuId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "{{menuId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer menu (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menus/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menus", "{{menuId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. TABLES",
+      "item": [
+        {
+          "name": "Créer table (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"number\": \"T001\",\n  \"name\": \"Table 1\",\n  \"capacity\": 4,\n  \"room\": \"Terrasse\",\n  \"available\": true,\n  \"isVip\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tables",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer toutes les tables",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tables actives",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/active/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "active", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tables disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/available/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "available", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tables par salle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/room/Terrasse",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "room", "Terrasse"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tables VIP",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/vip/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "vip", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tables par capacité min",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/capacity/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "capacity", "4"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer table par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}"]
+            }
+          }
+        },
+        {
+          "name": "Occuper table (ADMIN/CAISSIER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}/occupy?orderId={{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}", "occupy"],
+              "query": [
+                {
+                  "key": "orderId",
+                  "value": "{{orderId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Libérer table (ADMIN/CAISSIER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}/release",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}", "release"]
+            }
+          }
+        },
+        {
+          "name": "Compter tables disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/stats/available-count",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "stats", "available-count"]
+            }
+          }
+        },
+        {
+          "name": "Compter tables occupées",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/stats/occupied-count",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "stats", "occupied-count"]
+            }
+          }
+        },
+        {
+          "name": "Modifier table (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Table 1 VIP\",\n  \"capacity\": 6,\n  \"isVip\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer table (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "menuId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tableId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
