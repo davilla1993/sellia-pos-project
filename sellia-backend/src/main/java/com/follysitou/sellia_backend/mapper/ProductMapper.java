@@ -24,6 +24,7 @@ public class ProductMapper {
                 .available(request.getAvailable())
                 .preparationTime(request.getPreparationTime() != null ? Integer.valueOf(request.getPreparationTime()) : null)
                 .isVip(request.getIsVip())
+                .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
                 .build();
         
         // Note: imageUrl will be set in service layer after file upload
@@ -41,6 +42,7 @@ public class ProductMapper {
         response.setImageUrl(product.getImageUrl());
         response.setPreparationTime(product.getPreparationTime());
         response.setIsVip(product.getIsVip());
+        response.setDisplayOrder(product.getDisplayOrder());
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
 
@@ -73,6 +75,9 @@ public class ProductMapper {
         }
         if (request.getIsVip() != null) {
             product.setIsVip(request.getIsVip());
+        }
+        if (request.getDisplayOrder() != null) {
+            product.setDisplayOrder(request.getDisplayOrder());
         }
         // Note: Image file handling is done in service layer
         // Category will be handled in service layer

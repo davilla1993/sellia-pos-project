@@ -38,4 +38,6 @@ public class ProductCreateRequest {
     private Integer preparationTime;
 
     private Boolean isVip = false;
+
+    private Integer displayOrder = 0;
 }

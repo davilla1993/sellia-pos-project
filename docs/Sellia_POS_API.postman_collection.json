@@ -435,6 +435,11 @@
                   "key": "isVip",
                   "value": "false",
                   "type": "text"
+                },
+                {
+                  "key": "displayOrder",
+                  "value": "0",
+                  "type": "text"
                 }
               ]
             },
@@ -611,6 +616,11 @@
                   "key": "image",
                   "value": "",
                   "type": "file"
+                },
+                {
+                  "key": "displayOrder",
+                  "value": "1",
+                  "type": "text"
                 }
               ]
             },

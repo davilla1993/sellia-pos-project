@@ -16,6 +16,7 @@ public class ProductResponse {
     private String imageUrl;
     private Integer preparationTime;
     private Boolean isVip;
+    private Integer displayOrder;
     private Boolean lowStock;
     private List<CategorySimpleResponse> categories;
     private LocalDateTime createdAt;

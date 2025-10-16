@@ -32,4 +32,6 @@ public class ProductUpdateRequest {
     private Integer preparationTime;
 
     private Boolean isVip;
+
+    private Integer displayOrder;
 }
