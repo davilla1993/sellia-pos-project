@@ -4,12 +4,8 @@ import com.follysitou.sellia_backend.dto.request.ProductCreateRequest;
 import com.follysitou.sellia_backend.dto.request.ProductUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.ProductResponse;
 import com.follysitou.sellia_backend.model.Product;
-import com.follysitou.sellia_backend.model.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -45,15 +41,6 @@ public class ProductMapper {
         response.setDisplayOrder(product.getDisplayOrder());
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
-
-        // Map single category to list for consistency
-        if (product.getCategory() != null) {
-            response.setCategories(List.of(toCategorySimpleResponse(product.getCategory())));
-        }
-
-        // Set low stock null since stock is managed separately in Stock entity
-        response.setLowStock(null);
-
         return response;
     }
 
@@ -81,12 +68,5 @@ public class ProductMapper {
         }
         // Note: Image file handling is done in service layer
         // Category will be handled in service layer
-    }
-
-    private ProductResponse.CategorySimpleResponse toCategorySimpleResponse(Category category) {
-        ProductResponse.CategorySimpleResponse response = new ProductResponse.CategorySimpleResponse();
-        response.setPublicId(category.getPublicId());
-        response.setName(category.getName());
-        return response;
     }
 }

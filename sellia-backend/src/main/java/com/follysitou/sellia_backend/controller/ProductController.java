@@ -33,8 +33,8 @@ public class ProductController {
     @Value("${app.products-images-dir:./uploads/products}")
     private String productsImagesDir;
 
-    @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ProductResponse> createProduct(@Valid @ModelAttribute ProductCreateRequest request) {
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

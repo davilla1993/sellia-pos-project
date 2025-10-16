@@ -3,7 +3,6 @@ package com.follysitou.sellia_backend.dto.response;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 public class ProductResponse {
@@ -17,14 +16,6 @@ public class ProductResponse {
     private Integer preparationTime;
     private Boolean isVip;
     private Integer displayOrder;
-    private Boolean lowStock;
-    private List<CategorySimpleResponse> categories;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    @Data
-    public static class CategorySimpleResponse {
-        private String publicId;
-        private String name;
-    }
 }
