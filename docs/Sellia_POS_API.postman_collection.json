@@ -374,22 +374,69 @@
       "name": "4. PRODUITS",
       "item": [
         {
-          "name": "Créer produit (ADMIN)",
+          "name": "Créer produit avec image (ADMIN)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Steak Frites\",\n  \"description\": \"Steak savoureux avec frites croustillantes\",\n  \"price\": 15000,\n  \"discountPrice\": 12000,\n  \"categoryId\": 1,\n  \"imageUrl\": \"https://example.com/steak.jpg\",\n  \"available\": true,\n  \"preparationTime\": 20,\n  \"isVip\": false\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Steak Frites",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Steak savoureux avec frites croustillantes",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "15000",
+                  "type": "text"
+                },
+                {
+                  "key": "discountPrice",
+                  "value": "12000",
+                  "type": "text"
+                },
+                {
+                  "key": "stockQuantity",
+                  "value": "50",
+                  "type": "text"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "value": "",
+                  "type": "file"
+                },
+                {
+                  "key": "preparationTime",
+                  "value": "20",
+                  "type": "text"
+                },
+                {
+                  "key": "available",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "isVip",
+                  "value": "false",
+                  "type": "text"
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/products",
@@ -533,27 +580,56 @@
           }
         },
         {
-          "name": "Modifier produit (ADMIN)",
+          "name": "Modifier produit avec image (ADMIN)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Steak Premium\",\n  \"price\": 18000,\n  \"preparationTime\": 25\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Steak Premium",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "18000",
+                  "type": "text"
+                },
+                {
+                  "key": "preparationTime",
+                  "value": "25",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "value": "",
+                  "type": "file"
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/products/{{productId}}",
               "host": ["{{baseUrl}}"],
               "path": ["products", "{{productId}}"]
+            }
+          }
+        },
+        {
+          "name": "Télécharger image produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/images/uuid-filename.jpg",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "images", "uuid-filename.jpg"]
             }
           }
         },

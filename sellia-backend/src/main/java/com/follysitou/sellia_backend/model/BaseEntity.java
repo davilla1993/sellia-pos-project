@@ -46,5 +46,29 @@ public abstract class BaseEntity {
     private LocalDateTime deletedAt;
 
     private String deletedBy;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+        if (publicId == null) {
+            publicId = UUID.randomUUID().toString();
+        }
+        if (deleted == null) {
+            deleted = false;
+        }
+        if (createdBy == null) {
+            createdBy = "SYSTEM";
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
 

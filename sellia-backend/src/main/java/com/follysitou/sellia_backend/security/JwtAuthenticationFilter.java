@@ -1,10 +1,14 @@
 package com.follysitou.sellia_backend.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.follysitou.sellia_backend.exception.ApiError;
+import com.follysitou.sellia_backend.util.ErrorMessages;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -13,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -20,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -27,7 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+            if (StringUtils.hasText(jwt)) {
+                if (!tokenProvider.validateToken(jwt)) {
+                    sendErrorResponse(response, ErrorMessages.TOKEN_EXPIRED, request.getRequestURI());
+                    return;
+                }
+
                 String username = tokenProvider.getUsernameFromToken(jwt);
                 UserPrincipal userPrincipal = (UserPrincipal) userDetailsService.loadUserByUsername(username);
 
@@ -38,10 +49,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Authentication error: " + ex.getMessage(), ex);
+            sendErrorResponse(response, ErrorMessages.TOKEN_INVALID, request.getRequestURI());
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, String message, String path) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpServletResponse.SC_UNAUTHORIZED)
+                .error("Authentification requise")
+                .message(message)
+                .path(path)
+                .build();
+
+        response.getWriter().write(objectMapper.writeValueAsString(apiError));
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

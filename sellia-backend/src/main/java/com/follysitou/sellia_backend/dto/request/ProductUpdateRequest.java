@@ -3,8 +3,7 @@ package com.follysitou.sellia_backend.dto.request;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ProductUpdateRequest {
@@ -26,7 +25,7 @@ public class ProductUpdateRequest {
 
     private Long categoryId;
 
-    private String imageUrl;
+    private MultipartFile image;
 
     private Boolean available;
 

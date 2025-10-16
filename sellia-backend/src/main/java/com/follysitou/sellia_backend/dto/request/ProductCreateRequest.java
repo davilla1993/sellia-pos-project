@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ProductCreateRequest {
@@ -32,7 +31,7 @@ public class ProductCreateRequest {
     @NotNull(message = "Category is required")
     private Long categoryId;
 
-    private String imageUrl;
+    private MultipartFile image;
 
     private Boolean available = true;
 

@@ -7,13 +7,21 @@ import com.follysitou.sellia_backend.dto.response.ProductResponse;
 import com.follysitou.sellia_backend.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/products")
@@ -22,11 +30,33 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
+    @Value("${app.products-images-dir:./uploads/products}")
+    private String productsImagesDir;
+
+    @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductCreateRequest request) {
+    public ResponseEntity<ProductResponse> createProduct(@Valid @ModelAttribute ProductCreateRequest request) {
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<Resource> getProductImage(@PathVariable String filename) throws IOException {
+        try {
+            Resource resource = new UrlResource(Paths.get(productsImagesDir)
+                    .resolve(filename)
+                    .toUri());
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(resource);
+        } catch (MalformedURLException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{publicId}")
@@ -89,11 +119,11 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{publicId}")
+    @PutMapping(value = "/{publicId}", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable String publicId,
-            @Valid @RequestBody ProductUpdateRequest request) {
+            @Valid @ModelAttribute ProductUpdateRequest request) {
         ProductResponse response = productService.updateProduct(publicId, request);
         return ResponseEntity.ok(response);
     }

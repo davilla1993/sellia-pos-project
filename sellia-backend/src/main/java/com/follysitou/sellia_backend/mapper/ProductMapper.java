@@ -20,13 +20,14 @@ public class ProductMapper {
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(null)
                 .available(request.getAvailable())
                 .preparationTime(request.getPreparationTime() != null ? Integer.valueOf(request.getPreparationTime()) : null)
                 .isVip(request.getIsVip())
                 .build();
         
-        // Note: Category will be set in the service layer from first category in the list
+        // Note: imageUrl will be set in service layer after file upload
+        // Category will be set in the service layer
         return product;
     }
 
@@ -64,9 +65,6 @@ public class ProductMapper {
         if (request.getPrice() != null) {
             product.setPrice(request.getPrice());
         }
-        if (request.getImageUrl() != null) {
-            product.setImageUrl(request.getImageUrl());
-        }
         if (request.getAvailable() != null) {
             product.setAvailable(request.getAvailable());
         }
@@ -76,7 +74,8 @@ public class ProductMapper {
         if (request.getIsVip() != null) {
             product.setIsVip(request.getIsVip());
         }
-        // Note: Category will be handled in service layer
+        // Note: Image file handling is done in service layer
+        // Category will be handled in service layer
     }
 
     private ProductResponse.CategorySimpleResponse toCategorySimpleResponse(Category category) {

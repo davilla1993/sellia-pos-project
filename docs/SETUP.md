@@ -1,6 +1,64 @@
 # Sellia POS API - Guide de Configuration
 
-## Démarrage de l'Application
+## 1. Script SQL - Créer le Premier ADMIN
+
+**Exécutez ce script SQL après le démarrage de l'application (une fois les tables créées et les rôles initialisés):**
+
+```sql
+-- Script pour créer le premier administrateur
+-- Username: admin
+-- Email: admin@sella.com
+-- Password: Admin@123
+-- 
+-- Note: Le mot de passe est hashé avec BCrypt
+-- Hash de "Admin@123": $2a$10$slYQmyNdGzin7olVv76p2OPST9/PgBkqquzi.Ss7KIUgO2t0jKMm2
+
+INSERT INTO users (
+    public_id,
+    username,
+    first_name,
+    last_name,
+    email,
+    password,
+    role_id,
+    active,
+    first_login,
+    created_at,
+    updated_at,
+    created_by,
+    deleted
+) 
+SELECT 
+    gen_random_uuid(),
+    'admin',
+    'Admin',
+    'System',
+    'admin@sella.com',
+    '$2a$10$gacjHPAnQgYwMK9QFccX7OHTRcyk5vc8QJcA4SSsY0kNB8i5RZhlK',
+    r.id,
+    true,
+    false,
+    NOW(),
+    NOW(),
+    'SYSTEM',
+    false
+FROM roles r
+WHERE r.name = 'ADMIN'
+AND NOT EXISTS (
+    SELECT 1 FROM users WHERE username = 'admin'
+);
+```
+
+**Après exécution du script:**
+- Username: `admin`
+- Email: `admin@sella.com`
+- Password: `Admin@123`
+
+Vous pouvez ensuite vous connecter avec ces identifiants.
+
+---
+
+## 2. Démarrage de l'Application
 
 ### Initialisation Automatique au Startup
 
@@ -43,7 +101,7 @@ Initializing default roles...
 Default roles initialization completed
 ```
 
-## Configuration de Base de Données
+## 2.5 Configuration de Base de Données
 
 ### Variables d'Environnement (application.yml)
 
@@ -57,18 +115,19 @@ spring:
 
 **Assurez-vous que PostgreSQL est en cours d'exécution** avant de démarrer l'application.
 
-## Premier Login
+## 3. Premier Login
 
-Une fois l'application démarrée:
+Une fois l'application démarrée et l'utilisateur ADMIN créé:
 
 1. **Importer la collection Postman**: `Sellia_POS_API.postman_collection.json`
-2. **Login** avec credentials (à créer via endpoint ou directement en DB):
+2. **Login** avec les credentials du script SQL:
    - **Username**: `admin`
-   - **Password**: `Admin123!@#` (respecte la politique de sécurité)
+   - **Password**: `Admin@123`
 
-3. Les rôles sont maintenant disponibles pour l'assignation aux utilisateurs
+3. Copiez le `accessToken` et `refreshToken` dans les variables Postman
+4. Les rôles sont maintenant disponibles pour l'assignation aux utilisateurs
 
-## Politique de Sécurité des Mots de Passe
+## 4. Politique de Sécurité des Mots de Passe
 
 Tous les mots de passe doivent contenir:
 - ✓ Minimum 6 caractères
@@ -78,7 +137,7 @@ Tous les mots de passe doivent contenir:
 
 Exemple valide: `Admin123!@#`
 
-## Endpoints Phase 1, 2, 3
+## 5. Endpoints Phase 1, 2, 3
 
 ### Authentification
 - `POST /api/auth/login` - Login
@@ -136,11 +195,58 @@ Exemple valide: `Admin123!@#`
 - `PUT /api/tables/{publicId}` - Modifier (ADMIN)
 - `DELETE /api/tables/{publicId}` - Supprimer (ADMIN)
 
-## Prochain Déploiement
+## 6. Upload d'Images pour Produits
+
+Les produits supportent maintenant l'upload d'images lors de la création et de la mise à jour.
+
+### Configuration
+- Répertoire de stockage: `./uploads/products/`
+- Taille max: 5MB par fichier
+- Formats supportés: JPEG, PNG, GIF, WebP
+- Les noms de fichiers sont auto-générés (UUID)
+
+### Endpoints
+- `POST /api/products` (multipart/form-data) - Créer avec image
+- `PUT /api/products/{publicId}` (multipart/form-data) - Mettre à jour avec image
+- `GET /api/products/images/{filename}` - Télécharger image
+- `GET /api/products/{publicId}` - Voir produit + imageUrl
+- `DELETE /api/products/{publicId}` - Supprimer (image auto-supprimée)
+
+### Exemple Postman - Créer Produit avec Image
+```
+POST /api/products
+Content-Type: multipart/form-data
+
+Body (form-data):
+- name: Croissant
+- description: Croissant français
+- price: 300
+- stockQuantity: 50
+- categoryId: 1
+- image: [sélectionner fichier]
+- preparationTime: 5
+```
+
+### Exemple cURL
+```bash
+curl -X POST http://localhost:8080/api/products \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "name=Croissant" \
+  -F "price=300" \
+  -F "stockQuantity=50" \
+  -F "categoryId=1" \
+  -F "image=@croissant.jpg"
+```
+
+Voir `IMAGE_UPLOAD.md` pour la documentation complète.
+
+## 7. Prochain Déploiement
 
 Phase 3 (Orders & Workflow):
 - OrderService
 - WebSocket pour caisse ↔ cuisine
 - QR Code generation
 - Invoice management
+
+
 

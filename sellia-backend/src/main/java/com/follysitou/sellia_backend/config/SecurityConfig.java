@@ -1,5 +1,7 @@
 package com.follysitou.sellia_backend.config;
 
+import com.follysitou.sellia_backend.security.JwtAccessDeniedHandler;
+import com.follysitou.sellia_backend.security.JwtAuthenticationEntryPoint;
 import com.follysitou.sellia_backend.security.JwtAuthenticationFilter;
 import com.follysitou.sellia_backend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final UserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -52,6 +56,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                )
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()

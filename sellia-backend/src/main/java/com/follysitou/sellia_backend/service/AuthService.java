@@ -7,7 +7,7 @@ import com.follysitou.sellia_backend.mapper.UserMapper;
 import com.follysitou.sellia_backend.model.User;
 import com.follysitou.sellia_backend.repository.UserRepository;
 import com.follysitou.sellia_backend.security.JwtTokenProvider;
-import com.follysitou.sellia_backend.security.UserPrincipal;
+import com.follysitou.sellia_backend.util.ErrorMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,14 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+                .orElseThrow(() -> new UnauthorizedException(ErrorMessages.CREDENTIALS_INVALID));
 
         if (!user.getActive()) {
-            throw new UnauthorizedException("User account is disabled");
+            throw new UnauthorizedException(ErrorMessages.ACCOUNT_DISABLED);
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid username or password");
+            throw new UnauthorizedException(ErrorMessages.CREDENTIALS_INVALID);
         }
 
         String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), user.getPublicId());
@@ -39,25 +39,23 @@ public class AuthService {
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
-                .user(userMapper.toResponse(user))
                 .build();
     }
 
     public AuthResponse refreshAccessToken(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new UnauthorizedException("Invalid or expired refresh token");
+            throw new UnauthorizedException(ErrorMessages.TOKEN_EXPIRED);
         }
 
         String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
         String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedException("User not found"));
+                .orElseThrow(() -> new UnauthorizedException(ErrorMessages.USER_NOT_FOUND));
 
         if (!user.getActive()) {
-            throw new UnauthorizedException("User account is disabled");
+            throw new UnauthorizedException(ErrorMessages.ACCOUNT_DISABLED);
         }
 
         String newAccessToken = jwtTokenProvider.generateAccessToken(username, userId);
@@ -65,9 +63,7 @@ public class AuthService {
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(refreshToken)
-                .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
-                .user(userMapper.toResponse(user))
                 .build();
     }
 }
