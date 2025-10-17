@@ -25,9 +25,31 @@ public class MenuController {
 
     private final MenuService menuService;
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuCreateRequest request) {
+    public ResponseEntity<MenuResponse> createMenu(
+            @RequestParam String name,
+            @RequestParam(required = false) String description,
+            @RequestParam MenuType menuType,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) org.springframework.web.multipart.MultipartFile image) {
+        
+        MenuCreateRequest request = new MenuCreateRequest();
+        request.setName(name);
+        request.setDescription(description);
+        request.setMenuType(menuType);
+        request.setActive(active != null ? active : true);
+        
+        if (startDate != null && !startDate.isEmpty()) {
+            request.setStartDate(java.time.LocalDateTime.parse(startDate));
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            request.setEndDate(java.time.LocalDateTime.parse(endDate));
+        }
+        request.setImage(image);
+        
         MenuResponse response = menuService.createMenu(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

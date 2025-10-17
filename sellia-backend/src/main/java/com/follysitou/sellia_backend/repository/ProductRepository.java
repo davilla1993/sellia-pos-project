@@ -18,17 +18,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByNameAndDeletedFalse(String name);
 
-    @Query("SELECT p FROM Product p WHERE p.deleted = false AND p.available = true")
+    @Query(value = "SELECT * FROM products WHERE deleted = false", nativeQuery = true)
+    Page<Product> findAll(Pageable pageable);
+
+    @Query(value = "SELECT * FROM products WHERE deleted = false AND available = true", nativeQuery = true)
     Page<Product> findAllAvailableProducts(Pageable pageable);
+
+    @Query(value = "SELECT * FROM products WHERE deleted = false AND available = false", nativeQuery = true)
+    Page<Product> findAllUnavailableProducts(Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.deleted = false AND p.category.id = :categoryId")
     Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.deleted = false AND (p.name LIKE %:name% OR p.description LIKE %:description%)")
+    @Query("SELECT p FROM Product p WHERE p.deleted = false AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :description, '%')))")
     Page<Product> findByNameContaining(@Param("name") String name, @Param("description") String description, Pageable pageable);
-
-    // Note: Stock management is handled by the Stock entity, not Product directly
-    // List<Product> findLowStockProducts(); // Removed - use StockRepository instead
 
     @Query("SELECT p FROM Product p WHERE p.deleted = false AND p.category.id = :categoryId")
     Page<Product> findByCategoryIdDirect(@Param("categoryId") Long categoryId, Pageable pageable);

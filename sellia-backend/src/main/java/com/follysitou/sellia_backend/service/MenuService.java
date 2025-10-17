@@ -10,6 +10,7 @@ import com.follysitou.sellia_backend.mapper.MenuMapper;
 import com.follysitou.sellia_backend.model.Menu;
 import com.follysitou.sellia_backend.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MenuService {
 
     private final MenuRepository menuRepository;
     private final MenuMapper menuMapper;
+    private final FileService fileService;
 
     @Transactional
     public MenuResponse createMenu(MenuCreateRequest request) {
@@ -32,6 +35,14 @@ public class MenuService {
         }
 
         Menu menu = menuMapper.toEntity(request);
+
+        // Upload image if provided
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String imageUrl = fileService.uploadProductImage(request.getImage());
+            menu.setImageUrl(imageUrl);
+            log.info("Menu image uploaded: {}", imageUrl);
+        }
+
         Menu saved = menuRepository.save(menu);
         return menuMapper.toResponse(saved);
     }

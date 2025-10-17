@@ -85,6 +85,16 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/unavailable/list")
+    public ResponseEntity<PagedResponse<ProductResponse>> getUnavailableProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductResponse> products = productService.getAllUnavailableProducts(pageable);
+        PagedResponse<ProductResponse> response = PagedResponse.of(products);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<PagedResponse<ProductResponse>> getProductsByCategory(
             @PathVariable Long categoryId,
@@ -100,7 +110,7 @@ public class ProductController {
     public ResponseEntity<PagedResponse<ProductResponse>> searchProducts(
             @RequestParam String name,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductResponse> products = productService.searchProducts(name, pageable);
         PagedResponse<ProductResponse> response = PagedResponse.of(products);

@@ -66,6 +66,11 @@ public class ProductService {
         return products.map(productMapper::toResponse);
     }
 
+    public Page<ProductResponse> getAllUnavailableProducts(Pageable pageable) {
+        Page<Product> products = productRepository.findAllUnavailableProducts(pageable);
+        return products.map(productMapper::toResponse);
+    }
+
     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
         Page<Product> products = productRepository.findByCategoryId(categoryId, pageable);
         return products.map(productMapper::toResponse);

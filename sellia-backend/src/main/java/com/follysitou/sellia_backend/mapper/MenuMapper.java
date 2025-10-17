@@ -21,7 +21,7 @@ public class MenuMapper {
                 .active(request.getActive() != null ? request.getActive() : true)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(null)
                 .build();
     }
 
