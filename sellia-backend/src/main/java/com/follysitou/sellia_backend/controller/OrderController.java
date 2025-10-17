@@ -94,7 +94,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @PutMapping("/{publicId}")
     public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable String publicId,
@@ -103,7 +103,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER', 'CUISINIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE')")
     @PutMapping("/{publicId}/status/{status}")
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable String publicId,
@@ -112,7 +112,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @PutMapping("/{publicId}/discount")
     public ResponseEntity<OrderResponse> addDiscount(
             @PathVariable String publicId,
@@ -121,7 +121,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @PutMapping("/{publicId}/payment")
     public ResponseEntity<OrderResponse> markAsPaid(
             @PathVariable String publicId,
@@ -130,14 +130,14 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/pending/unpaid")
     public ResponseEntity<List<OrderResponse>> getUnpaidPendingOrders() {
         List<OrderResponse> response = orderService.getUnpaidPendingOrders();
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER', 'CUISINIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE')")
     @GetMapping("/kitchen/active")
     public ResponseEntity<List<OrderResponse>> getActiveKitchenOrders() {
         List<OrderResponse> response = orderService.getActiveKitchenOrders();

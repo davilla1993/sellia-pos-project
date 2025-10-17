@@ -114,8 +114,9 @@ export class AuthService {
     localStorage.setItem('refreshToken', token);
   }
 
-  private saveUserToStorage(user: User): void {
+  saveUserToStorage(user: User): void {
     localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   private loadUserFromStorage(): User | null {

@@ -35,17 +35,17 @@ public class DataInitializationService {
             log.info("✓ ADMIN role already exists");
         }
 
-        // Check and create CAISSIER role
-        if (roleRepository.findByName(RoleName.CAISSIER).isEmpty()) {
-            Role caissierRole = Role.builder()
-                    .name(RoleName.CAISSIER)
+        // Check and create CAISSE role
+        if (roleRepository.findByName(RoleName.CAISSE).isEmpty()) {
+            Role caisseRole = Role.builder()
+                    .name(RoleName.CAISSE)
                     .description("Gère commandes, encaissements, rapports de vente.")
                     .active(true)
                     .build();
-            roleRepository.save(caissierRole);
-            log.info("✓ CAISSIER role created");
+            roleRepository.save(caisseRole);
+            log.info("✓ CAISSE role created");
         } else {
-            log.info("✓ CAISSIER role already exists");
+            log.info("✓ CAISSE role already exists");
         }
 
         // Check and create CUISINE role

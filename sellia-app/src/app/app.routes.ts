@@ -47,12 +47,12 @@ export const routes: Routes = [
         children: [
           {
             path: 'cashier',
-            canActivate: [roleGuard(['CAISSIER', 'ADMIN'])],
+            canActivate: [roleGuard(['CAISSE', 'ADMIN'])],
             component: CashierComponent
           },
           {
             path: 'kitchen',
-            canActivate: [roleGuard(['CUISINIER', 'ADMIN'])],
+            canActivate: [roleGuard(['CUISINE', 'ADMIN'])],
             component: KitchenComponent
           }
         ]

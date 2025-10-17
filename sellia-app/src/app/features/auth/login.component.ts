@@ -46,13 +46,29 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- Password -->
             <div>
               <label for="password" class="block text-sm font-semibold text-dark mb-2">Password</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                class="input-field"
-                placeholder="••••••••"
-              />
+              <div class="relative">
+                <input
+                  id="password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  class="input-field pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="togglePasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-primary transition-colors"
+                  [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                >
+                  <svg *ngIf="!showPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m7.338-12.202a10.079 10.079 0 015.802 2.197M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </button>
+              </div>
               <div *ngIf="getFieldError('password')" class="text-red-500 text-sm mt-1">
                 Password is required
               </div>
@@ -85,6 +101,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = signal(false);
   error = signal<string | null>(null);
+  showPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -95,6 +112,10 @@ export class LoginComponent {
       username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
   }
 
   onSubmit(): void {
@@ -131,7 +152,7 @@ export class LoginComponent {
   private navigateByRole(role: string): void {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/dashboard',
-      'CAISSIER': '/pos/cashier',
+      'CAISSE': '/pos/cashier',
       'CUISINE': '/pos/kitchen'
     };
 

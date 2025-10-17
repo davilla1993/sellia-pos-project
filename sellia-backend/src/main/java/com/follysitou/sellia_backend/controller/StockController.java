@@ -30,14 +30,14 @@ public class StockController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/{publicId}")
     public ResponseEntity<StockResponse> getStock(@PathVariable String publicId) {
         StockResponse response = stockService.getStockById(publicId);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping
     public ResponseEntity<PagedResponse<StockResponse>> getAllStocks(
             @RequestParam(defaultValue = "0") int page,
@@ -47,7 +47,7 @@ public class StockController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/active/list")
     public ResponseEntity<PagedResponse<StockResponse>> getAllActiveStocks(
             @RequestParam(defaultValue = "0") int page,
@@ -57,21 +57,21 @@ public class StockController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/low-stock/list")
     public ResponseEntity<List<StockResponse>> getLowStockItems() {
         List<StockResponse> response = stockService.getLowStockItems();
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/below-minimum/list")
     public ResponseEntity<List<StockResponse>> getBelowMinimumQuantity() {
         List<StockResponse> response = stockService.getBelowMinimumQuantity();
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/above-maximum/list")
     public ResponseEntity<List<StockResponse>> getAboveMaximumQuantity() {
         List<StockResponse> response = stockService.getAboveMaximumQuantity();

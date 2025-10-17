@@ -37,14 +37,29 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- Current Password -->
             <div>
               <label for="oldPassword" class="block text-sm font-semibold text-dark mb-2">Current Password</label>
-              <input
-                id="oldPassword"
-                type="password"
-                formControlName="oldPassword"
-                class="input-field"
-                placeholder="••••••••"
-                [disabled]="isLoading()"
-              />
+              <div class="relative">
+                <input
+                  id="oldPassword"
+                  [type]="showOldPassword() ? 'text' : 'password'"
+                  formControlName="oldPassword"
+                  class="input-field pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="toggleOldPasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-primary transition-colors"
+                  [attr.aria-label]="showOldPassword() ? 'Hide password' : 'Show password'"
+                >
+                  <svg *ngIf="!showOldPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showOldPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m7.338-12.202a10.079 10.079 0 015.802 2.197M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </button>
+              </div>
               <div *ngIf="getFieldError('oldPassword')" class="text-red-500 text-sm mt-1">
                 Current password is required
               </div>
@@ -53,14 +68,29 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- New Password -->
             <div>
               <label for="newPassword" class="block text-sm font-semibold text-dark mb-2">New Password</label>
-              <input
-                id="newPassword"
-                type="password"
-                formControlName="newPassword"
-                class="input-field"
-                placeholder="••••••••"
-                [disabled]="isLoading()"
-              />
+              <div class="relative">
+                <input
+                  id="newPassword"
+                  [type]="showNewPassword() ? 'text' : 'password'"
+                  formControlName="newPassword"
+                  class="input-field pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="toggleNewPasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-primary transition-colors"
+                  [attr.aria-label]="showNewPassword() ? 'Hide password' : 'Show password'"
+                >
+                  <svg *ngIf="!showNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m7.338-12.202a10.079 10.079 0 015.802 2.197M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </button>
+              </div>
               <div *ngIf="getFieldError('newPassword')" class="text-red-500 text-sm mt-1">
                 <span *ngIf="changePasswordForm.get('newPassword')?.hasError('required')">New password is required</span>
                 <span *ngIf="changePasswordForm.get('newPassword')?.hasError('minlength')">Minimum 6 characters</span>
@@ -73,14 +103,29 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- Confirm Password -->
             <div>
               <label for="confirmPassword" class="block text-sm font-semibold text-dark mb-2">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                formControlName="confirmPassword"
-                class="input-field"
-                placeholder="••••••••"
-                [disabled]="isLoading()"
-              />
+              <div class="relative">
+                <input
+                  id="confirmPassword"
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  class="input-field pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="toggleConfirmPasswordVisibility()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-primary transition-colors"
+                  [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+                >
+                  <svg *ngIf="!showConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m7.338-12.202a10.079 10.079 0 015.802 2.197M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </button>
+              </div>
               <div *ngIf="getFieldError('confirmPassword')" class="text-red-500 text-sm mt-1">
                 Passwords do not match
               </div>
@@ -107,6 +152,9 @@ export class ChangePasswordComponent {
   isLoading = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
+  showOldPassword = signal(false);
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -127,6 +175,18 @@ export class ChangePasswordComponent {
     );
   }
 
+  toggleOldPasswordVisibility(): void {
+    this.showOldPassword.set(!this.showOldPassword());
+  }
+
+  toggleNewPasswordVisibility(): void {
+    this.showNewPassword.set(!this.showNewPassword());
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.set(!this.showConfirmPassword());
+  }
+
   private passwordMatchValidator(group: FormGroup): { [key: string]: any } | null {
     const password = group.get('newPassword')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
@@ -139,6 +199,7 @@ export class ChangePasswordComponent {
     this.isLoading.set(true);
     this.error.set(null);
     this.success.set(null);
+    this.changePasswordForm.disable();
 
     const { oldPassword, newPassword, confirmPassword } = this.changePasswordForm.value;
 
@@ -146,13 +207,19 @@ export class ChangePasswordComponent {
       next: () => {
         this.isLoading.set(false);
         this.success.set('Password changed successfully. Redirecting...');
+        
+        const user = this.authService.getCurrentUser();
+        if (user) {
+          user.firstLogin = false;
+          this.authService.saveUserToStorage(user);
+        }
+
         setTimeout(() => {
-          const user = this.authService.getCurrentUser();
           if (user) {
             const roleRoutes: { [key: string]: string } = {
               'ADMIN': '/dashboard',
-              'CAISSIER': '/pos/cashier',
-              'CUISINIER': '/pos/kitchen'
+              'CAISSE': '/pos/cashier',
+              'CUISINE': '/pos/kitchen'
             };
             const route = roleRoutes[user.role] || '/dashboard';
             this.router.navigate([route]);
@@ -161,6 +228,7 @@ export class ChangePasswordComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
+        this.changePasswordForm.enable();
         this.error.set(err.error?.message || 'Failed to change password.');
       }
     });

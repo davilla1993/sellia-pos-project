@@ -98,6 +98,8 @@ public class SecurityConfig {
                         // Orders creation and viewing (public for customers)
                         .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
+                        // Authenticated requests
+                        .requestMatchers(HttpMethod.POST, "/api/users/change-password").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

@@ -59,6 +59,7 @@ public class UserController {
     }
 
     @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody UserPasswordChangeRequest request) {
         String userId = SecurityContextUtils.getCurrentUserId();
         userService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword(), request.getConfirmPassword());

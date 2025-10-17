@@ -17,7 +17,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/daily-sales")
     public ResponseEntity<Map<String, Object>> getDailySalesReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -26,7 +26,7 @@ public class ReportController {
         return ResponseEntity.ok(report);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/revenue")
     public ResponseEntity<Map<String, Object>> getRevenueReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -35,7 +35,7 @@ public class ReportController {
         return ResponseEntity.ok(report);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/orders-summary")
     public ResponseEntity<Map<String, Object>> getOrderSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -44,7 +44,7 @@ public class ReportController {
         return ResponseEntity.ok(summary);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @GetMapping("/inventory-summary")
     public ResponseEntity<Map<String, Object>> getInventorySummary() {
         Map<String, Object> summary = reportService.getInventorySummary();

@@ -14,7 +14,10 @@ import { AuthService } from '../../core/services/auth.service';
           <!-- Logo -->
           <div class="flex items-center space-x-3">
             <img src="/assets/logo.jpg" alt="Maison Recla" class="h-12 w-12 rounded-lg">
-            <span class="text-2xl font-bold text-primary">Maison Recla</span>
+            <div>
+              <div class="text-xs uppercase tracking-wider text-neutral-500 font-semibold">Sellia POS</div>
+              <span class="text-xl font-bold text-primary">Maison Recla</span>
+            </div>
           </div>
 
           <!-- Navigation -->

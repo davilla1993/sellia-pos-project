@@ -103,7 +103,7 @@ public class RestaurantTableController {
     }
 
     @PostMapping("/{publicId}/occupy")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CAISSIER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CAISSE')")
     public ResponseEntity<Void> occupyTable(
             @PathVariable String publicId,
             @RequestParam String orderId) {
@@ -112,7 +112,7 @@ public class RestaurantTableController {
     }
 
     @PostMapping("/{publicId}/release")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CAISSIER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CAISSE')")
     public ResponseEntity<Void> releaseTable(@PathVariable String publicId) {
         tableService.releaseTable(publicId);
         return ResponseEntity.noContent().build();

@@ -1,8 +1,11 @@
 package com.follysitou.sellia_backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum RoleName {
     ADMIN("Administrateur"),
-    CAISSIER("Caissier"),
+    CAISSE("Caisse"),
     CUISINE("Cuisine");
 
     private final String displayName;
@@ -11,7 +14,4 @@ public enum RoleName {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

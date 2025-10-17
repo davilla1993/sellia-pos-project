@@ -16,7 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
       </main>
       <footer class="bg-dark text-white mt-12 py-8">
         <div class="max-w-7xl mx-auto px-4 text-center">
-          <p class="text-neutral-400">© 2025 Maison Recla. All rights reserved.</p>
+          <p class="text-neutral-400">Sellia POS • © 2025 Maison Recla. All rights reserved.</p>
         </div>
       </footer>
     </div>
