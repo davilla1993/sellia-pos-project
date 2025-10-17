@@ -1,0 +1,102 @@
+export type UserRole = 'ADMIN' | 'CAISSIER' | 'CUISINIER' | 'CUSTOMER';
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  restaurantId: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+}
+
+export interface Product {
+  publicId: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  categoryId: string;
+  available: boolean;
+}
+
+export interface MenuItem {
+  publicId: string;
+  title: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  category: string;
+  available: boolean;
+}
+
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  id?: string;
+  orderNumber?: string;
+  tableId?: string;
+  status: 'EN_ATTENTE' | 'ACCEPTEE' | 'EN_PREPARATION' | 'PRETE' | 'LIVREE' | 'PAYEE';
+  items: OrderItem[];
+  totalAmount: number;
+  discount?: number;
+  paymentMethod?: string;
+  notes?: string;
+  createdAt?: Date;
+}
+
+export interface CustomerSession {
+  sessionId: string;
+  customerName?: string;
+  customerPhone?: string;
+  tableId?: string;
+  status: 'ACTIVE' | 'CLOSED';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  sessionId: string;
+  totalAmount: number;
+  subtotal: number;
+  discount?: number;
+  tax: number;
+  status: 'PENDING' | 'PAID';
+  createdAt: Date;
+}
+
+export interface Stock {
+  id: string;
+  productId: string;
+  currentQuantity: number;
+  unitOfMeasure: string;
+  alertThreshold: number;
+  minimumQuantity: number;
+}
+
+export interface DailySalesReport {
+  date: string;
+  revenue: number;
+  orderCount: number;
+  averageOrderValue: number;
+  topProducts: { name: string; quantity: number }[];
+}
+
+export interface Table {
+  id: string;
+  number: number;
+  capacity: number;
+  status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED';
+  qrCodeUrl?: string;
+}

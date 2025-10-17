@@ -1,0 +1,177 @@
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
+
+@Component({
+  selector: 'app-qr-scanner',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="min-h-screen bg-gradient-to-br from-primary-light to-white flex items-center justify-center px-4">
+      <div class="w-full max-w-md animate-slide-up">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <img src="/assets/logo.jpg" alt="Maison Recla" class="h-24 w-24 rounded-2xl mx-auto mb-4 shadow-elegant">
+          <h1 class="text-3xl font-bold text-dark mb-2">Welcome to Maison Recla</h1>
+          <p class="text-neutral-600">Scan your table QR code to start ordering</p>
+        </div>
+
+        <!-- Scanner Section -->
+        <div *ngIf="!manualEntry()" class="card shadow-elevation mb-6">
+          <!-- QR Input Placeholder -->
+          <div class="mb-4 p-8 bg-gradient-to-br from-primary-light to-neutral-100 rounded-lg border-2 border-dashed border-primary flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-3">📱</div>
+              <p class="text-neutral-700 font-semibold">QR Scanner Ready</p>
+              <p class="text-sm text-neutral-600 mt-1">Point your camera at the table QR code</p>
+            </div>
+          </div>
+
+          <!-- Manual Entry Toggle -->
+          <div class="text-center border-t border-neutral-200 pt-4">
+            <button
+              (click)="toggleManualEntry()"
+              class="text-primary hover:text-primary-dark font-semibold transition"
+            >
+              Or enter table number manually
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Entry Section -->
+        <div *ngIf="manualEntry()" class="card shadow-elevation">
+          <h2 class="text-2xl font-bold text-dark mb-6">Enter Table Information</h2>
+
+          <form [formGroup]="manualForm" (ngSubmit)="submitManual()" class="space-y-4">
+            <!-- Table Number -->
+            <div>
+              <label class="block text-sm font-semibold text-dark mb-2">Table Number</label>
+              <input
+                type="number"
+                formControlName="tableNumber"
+                class="input-field"
+                placeholder="e.g., 1, 5, 12..."
+                min="1"
+              />
+              <div *ngIf="getFieldError('tableNumber')" class="text-red-500 text-sm mt-1">
+                Please enter a valid table number
+              </div>
+            </div>
+
+            <!-- Customer Name (Optional) -->
+            <div>
+              <label class="block text-sm font-semibold text-dark mb-2">Your Name (Optional)</label>
+              <input
+                type="text"
+                formControlName="customerName"
+                class="input-field"
+                placeholder="John Doe"
+              />
+            </div>
+
+            <!-- Customer Phone (Optional) -->
+            <div>
+              <label class="block text-sm font-semibold text-dark mb-2">Phone Number (Optional)</label>
+              <input
+                type="tel"
+                formControlName="customerPhone"
+                class="input-field"
+                placeholder="123-456-7890"
+              />
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              [disabled]="isProcessing() || manualForm.invalid"
+              class="btn-primary w-full mt-6"
+              [class.opacity-50]="isProcessing()"
+            >
+              {{ isProcessing() ? 'Starting your session...' : 'Start Ordering' }}
+            </button>
+
+            <!-- Back Button -->
+            <button
+              type="button"
+              (click)="toggleManualEntry()"
+              class="btn-secondary w-full"
+            >
+              Back to Scanner
+            </button>
+          </form>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error()" class="mt-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-slide-up">
+          <p class="font-semibold">Error</p>
+          <p class="text-sm">{{ error() }}</p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+          <p class="text-xs text-blue-800">
+            💡 This QR code scanner helps us connect you to your table. Your personal information is optional and helps us provide better service.
+          </p>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: []
+})
+export class QrScannerComponent {
+  manualEntry = signal(false);
+  isProcessing = signal(false);
+  error = signal<string | null>(null);
+  manualForm: FormGroup;
+
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.manualForm = this.fb.group({
+      tableNumber: ['', [Validators.required, Validators.min(1)]],
+      customerName: [''],
+      customerPhone: ['']
+    });
+  }
+
+
+
+  toggleManualEntry(): void {
+    this.manualEntry.set(!this.manualEntry());
+    this.error.set(null);
+  }
+
+  submitManual(): void {
+    if (this.manualForm.invalid) return;
+
+    const { tableNumber, customerName, customerPhone } = this.manualForm.value;
+    this.createSession(tableNumber.toString(), customerName, customerPhone);
+  }
+
+  private createSession(tableId: string, customerName?: string, customerPhone?: string): void {
+    this.isProcessing.set(true);
+    this.error.set(null);
+
+    this.apiService.getOrCreateSession(tableId, customerName, customerPhone).subscribe({
+      next: (session) => {
+        this.isProcessing.set(false);
+        this.router.navigate(['/customer/menu'], {
+          queryParams: { sessionId: session.sessionId }
+        });
+      },
+      error: (err) => {
+        this.isProcessing.set(false);
+        this.error.set(err.error?.message || 'Failed to start session. Please try again.');
+      }
+    });
+  }
+
+  getFieldError(fieldName: string): boolean {
+    const field = this.manualForm.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+}
