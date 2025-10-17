@@ -78,14 +78,6 @@ import { AuthService } from '../../core/services/auth.service';
             </p>
           </div>
         </div>
-
-        <!-- Demo Credentials -->
-        <div class="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-          <p class="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</p>
-          <p class="text-xs text-blue-800">Admin: admin@maison.local / password</p>
-          <p class="text-xs text-blue-800">Cashier: cashier@maison.local / password</p>
-          <p class="text-xs text-blue-800">Chef: chef@maison.local / password</p>
-        </div>
       </div>
     </div>
   `,
