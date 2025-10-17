@@ -28,19 +28,19 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <!-- Email -->
+            <!-- Username -->
             <div>
-              <label for="email" class="block text-sm font-semibold text-dark mb-2">Email</label>
+              <label for="username" class="block text-sm font-semibold text-dark mb-2">Username</label>
               <input
-                id="email"
-                type="email"
-                formControlName="email"
+                id="username"
+                type="text"
+                formControlName="username"
                 class="input-field"
-                placeholder="your@email.com"
+                placeholder="your username"
                 [disabled]="isLoading()"
               />
-              <div *ngIf="getFieldError('email')" class="text-red-500 text-sm mt-1">
-                Please enter a valid email
+              <div *ngIf="getFieldError('username')" class="text-red-500 text-sm mt-1">
+                Username is required
               </div>
             </div>
 
@@ -94,7 +94,7 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
@@ -105,9 +105,9 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const { email, password } = this.loginForm.value;
+    const { username, password } = this.loginForm.value;
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(username, password).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         const user = response.user;
