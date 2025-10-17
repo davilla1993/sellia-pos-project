@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -18,7 +18,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <!-- Navigation Links -->
-          <div *ngIf="currentUser$ | async as user" class="hidden md:flex items-center space-x-8">
+          <div *ngIf="authService.getCurrentUser() as user" class="hidden md:flex items-center space-x-8">
             <ng-container [ngSwitch]="user.role">
               <!-- Customer Links -->
               <ng-container *ngSwitchCase="'CUSTOMER'">
@@ -37,7 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <!-- User Menu -->
-          <div *ngIf="currentUser$ | async as user" class="flex items-center space-x-4">
+          <div *ngIf="authService.getCurrentUser() as user" class="flex items-center space-x-4">
             <span class="text-sm text-neutral-600">{{ user.firstName }} {{ user.lastName }}</span>
             <button (click)="logout()" class="btn-outline text-sm py-2 px-4">
               Logout
@@ -50,9 +50,7 @@ import { AuthService } from '../../core/services/auth.service';
   styles: []
 })
 export class NavbarComponent {
-  @Input() currentUser$ = this.authService.currentUser$;
-
-  constructor(private authService: AuthService) {}
+  authService = inject(AuthService);
 
   isAdmin(user: any): boolean {
     return this.authService.hasRole(['ADMIN']);

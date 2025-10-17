@@ -21,14 +21,12 @@ import { Order } from '../../shared/models/types';
       <div class="max-w-2xl mx-auto mb-8">
         <div class="card">
           <div class="relative">
-            <!-- Timeline -->
             <div class="space-y-8">
               <div
                 *ngFor="let status of orderStatuses; let last = last"
                 [ngClass]="getStatusClass(status.value)"
                 class="flex items-start"
               >
-                <!-- Timeline Dot -->
                 <div class="flex flex-col items-center mr-6">
                   <div
                     class="w-4 h-4 rounded-full"
@@ -43,7 +41,6 @@ import { Order } from '../../shared/models/types';
                   ></div>
                 </div>
 
-                <!-- Status Info -->
                 <div class="pt-1">
                   <h3
                     class="font-semibold"
@@ -74,7 +71,7 @@ import { Order } from '../../shared/models/types';
                   <h3 class="font-semibold text-dark">{{ item.productId }}</h3>
                   <p class="text-sm text-neutral-600">Qty: {{ item.quantity }}</p>
                 </div>
-                <span class="text-primary font-bold">${{ (item.price * item.quantity).toFixed(2) }}</span>
+                <span class="text-primary font-bold">{{ formatItemTotal(item.price, item.quantity) }}</span>
               </div>
             </div>
           </div>
@@ -112,7 +109,7 @@ import { Order } from '../../shared/models/types';
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
+              <span class="text-primary">{{ formatTotalPrice(order()?.totalAmount || 0) }}</span>
             </div>
 
             <button
@@ -204,5 +201,13 @@ export class OrderTrackingComponent implements OnInit {
   showNotification(message: string): void {
     this.notification.set(message);
     setTimeout(() => this.notification.set(null), 3000);
+  }
+
+  formatItemTotal(price: number, quantity: number): string {
+    return '$' + (price * quantity).toFixed(2);
+  }
+
+  formatTotalPrice(totalAmount: number): string {
+    return '$' + totalAmount.toFixed(2);
   }
 }

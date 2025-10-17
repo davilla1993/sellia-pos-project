@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { Order } from '../../shared/models/types';
@@ -8,7 +8,7 @@ import { Order } from '../../shared/models/types';
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="animate-fade-in">
       <!-- Header -->
@@ -29,7 +29,7 @@ import { Order } from '../../shared/models/types';
                   <p class="text-sm text-neutral-600">Qty: {{ item.quantity }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
+                  <p class="font-semibold text-primary">{{ formatItemTotal(item.price, item.quantity) }}</p>
                 </div>
               </div>
             </div>
@@ -55,21 +55,21 @@ import { Order } from '../../shared/models/types';
             <div class="space-y-3 pb-4 border-b border-neutral-200">
               <div class="flex justify-between text-neutral-700">
                 <span>Subtotal</span>
-                <span>${{ subtotal().toFixed(2) }}</span>
+                <span>{{ formatPrice(subtotal()) }}</span>
               </div>
               <div class="flex justify-between text-neutral-700">
                 <span>Tax (10%)</span>
-                <span>${{ tax().toFixed(2) }}</span>
+                <span>{{ formatPrice(tax()) }}</span>
               </div>
               <div *ngIf="discount() > 0" class="flex justify-between text-green-600">
                 <span>Discount</span>
-                <span>-${{ discount().toFixed(2) }}</span>
+                <span>-{{ formatPrice(discount()) }}</span>
               </div>
             </div>
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">${{ total().toFixed(2) }}</span>
+              <span class="text-primary">{{ formatPrice(total()) }}</span>
             </div>
 
             <!-- Payment Method -->
@@ -165,5 +165,13 @@ export class CheckoutComponent implements OnInit {
 
   continueShopping(): void {
     this.router.navigate(['/customer/menu']);
+  }
+
+  formatItemTotal(price: number, quantity: number): string {
+    return '$' + (price * quantity).toFixed(2);
+  }
+
+  formatPrice(value: number): string {
+    return '$' + value.toFixed(2);
   }
 }
