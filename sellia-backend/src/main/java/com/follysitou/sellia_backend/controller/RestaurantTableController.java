@@ -5,6 +5,7 @@ import com.follysitou.sellia_backend.dto.request.RestaurantTableUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.dto.response.RestaurantTableResponse;
 import com.follysitou.sellia_backend.service.RestaurantTableService;
+import com.follysitou.sellia_backend.service.QrCodeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tables")
@@ -23,6 +26,7 @@ import java.util.List;
 public class RestaurantTableController {
 
     private final RestaurantTableService tableService;
+    private final QrCodeService qrCodeService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -112,6 +116,23 @@ public class RestaurantTableController {
     public ResponseEntity<Void> releaseTable(@PathVariable String publicId) {
         tableService.releaseTable(publicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{publicId}/qrcode/generate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> generateQrCode(@PathVariable String publicId) {
+        String qrCodeUrl = qrCodeService.generateTableQrCode(publicId);
+        Map<String, String> response = new HashMap<>();
+        response.put("qrCodeUrl", qrCodeUrl);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{publicId}/qrcode")
+    public ResponseEntity<Map<String, String>> getQrCode(@PathVariable String publicId) {
+        String qrCodeUrl = qrCodeService.generateTableQrCode(publicId);
+        Map<String, String> response = new HashMap<>();
+        response.put("qrCodeUrl", qrCodeUrl);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{publicId}")
