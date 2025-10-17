@@ -1,14 +1,13 @@
-export type UserRole = 'ADMIN' | 'CAISSIER' | 'CUISINIER' | 'CUSTOMER';
+export type UserRole = 'ADMIN' | 'CAISSIER' | 'CUISINE' | 'CUSTOMER';
 
 export interface User {
-  id: string;
+  publicId: string;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
-  restaurantId: string;
-  mustChangePassword?: boolean;
-  isActive?: boolean;
+  firstLogin?: boolean;
+  active?: boolean;
 }
 
 export interface AuthResponse {

@@ -113,7 +113,7 @@ export class LoginComponent {
         const user = response.user;
 
         // Check if first login - must change password
-        if (user.mustChangePassword) {
+        if (user.firstLogin) {
           this.router.navigate(['/auth/change-password']);
         } else {
           // Navigate based on role
@@ -132,7 +132,7 @@ export class LoginComponent {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/dashboard',
       'CAISSIER': '/pos/cashier',
-      'CUISINIER': '/pos/kitchen'
+      'CUISINE': '/pos/kitchen'
     };
 
     const route = roleRoutes[role] || '/dashboard';

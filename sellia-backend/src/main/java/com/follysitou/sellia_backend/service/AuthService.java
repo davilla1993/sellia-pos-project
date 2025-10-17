@@ -40,6 +40,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
+                .user(userMapper.toResponse(user))
                 .build();
     }
 
@@ -64,6 +65,7 @@ public class AuthService {
                 .accessToken(newAccessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
+                .user(userMapper.toResponse(user))
                 .build();
     }
 }
