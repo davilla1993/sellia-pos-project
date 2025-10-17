@@ -7,6 +7,8 @@ export interface User {
   lastName: string;
   role: UserRole;
   restaurantId: string;
+  mustChangePassword?: boolean;
+  isActive?: boolean;
 }
 
 export interface AuthResponse {

@@ -1,11 +1,14 @@
 import { Routes } from '@angular/router';
 import { LayoutSimpleComponent } from './shared/components/layout-simple.component';
 import { LoginComponent } from './features/auth/login.component';
-import { RegisterComponent } from './features/auth/register.component';
+import { ChangePasswordComponent } from './features/auth/change-password.component';
 import { MenuSimpleComponent } from './features/customer/menu-simple.component';
 import { CheckoutSimpleComponent } from './features/customer/checkout-simple.component';
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanner.component';
+import { DashboardComponent } from './features/admin/dashboard.component';
+import { CashierComponent } from './features/pos/cashier.component';
+import { KitchenComponent } from './features/pos/kitchen.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -20,20 +23,44 @@ export const routes: Routes = [
     path: 'auth',
     children: [
       { path: 'login', component: LoginComponent },
-      { path: 'register', component: RegisterComponent },
+      { path: 'change-password', component: ChangePasswordComponent },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
 
-  // Layout Routes
+  // Protected Routes (Require Authentication)
   {
     path: '',
     component: LayoutSimpleComponent,
+    canActivate: [authGuard],
     children: [
-      // Customer Routes
+      // Admin Routes
+      {
+        path: 'dashboard',
+        canActivate: [roleGuard(['ADMIN'])],
+        component: DashboardComponent
+      },
+
+      // POS Routes
+      {
+        path: 'pos',
+        children: [
+          {
+            path: 'cashier',
+            canActivate: [roleGuard(['CAISSIER', 'ADMIN'])],
+            component: CashierComponent
+          },
+          {
+            path: 'kitchen',
+            canActivate: [roleGuard(['CUISINIER', 'ADMIN'])],
+            component: KitchenComponent
+          }
+        ]
+      },
+
+      // Customer Routes (QR Code - No Auth)
       {
         path: 'customer',
-        canActivate: [roleGuard(['CUSTOMER'])],
         children: [
           { path: 'menu', component: MenuSimpleComponent },
           { path: 'checkout', component: CheckoutSimpleComponent },
@@ -41,8 +68,8 @@ export const routes: Routes = [
         ]
       },
 
-      // Default redirect
-      { path: '', redirectTo: '/customer/menu', pathMatch: 'full' }
+      // Default redirect based on role
+      { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
     ]
   },
 

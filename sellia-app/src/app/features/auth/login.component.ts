@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-primary-light to-white flex items-center justify-center px-4">
       <div class="w-full max-w-md animate-slide-up">
@@ -20,11 +20,11 @@ import { AuthService } from '../../core/services/auth.service';
 
         <!-- Login Form -->
         <div class="card shadow-elevation">
-          <h2 class="text-2xl font-bold text-dark mb-6">Welcome Back</h2>
+          <h2 class="text-2xl font-bold text-dark mb-6">Staff Login</h2>
 
           <!-- Error Message -->
           <div *ngIf="error()" class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
-            {{ error() }}
+            <p class="font-semibold">{{ error() }}</p>
           </div>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
@@ -37,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
                 formControlName="email"
                 class="input-field"
                 placeholder="your@email.com"
+                [disabled]="isLoading()"
               />
               <div *ngIf="getFieldError('email')" class="text-red-500 text-sm mt-1">
                 Please enter a valid email
@@ -52,6 +53,7 @@ import { AuthService } from '../../core/services/auth.service';
                 formControlName="password"
                 class="input-field"
                 placeholder="••••••••"
+                [disabled]="isLoading()"
               />
               <div *ngIf="getFieldError('password')" class="text-red-500 text-sm mt-1">
                 Password is required
@@ -61,21 +63,18 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- Submit Button -->
             <button
               type="submit"
-              [disabled]="isLoading()"
+              [disabled]="isLoading() || loginForm.invalid"
               class="btn-primary w-full mt-6"
-              [class.opacity-50]="isLoading()"
+              [class.opacity-50]="isLoading() || loginForm.invalid"
             >
               {{ isLoading() ? 'Logging in...' : 'Login' }}
             </button>
           </form>
 
-          <!-- Register Link -->
+          <!-- Info -->
           <div class="mt-6 text-center border-t border-neutral-200 pt-4">
-            <p class="text-neutral-600">
-              Don't have an account?
-              <a routerLink="/auth/register" class="text-primary font-semibold hover:text-primary-dark transition">
-                Register here
-              </a>
+            <p class="text-sm text-neutral-600">
+              Staff accounts are created by administrators only.
             </p>
           </div>
         </div>
@@ -85,6 +84,7 @@ import { AuthService } from '../../core/services/auth.service';
           <p class="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</p>
           <p class="text-xs text-blue-800">Admin: admin@maison.local / password</p>
           <p class="text-xs text-blue-800">Cashier: cashier@maison.local / password</p>
+          <p class="text-xs text-blue-800">Chef: chef@maison.local / password</p>
         </div>
       </div>
     </div>
@@ -103,7 +103,7 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -118,19 +118,33 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe({
       next: (response) => {
         this.isLoading.set(false);
-        // Navigate based on role
-        const role = response.user.role;
-        if (role === 'CUSTOMER') {
-          this.router.navigate(['/customer/menu']);
+        const user = response.user;
+
+        // Check if first login - must change password
+        if (user.mustChangePassword) {
+          this.router.navigate(['/auth/change-password']);
         } else {
-          this.router.navigate(['/dashboard']);
+          // Navigate based on role
+          this.navigateByRole(user.role);
         }
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.error.set(err.error?.message || 'Login failed. Please try again.');
+        const errorMsg = err.error?.message || 'Invalid email or password.';
+        this.error.set(errorMsg);
       }
     });
+  }
+
+  private navigateByRole(role: string): void {
+    const roleRoutes: { [key: string]: string } = {
+      'ADMIN': '/dashboard',
+      'CAISSIER': '/pos/cashier',
+      'CUISINIER': '/pos/kitchen'
+    };
+
+    const route = roleRoutes[role] || '/dashboard';
+    this.router.navigate([route]);
   }
 
   getFieldError(fieldName: string): boolean {

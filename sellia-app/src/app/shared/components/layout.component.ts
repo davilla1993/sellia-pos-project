@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './navbar.component';
@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterOutlet, NavbarComponent],
   template: `
     <div class="min-h-screen flex flex-col bg-primary-light">
-      <app-navbar *ngIf="authService.isAuthenticated$()"></app-navbar>
+      <app-navbar *ngIf="isAuthenticated()"></app-navbar>
       
       <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
         <router-outlet></router-outlet>
@@ -26,5 +26,6 @@ import { AuthService } from '../../core/services/auth.service';
   styles: []
 })
 export class LayoutComponent {
-  authService = inject(AuthService);
+  protected authService = inject(AuthService);
+  protected isAuthenticated = computed(() => !!this.authService.getToken());
 }

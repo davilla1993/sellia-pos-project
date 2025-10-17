@@ -30,6 +30,7 @@ export class AuthService {
         tap(response => {
           this.setToken(response.accessToken);
           this.setRefreshToken(response.refreshToken);
+          this.saveUserToStorage(response.user);
           this.currentUserSubject.next(response.user);
           this.isAuthenticatedSignal.set(true);
         }),
@@ -40,21 +41,38 @@ export class AuthService {
       );
   }
 
-  register(email: string, password: string, firstName: string, lastName: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, {
-      email,
-      password,
-      firstName,
-      lastName
-    })
-    .pipe(
-      tap(response => {
-        this.setToken(response.accessToken);
-        this.setRefreshToken(response.refreshToken);
-        this.currentUserSubject.next(response.user);
-        this.isAuthenticatedSignal.set(true);
-      })
-    );
+  changePassword(oldPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/users/change-password`, { 
+      currentPassword: oldPassword, 
+      newPassword, 
+      confirmPassword 
+    }).pipe(
+        tap(() => {
+          console.log('Password changed successfully');
+        }),
+        catchError(error => {
+          console.error('Password change error:', error);
+          throw error;
+        })
+      );
+  }
+
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken })
+      .pipe(
+        tap(response => {
+          this.setToken(response.accessToken);
+          this.setRefreshToken(response.refreshToken);
+          this.saveUserToStorage(response.user);
+          this.currentUserSubject.next(response.user);
+        }),
+        catchError(error => {
+          console.error('Token refresh error:', error);
+          this.logout();
+          throw error;
+        })
+      );
   }
 
   logout(): void {
@@ -84,12 +102,20 @@ export class AuthService {
     return localStorage.getItem('accessToken');
   }
 
+  private getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
   private setToken(token: string): void {
     localStorage.setItem('accessToken', token);
   }
 
   private setRefreshToken(token: string): void {
     localStorage.setItem('refreshToken', token);
+  }
+
+  private saveUserToStorage(user: User): void {
+    localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
   private loadUserFromStorage(): User | null {

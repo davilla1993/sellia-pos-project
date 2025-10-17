@@ -109,7 +109,7 @@ import { Order } from '../../shared/models/types';
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">{{ formatTotalPrice(order()?.totalAmount || 0) }}</span>
+              <span class="text-primary">{{ '$' + ((order()?.totalAmount || 0).toFixed(2)) }}</span>
             </div>
 
             <button

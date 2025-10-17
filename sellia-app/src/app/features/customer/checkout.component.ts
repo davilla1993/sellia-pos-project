@@ -55,21 +55,21 @@ import { Order } from '../../shared/models/types';
             <div class="space-y-3 pb-4 border-b border-neutral-200">
               <div class="flex justify-between text-neutral-700">
                 <span>Subtotal</span>
-                <span>{{ formatPrice(subtotal()) }}</span>
+                <span>{{ '$' + subtotal().toFixed(2) }}</span>
               </div>
               <div class="flex justify-between text-neutral-700">
                 <span>Tax (10%)</span>
-                <span>{{ formatPrice(tax()) }}</span>
+                <span>{{ '$' + tax().toFixed(2) }}</span>
               </div>
               <div *ngIf="discount() > 0" class="flex justify-between text-green-600">
                 <span>Discount</span>
-                <span>-{{ formatPrice(discount()) }}</span>
+                <span>{{ '-$' + discount().toFixed(2) }}</span>
               </div>
             </div>
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">{{ formatPrice(total()) }}</span>
+              <span class="text-primary">{{ '$' + total().toFixed(2) }}</span>
             </div>
 
             <!-- Payment Method -->
