@@ -58,11 +58,12 @@ app:
 # Logging Configuration
 logging:
   level:
-    com.follysitou.sellia_backend: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
+    com.follysitou.sellia_backend: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
 
 # Development Profile
 ---
