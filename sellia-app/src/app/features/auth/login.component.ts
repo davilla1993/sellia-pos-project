@@ -37,7 +37,6 @@ import { AuthService } from '../../core/services/auth.service';
                 formControlName="username"
                 class="input-field"
                 placeholder="your username"
-                [disabled]="isLoading()"
               />
               <div *ngIf="getFieldError('username')" class="text-red-500 text-sm mt-1">
                 Username is required
@@ -53,7 +52,6 @@ import { AuthService } from '../../core/services/auth.service';
                 formControlName="password"
                 class="input-field"
                 placeholder="••••••••"
-                [disabled]="isLoading()"
               />
               <div *ngIf="getFieldError('password')" class="text-red-500 text-sm mt-1">
                 Password is required
@@ -104,6 +102,7 @@ export class LoginComponent {
 
     this.isLoading.set(true);
     this.error.set(null);
+    this.loginForm.disable();
 
     const { username, password } = this.loginForm.value;
 
@@ -122,7 +121,8 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        const errorMsg = err.error?.message || 'Invalid email or password.';
+        this.loginForm.enable();
+        const errorMsg = err.error?.message || 'Invalid username or password.';
         this.error.set(errorMsg);
       }
     });
