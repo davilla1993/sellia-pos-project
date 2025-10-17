@@ -18,6 +18,7 @@ import com.follysitou.sellia_backend.repository.OrderItemRepository;
 import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.repository.ProductRepository;
 import com.follysitou.sellia_backend.repository.RestaurantTableRepository;
+import com.follysitou.sellia_backend.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,8 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final NotificationService notificationService;
     private final CustomerSessionService customerSessionService;
+    private final InventoryMovementService inventoryMovementService;
+    private final StockRepository stockRepository;
 
     public OrderResponse createOrder(OrderCreateRequest request) {
         // Get table
@@ -110,6 +113,17 @@ public class OrderService {
         // Save order and items
         Order savedOrder = orderRepository.save(order);
         log.info("Order created: {} for table {}", orderNumber, table.getNumber());
+
+        // Record inventory movements for each item (reduce stock)
+        for (OrderItem item : savedOrder.getItems()) {
+            com.follysitou.sellia_backend.model.Stock stock = stockRepository.findByProductId(item.getProduct().getId())
+                    .orElse(null);
+            
+            if (stock != null) {
+                inventoryMovementService.recordSale(stock, (long) item.getQuantity(), savedOrder.getPublicId());
+                log.info("Stock reduced for product: {} - quantity: {}", item.getProduct().getName(), item.getQuantity());
+            }
+        }
 
         // Notify kitchen and cashier
         notificationService.notifyNewOrder(savedOrder);

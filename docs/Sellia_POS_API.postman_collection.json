@@ -1694,6 +1694,271 @@
           }
         }
       ]
+    },
+    {
+      "name": "11. STOCK MANAGEMENT",
+      "item": [
+        {
+          "name": "Créer stock (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productPublicId\": \"{{productId}}\",\n  \"currentQuantity\": 50,\n  \"initialQuantity\": 50,\n  \"unitOfMeasure\": \"piece\",\n  \"alertThreshold\": 10,\n  \"minimumQuantity\": 5,\n  \"maximumQuantity\": 100,\n  \"active\": true,\n  \"supplierInfo\": \"Supplier A\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer tous les stocks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer stocks actifs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock/active/list?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock", "active", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer stocks bas (alerte)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock/low-stock/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock", "low-stock", "list"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer stocks sous minimum",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock/below-minimum/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock", "below-minimum", "list"]
+            }
+          }
+        },
+        {
+          "name": "Ajuster stock (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock/{{stockId}}/adjust?quantityChange=10&reason=Restock manual",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock", "{{stockId}}", "adjust"],
+              "query": [
+                {
+                  "key": "quantityChange",
+                  "value": "10"
+                },
+                {
+                  "key": "reason",
+                  "value": "Restock manual"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. REPORTS & ANALYTICS",
+      "item": [
+        {
+          "name": "Rapport ventes journalières",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports/daily-sales?startDate=2025-10-16T00:00:00&endDate=2025-10-17T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "daily-sales"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-10-16T00:00:00"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-10-17T23:59:59"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rapport revenus",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports/revenue?startDate=2025-10-16T00:00:00&endDate=2025-10-17T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "revenue"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-10-16T00:00:00"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-10-17T23:59:59"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Résumé commandes (date range)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports/orders-summary?startDate=2025-10-16T00:00:00&endDate=2025-10-17T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "orders-summary"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-10-16T00:00:00"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-10-17T23:59:59"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Résumé inventaire",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports/inventory-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "inventory-summary"]
+            }
+          }
+        },
+        {
+          "name": "Santé du système (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports/system-health",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "system-health"]
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
