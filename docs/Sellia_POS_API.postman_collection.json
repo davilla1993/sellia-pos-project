@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Sellia POS API - Phase 1, 2, 3",
-    "description": "Collection complète pour tester l'API Sellia POS (Authentification, Produits/Catégories, Menus, Tables, Commandes)",
+    "name": "Sellia POS API - Phase 1, 2, 3 Complete",
+    "description": "Collection complète pour tester l'API Sellia POS (Authentification, Produits/Catégories, Menus, Menu Items, Tables, Sessions Client, Commandes, QR Codes)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -1099,6 +1099,601 @@
           }
         }
       ]
+    },
+    {
+      "name": "7. MENU ITEMS",
+      "item": [
+        {
+          "name": "Créer menu item (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"menuId\": \"{{menuId}}\",\n  \"productIds\": [\"{{productId}}\"],\n  \"bundlePrice\": null,\n  \"displayOrder\": 1,\n  \"available\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menu item par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menu items d'un menu",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/menu/{{menuId}}?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "menu", "{{menuId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menu items ordonnés",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/menu/{{menuId}}/ordered",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "menu", "{{menuId}}", "ordered"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer menu items disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/available?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "available"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Modifier menu item (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productIds\": [\"{{productId}}\"],\n  \"bundlePrice\": 25000,\n  \"displayOrder\": 2,\n  \"available\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer menu item (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. SESSIONS CLIENT (QR Code)",
+      "item": [
+        {
+          "name": "Démarrer ou reprendre session (PUBLIC)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tablePublicId\": \"{{tableId}}\",\n  \"customerName\": \"Jean\",\n  \"customerPhone\": \"+223 XX XX XX XX\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer-sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer-sessions"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer session par ID (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customer-sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer-sessions", "{{sessionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes de la session (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customer-sessions/{{sessionId}}/orders?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer-sessions", "{{sessionId}}", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour infos session (PUBLIC)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customer-sessions/{{sessionId}}/info?customerName=Olivier&customerPhone=%2B223XXXXXXXX",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer-sessions", "{{sessionId}}", "info"],
+              "query": [
+                {
+                  "key": "customerName",
+                  "value": "Olivier"
+                },
+                {
+                  "key": "customerPhone",
+                  "value": "+223XXXXXXXX"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Finaliser session et générer facture (PUBLIC)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer-sessions/{{sessionId}}/finalize",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer-sessions", "{{sessionId}}", "finalize"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. COMMANDES",
+      "item": [
+        {
+          "name": "Créer commande (PUBLIC pour clients)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tablePublicId\": \"{{tableId}}\",\n  \"customerSessionPublicId\": \"{{sessionId}}\",\n  \"items\": [\n    {\n      \"productPublicId\": \"{{productId}}\",\n      \"quantity\": 2,\n      \"notes\": \"Sans oignons\"\n    }\n  ],\n  \"discountAmount\": 0,\n  \"notes\": \"Livraison rapide svp\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commande par ID (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commande par numéro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/number/20251016-00001",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "number", "20251016-00001"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer toutes les commandes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes par table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/table/{{tableId}}?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "table", "{{tableId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes par statut",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/status/EN_ATTENTE?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "status", "EN_ATTENTE"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes d'une session client (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/customer-session/{{sessionId}}?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "customer-session", "{{sessionId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes par plage de dates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/range?startDate=2025-10-16T00:00:00&endDate=2025-10-17T23:59:59&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "range"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-10-16T00:00:00"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-10-17T23:59:59"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Modifier commande (si EN_ATTENTE uniquement)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountAmount\": 5000,\n  \"notes\": \"Nouveau commentaire\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"]
+            }
+          }
+        },
+        {
+          "name": "Changer statut commande (ADMIN/CAISSIER/CUISINIER)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/status/ACCEPTEE",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}", "status", "ACCEPTEE"]
+            }
+          }
+        },
+        {
+          "name": "Ajouter réduction à commande (ADMIN/CAISSIER)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/discount?discountAmount=3000",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}", "discount"],
+              "query": [
+                {
+                  "key": "discountAmount",
+                  "value": "3000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Marquer commande comme payée (ADMIN/CAISSIER)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/payment?paymentMethod=CASH",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}", "payment"],
+              "query": [
+                {
+                  "key": "paymentMethod",
+                  "value": "CASH"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes impayées en attente (ADMIN/CAISSIER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/pending/unpaid",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "pending", "unpaid"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer commandes actives en cuisine (CUISINIER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/kitchen/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "kitchen", "active"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer commande (ADMIN uniquement)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. QR CODES",
+      "item": [
+        {
+          "name": "Générer QR code pour table (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}/qrcode/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}", "qrcode", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Récupérer QR code pour table (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/{{tableId}}/qrcode",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "{{tableId}}", "qrcode"]
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -1144,6 +1739,16 @@
     },
     {
       "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "menuItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
       "value": "",
       "type": "string"
     }
