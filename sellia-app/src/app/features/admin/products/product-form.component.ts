@@ -13,7 +13,7 @@ import { ApiService } from '../../../core/services/api.service';
       <!-- Header -->
       <div>
         <a routerLink=".." class="text-primary hover:text-primary-dark font-medium mb-4 inline-block">← Retour</a>
-        <h1 class="text-3xl font-bold text-white">{{ isEditMode() ? 'Éditer le produit' : 'Nouveau produit' }}</h1>
+        <h1 class="text-3xl font-bold text-white">{{ isEditMode() ? "Éditer le produit" : "Nouveau produit" }}</h1>
       </div>
 
       <!-- Loading -->
@@ -93,7 +93,7 @@ import { ApiService } from '../../../core/services/api.service';
         <!-- Buttons -->
         <div class="flex gap-4 pt-4">
           <button type="submit" [disabled]="isSubmitting() || form.invalid" class="btn-primary" [class.opacity-50]="isSubmitting() || form.invalid">
-            {{ isSubmitting() ? 'En cours...' : isEditMode() ? 'Mettre à jour' : 'Créer' }}
+            {{ isSubmitting() ? "En cours..." : isEditMode() ? "Mettre à jour" : "Créer" }}
           </button>
           <a routerLink=".." class="btn-outline">Annuler</a>
         </div>
