@@ -151,12 +151,12 @@ export class LoginComponent {
 
   private navigateByRole(role: string): void {
     const roleRoutes: { [key: string]: string } = {
-      'ADMIN': '/dashboard',
+      'ADMIN': '/admin/dashboard',
       'CAISSE': '/pos/cashier',
       'CUISINE': '/pos/kitchen'
     };
 
-    const route = roleRoutes[role] || '/dashboard';
+    const route = roleRoutes[role] || '/admin/dashboard';
     this.router.navigate([route]);
   }
 
