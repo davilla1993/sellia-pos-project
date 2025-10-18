@@ -56,12 +56,12 @@ import { ApiService } from '../../../core/services/api.service';
               <!-- Image -->
               <td class="px-6 py-4">
                 <div class="w-12 h-12 rounded-lg bg-neutral-700 overflow-hidden flex items-center justify-center">
-                  <img *ngIf="product.imageUrl" 
-                    [src]="product.imageUrl" 
+                  <img *ngIf="getImageUrl(product)" 
+                    [src]="getImageUrl(product)" 
                     alt="{{ product.name }}"
                     class="image-zoom w-12 h-12 object-cover cursor-pointer rounded-lg"
                     title="Cliquez pour zoomer">
-                  <svg *ngIf="!product.imageUrl" class="w-6 h-6 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg *ngIf="!getImageUrl(product)" class="w-6 h-6 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                   </svg>
                 </div>
@@ -137,6 +137,7 @@ export class ProductsListComponent implements OnInit {
   error = signal<string | null>(null);
   currentPage = signal(1);
   itemsPerPage = 10;
+  imageUrls = signal<{ [key: string]: string }>({});
 
   ngOnInit(): void {
     this.loadProducts();
@@ -148,7 +149,9 @@ export class ProductsListComponent implements OnInit {
     
     this.apiService.getAllProductsAdmin(0, 50).subscribe({
       next: (data) => {
-        this.products.set(Array.isArray(data) ? data : data.content || []);
+        const loadedProducts = Array.isArray(data) ? data : data.content || [];
+        this.products.set(loadedProducts);
+        this.loadImages(loadedProducts);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -156,6 +159,28 @@ export class ProductsListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  loadImages(products: any[]): void {
+    const urls: { [key: string]: string } = {};
+    
+    products.forEach(product => {
+      if (product.imageUrl) {
+        this.apiService.getImageAsDataUrl(product.imageUrl).subscribe({
+          next: (url) => {
+            urls[product.publicId] = url;
+            this.imageUrls.set({ ...this.imageUrls(), ...urls });
+          },
+          error: () => {
+            // Image loading error, will use placeholder
+          }
+        });
+      }
+    });
+  }
+
+  getImageUrl(product: any): string {
+    return this.imageUrls()[product.publicId] || '';
   }
 
   deleteProduct(publicId: string): void {

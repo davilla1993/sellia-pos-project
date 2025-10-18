@@ -87,6 +87,16 @@ export class ApiService {
     return `${BACKEND_URL}/uploads/products/${imageUrl}`;
   }
 
+  getImageAsDataUrl(imagePath: string): Observable<string> {
+    const fullUrl = this.fixImageUrl(imagePath);
+    return this.http.get(fullUrl, { responseType: 'blob' }).pipe(
+      map(blob => {
+        const url = URL.createObjectURL(blob);
+        return url;
+      })
+    );
+  }
+
   // Customer Sessions
   getOrCreateSession(tableId: string, customerName?: string, customerPhone?: string): Observable<CustomerSession> {
     const params = new HttpParams()
