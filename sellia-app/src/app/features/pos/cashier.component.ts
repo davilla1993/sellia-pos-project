@@ -43,14 +43,22 @@ interface PaymentMethod {
 
         <!-- Categories -->
         <div class="flex gap-2 overflow-x-auto pb-2">
-          <button *ngFor="let cat of categories" 
-            (click)="selectCategory(cat)"
-            [class.bg-primary]="selectedCategory() === cat"
-            [class.bg-neutral-700]="selectedCategory() !== cat"
-            [class.text-white]="selectedCategory() === cat"
-            [class.text-neutral-300]="selectedCategory() !== cat"
+          <button (click)="selectCategory(null)"
+            [class.bg-primary]="!selectedCategory()"
+            [class.bg-neutral-700]="selectedCategory()"
+            [class.text-white]="!selectedCategory()"
+            [class.text-neutral-300]="selectedCategory()"
             class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors">
-            {{ cat }}
+            Tous
+          </button>
+          <button *ngFor="let cat of categories()" 
+            (click)="selectCategory(cat.publicId)"
+            [class.bg-primary]="selectedCategory() === cat.publicId"
+            [class.bg-neutral-700]="selectedCategory() !== cat.publicId"
+            [class.text-white]="selectedCategory() === cat.publicId"
+            [class.text-neutral-300]="selectedCategory() !== cat.publicId"
+            class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors">
+            {{ cat.name }}
           </button>
         </div>
 
@@ -204,15 +212,14 @@ export class CashierComponent implements OnInit {
   products = signal<any[]>([]);
   cartItems = signal<CartItem[]>([]);
   searchQuery = signal('');
-  selectedCategory = signal('Tous');
+  selectedCategory = signal<string | null>(null);
   selectedPaymentMethod = signal('especes');
   discountPercent = signal(0);
   discountAmount = signal(0);
   isLoadingProducts = signal(false);
   currentPage = signal(1);
   itemsPerPage = 10;
-
-  categories = ['Tous', 'Pizzas', 'Pâtes', 'Salades', 'Boissons', 'Desserts'];
+  categories = signal<any[]>([]);
   paymentMethods: PaymentMethod[] = [
     { id: 'especes', label: 'Espèces', icon: '💵' },
     { id: 'carte', label: 'Carte', icon: '💳' },
@@ -220,7 +227,19 @@ export class CashierComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.apiService.getCategories().subscribe({
+      next: (data: any) => {
+        this.categories.set(Array.isArray(data) ? data : data.content || []);
+      },
+      error: () => {
+        // Erreur silencieuse
+      }
+    });
   }
 
   loadProducts(): void {
@@ -240,7 +259,7 @@ export class CashierComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     return this.products().filter(p => 
       p.name.toLowerCase().includes(query) &&
-      (this.selectedCategory() === 'Tous' || p.categoryId?.toString().includes(this.selectedCategory()))
+      (!this.selectedCategory() || p.categoryId?.toString() === this.selectedCategory())
     );
   }
 
@@ -298,8 +317,8 @@ export class CashierComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  selectCategory(cat: string): void {
-    this.selectedCategory.set(cat);
+  selectCategory(catId: string | null): void {
+    this.selectedCategory.set(catId);
     this.resetPagination();
   }
 
@@ -375,7 +394,7 @@ export class CashierComponent implements OnInit {
     };
 
     console.log('Commande complétée:', order);
-    alert(`Commande validée!\nTotal: €${(order.total / 100).toFixed(2)}`);
+    alert(`Commande validée!\nTotal: FCFA ${(order.total / 100).toFixed(2)}`);
     this.resetCart();
   }
 
@@ -385,3 +404,4 @@ export class CashierComponent implements OnInit {
     this.discountAmount.set(0);
   }
 }
+
