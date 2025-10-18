@@ -13,14 +13,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   template: `
     <div class="animate-fade-in">
       <!-- Header with Back Button -->
-      <div class="flex justify-between items-center mb-6">
-        <div class="section-header flex-1">
-          <h1 class="section-title">Our Menu</h1>
-          <p class="section-subtitle">Explore our delicious offerings</p>
+      <div class="flex justify-between items-start mb-8">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-dark mb-2">Our Menu</h1>
+          <p class="text-lg text-neutral-600">Explore our delicious offerings</p>
         </div>
         <button 
           (click)="goBack()" 
-          class="ml-4 flex items-center gap-2 bg-neutral-200 hover:bg-neutral-300 text-dark font-semibold py-2 px-4 rounded-lg transition">
+          class="flex items-center gap-2 bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-dark transition whitespace-nowrap ml-auto flex-shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
