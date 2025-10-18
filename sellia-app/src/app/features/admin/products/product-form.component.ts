@@ -74,11 +74,7 @@ import { ApiService } from '../../../core/services/api.service';
           <label class="block text-sm font-semibold text-white mb-2">Catégorie *</label>
           <select formControlName="categoryId" class="input-field bg-neutral-700 border-neutral-600 text-white">
             <option value="">Sélectionner une catégorie</option>
-            <option value="1">Pizzas</option>
-            <option value="2">Pâtes</option>
-            <option value="3">Salades</option>
-            <option value="4">Boissons</option>
-            <option value="5">Desserts</option>
+            <option *ngFor="let cat of categories()" [value]="cat.publicId">{{ cat.name }}</option>
           </select>
           <p *ngIf="hasError('categoryId')" class="text-red-400 text-sm mt-1">Requis</p>
         </div>
@@ -114,6 +110,7 @@ export class ProductFormComponent implements OnInit {
   isSubmitting = signal(false);
   error = signal<string | null>(null);
   imagePreview = signal<string | null>(null);
+  categories = signal<any[]>([]);
   selectedImage: File | null = null;
   productId: string | null = null;
 
@@ -128,12 +125,25 @@ export class ProductFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
+    
     this.productId = this.route.snapshot.paramMap.get('id');
     
     if (this.productId) {
       this.isEditMode.set(true);
       this.loadProduct();
     }
+  }
+
+  loadCategories(): void {
+    this.apiService.getCategories().subscribe({
+      next: (data: any) => {
+        this.categories.set(Array.isArray(data) ? data : data.content || []);
+      },
+      error: () => {
+        this.error.set('Erreur lors du chargement des catégories');
+      }
+    });
   }
 
   loadProduct(): void {

@@ -265,4 +265,9 @@ export class ApiService {
   deleteProduct(publicId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/products/${publicId}`);
   }
+
+  // Categories
+  getCategories(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/categories/active/list`);
+  }
 }
