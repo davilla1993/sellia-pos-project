@@ -13,7 +13,7 @@ import { ApiService } from '../../../core/services/api.service';
       <!-- Header -->
       <div>
         <a routerLink=".." class="text-primary hover:text-primary-dark font-medium mb-4 inline-block">← Retour</a>
-        <h1 class="text-3xl font-bold text-white">{{ isEditMode ? 'Éditer le produit' : 'Nouveau produit' }}</h1>
+        <h1 class="text-3xl font-bold text-white">{{ isEditMode() ? 'Éditer le produit' : 'Nouveau produit' }}</h1>
       </div>
 
       <!-- Loading -->
@@ -93,7 +93,7 @@ import { ApiService } from '../../../core/services/api.service';
         <!-- Buttons -->
         <div class="flex gap-4 pt-4">
           <button type="submit" [disabled]="isSubmitting() || form.invalid" class="btn-primary" [class.opacity-50]="isSubmitting() || form.invalid">
-            {{ isSubmitting() ? 'En cours...' : isEditMode ? 'Mettre à jour' : 'Créer' }}
+            {{ isSubmitting() ? 'En cours...' : isEditMode() ? 'Mettre à jour' : 'Créer' }}
           </button>
           <a routerLink=".." class="btn-outline">Annuler</a>
         </div>
@@ -109,7 +109,7 @@ export class ProductFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   form: FormGroup;
-  isEditMode = false;
+  isEditMode = signal(false);
   isLoading = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
@@ -131,7 +131,7 @@ export class ProductFormComponent implements OnInit {
     this.productId = this.route.snapshot.paramMap.get('id');
     
     if (this.productId) {
-      this.isEditMode = true;
+      this.isEditMode.set(true);
       this.loadProduct();
     }
   }
@@ -207,7 +207,7 @@ export class ProductFormComponent implements OnInit {
       formData.append('image', this.selectedImage);
     }
 
-    if (this.isEditMode && this.productId) {
+    if (this.isEditMode() && this.productId) {
       this.apiService.updateProduct(this.productId, formData).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
         error: (err) => {

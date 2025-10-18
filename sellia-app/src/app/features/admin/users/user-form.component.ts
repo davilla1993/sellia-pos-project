@@ -13,7 +13,7 @@ import { ApiService } from '../../../core/services/api.service';
       <!-- Header -->
       <div>
         <a routerLink=".." class="text-primary hover:text-primary-dark font-medium mb-4 inline-block">← Retour</a>
-        <h1 class="text-3xl font-bold text-white">{{ isEditMode ? 'Éditer l\'utilisateur' : 'Nouvel utilisateur' }}</h1>
+        <h1 class="text-3xl font-bold text-white">{{ isEditMode() ? 'Éditer l\'utilisateur' : 'Nouvel utilisateur' }}</h1>
       </div>
 
       <!-- Loading -->
@@ -32,7 +32,7 @@ import { ApiService } from '../../../core/services/api.service';
         <!-- Username -->
         <div>
           <label class="block text-sm font-semibold text-white mb-2">Username *</label>
-          <input formControlName="username" type="text" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="john_doe" [readonly]="isEditMode">
+          <input formControlName="username" type="text" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="john_doe" [readonly]="isEditMode()">
           <p *ngIf="hasError('username')" class="text-red-400 text-sm mt-1">Requis, 3+ caractères</p>
         </div>
 
@@ -76,7 +76,7 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
 
         <!-- Password (New User Only) -->
-        <div *ngIf="!isEditMode">
+        <div *ngIf="!isEditMode()">
           <label class="block text-sm font-semibold text-white mb-2">Mot de passe *</label>
           <input formControlName="password" type="password" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="••••••••">
           <p *ngIf="hasError('password')" class="text-red-400 text-sm mt-1">Requis, 6+ caractères</p>
@@ -86,7 +86,7 @@ import { ApiService } from '../../../core/services/api.service';
         <!-- Buttons -->
         <div class="flex gap-4 pt-4">
           <button type="submit" [disabled]="isSubmitting() || form.invalid" class="btn-primary" [class.opacity-50]="isSubmitting() || form.invalid">
-            {{ isSubmitting() ? 'En cours...' : isEditMode ? 'Mettre à jour' : 'Créer' }}
+            {{ isSubmitting() ? 'En cours...' : isEditMode() ? 'Mettre à jour' : 'Créer' }}
           </button>
           <a routerLink=".." class="btn-outline">Annuler</a>
         </div>
@@ -102,7 +102,7 @@ export class UserFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   form: FormGroup;
-  isEditMode = false;
+  isEditMode = signal(false);
   isLoading = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
@@ -124,7 +124,7 @@ export class UserFormComponent implements OnInit {
     this.userId = this.route.snapshot.paramMap.get('id');
     
     if (this.userId) {
-      this.isEditMode = true;
+      this.isEditMode.set(true);
       this.form.get('username')?.disable();
       this.form.get('password')?.clearValidators();
       this.form.get('password')?.updateValueAndValidity();
@@ -163,7 +163,7 @@ export class UserFormComponent implements OnInit {
 
     const formValue = this.form.getRawValue();
     
-    if (this.isEditMode && this.userId) {
+    if (this.isEditMode() && this.userId) {
       this.apiService.updateUser(this.userId, formValue).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
         error: (err) => {
