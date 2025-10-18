@@ -8,7 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <nav class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
+    <nav class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
       <div class="flex items-center space-x-6">
         <button [routerLink]="['/admin/dashboard']" class="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-primary hover:text-primary-dark transition-all duration-200 font-medium text-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@ import { AuthService } from '../../core/services/auth.service';
         </button>
 
         <!-- User Menu -->
-        <div class="flex items-center space-x-3 pl-6 border-l border-gray-200">
+        <div class="flex items-center space-x-3 pl-6 border-l border-slate-200">
           <div class="text-right">
             <p class="text-sm font-medium text-dark">{{ currentUserName() }}</p>
             <p class="text-xs text-neutral-500">{{ currentUserRole() }}</p>
