@@ -28,13 +28,24 @@ export const routes: Routes = [
     ]
   },
 
+  // Admin Routes (with Sidebar)
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard(['ADMIN'])],
+    loadComponent: () => import('./features/admin/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      { path: 'dashboard', component: DashboardComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+
   // Protected Routes (Require Authentication)
   {
     path: '',
     component: LayoutSimpleComponent,
     canActivate: [authGuard],
     children: [
-      // Admin Routes
+      // Admin Routes (Legacy)
       {
         path: 'dashboard',
         canActivate: [roleGuard(['ADMIN'])],
