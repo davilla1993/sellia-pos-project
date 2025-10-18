@@ -9,15 +9,14 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterLink],
   template: `
     <nav class="bg-neutral-800 border-b border-neutral-700 px-8 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <a routerLink="/admin/dashboard" class="text-sm text-primary hover:text-primary-dark transition-colors flex items-center space-x-2">
+      <div class="flex items-center space-x-6">
+        <button [routerLink]="['/admin/dashboard']" class="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-primary hover:text-primary-dark transition-all duration-200 font-medium text-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
-          <span>Retour</span>
-        </a>
-        <div class="w-px h-6 bg-neutral-700"></div>
-        <h1 class="text-xl font-bold text-white">Tableau de Bord Administrateur</h1>
+          <span>← Retour</span>
+        </button>
+        <h1 class="text-xl font-bold text-white">Tableau de Bord</h1>
       </div>
 
       <div class="flex items-center space-x-6">
