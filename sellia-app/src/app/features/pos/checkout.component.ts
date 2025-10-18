@@ -8,10 +8,22 @@ import { ApiService } from '../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex h-full gap-6 p-6 bg-neutral-900 overflow-hidden">
+    <div class="flex h-full gap-6 p-8 bg-neutral-900 overflow-hidden">
       <!-- LEFT: Table Selection -->
       <div class="w-80 flex flex-col gap-4 overflow-hidden">
-        <h2 class="text-2xl font-bold text-white">Sélectionner une Table</h2>
+        <div>
+          <h2 class="text-2xl font-bold text-white mb-2">Sélectionner une Table</h2>
+          <div class="flex gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-green-500"></div>
+              <span class="text-green-400 font-semibold">{{ activeTables() }} Actives</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-red-500"></div>
+              <span class="text-red-400 font-semibold">{{ inactiveTables() }} Libres</span>
+            </div>
+          </div>
+        </div>
         
         <!-- Search -->
         <div class="relative">
@@ -29,10 +41,19 @@ import { ApiService } from '../../core/services/api.service';
             (click)="selectTable(table)"
             [class.ring-2]="selectedTableId() === table.publicId"
             [class.ring-primary]="selectedTableId() === table.publicId"
-            class="p-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg transition-all">
-            <p class="font-bold text-white">{{ table.number }}</p>
+            [class.bg-green-900]="tablesWithSessions().has(table.publicId)"
+            [class.bg-red-900]="!tablesWithSessions().has(table.publicId)"
+            [class.border-green-600]="tablesWithSessions().has(table.publicId)"
+            [class.border-red-600]="!tablesWithSessions().has(table.publicId)"
+            class="p-3 bg-neutral-800 hover:opacity-80 border border-neutral-700 rounded-lg transition-all">
+            <div class="flex items-center gap-2 mb-2">
+              <div [class.bg-green-500]="tablesWithSessions().has(table.publicId)" [class.bg-red-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
+              <p class="font-bold text-white">{{ table.number }}</p>
+            </div>
             <p class="text-sm text-neutral-400">{{ table.name }}</p>
-            <p class="text-xs text-neutral-500" *ngIf="table.occupied">Occupée</p>
+            <p class="text-xs" [class.text-green-400]="tablesWithSessions().has(table.publicId)" [class.text-red-400]="!tablesWithSessions().has(table.publicId)">
+              {{ tablesWithSessions().has(table.publicId) ? '✓ Session active' : '○ Libre' }}
+            </p>
           </button>
         </div>
       </div>
@@ -197,8 +218,11 @@ export class CheckoutComponent implements OnInit {
   // Tables
   searchTable = signal('');
   tables = signal<any[]>([]);
+  tablesWithSessions = signal<Set<string>>(new Set());
   selectedTableId = signal<string | null>(null);
   isLoadingTables = signal(false);
+  activeTables = signal(0);
+  inactiveTables = signal(0);
 
   // Session & Orders
   selectedSession = signal<any | null>(null);
@@ -231,13 +255,45 @@ export class CheckoutComponent implements OnInit {
     this.apiService.getTables().subscribe({
       next: (tables) => {
         this.tables.set(tables);
-        this.isLoadingTables.set(false);
+        
+        // Check which tables have active sessions
+        const sessionsSet = new Set<string>();
+        let completedChecks = 0;
+        
+        tables.forEach(table => {
+          this.apiService.getActiveSessionByTable(table.publicId).subscribe({
+            next: () => {
+              sessionsSet.add(table.publicId);
+              completedChecks++;
+              if (completedChecks === tables.length) {
+                this.updateTableStats(sessionsSet, tables);
+              }
+            },
+            error: () => {
+              completedChecks++;
+              if (completedChecks === tables.length) {
+                this.updateTableStats(sessionsSet, tables);
+              }
+            }
+          });
+        });
+        
+        if (tables.length === 0) {
+          this.isLoadingTables.set(false);
+        }
       },
       error: (err) => {
         console.error('Error loading tables:', err);
         this.isLoadingTables.set(false);
       }
     });
+  }
+
+  private updateTableStats(sessionsSet: Set<string>, tables: any[]): void {
+    this.tablesWithSessions.set(sessionsSet);
+    this.activeTables.set(sessionsSet.size);
+    this.inactiveTables.set(tables.length - sessionsSet.size);
+    this.isLoadingTables.set(false);
   }
 
   selectTable(table: any): void {
