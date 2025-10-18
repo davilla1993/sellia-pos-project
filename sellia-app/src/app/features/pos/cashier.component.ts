@@ -234,7 +234,12 @@ export class CashierComponent implements OnInit {
   loadCategories(): void {
     this.apiService.getCategories().subscribe({
       next: (data: any) => {
-        this.categories.set(Array.isArray(data) ? data : data.content || []);
+        const cats = Array.isArray(data) ? data : data.content || [];
+        console.log('Loaded categories:', cats);
+        if (cats.length > 0) {
+          console.log('First category structure:', cats[0]);
+        }
+        this.categories.set(cats);
       },
       error: () => {
         // Erreur silencieuse
@@ -318,8 +323,10 @@ export class CashierComponent implements OnInit {
   }
 
   selectCategory(catId: number | null): void {
+    console.log('Selecting category:', catId);
     this.selectedCategory.set(catId);
     this.resetPagination();
+    console.log('Filtered products:', this.filteredProducts().length);
   }
 
   addToCart(product: any): void {

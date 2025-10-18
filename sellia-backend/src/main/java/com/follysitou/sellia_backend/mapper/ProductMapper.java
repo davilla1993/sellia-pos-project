@@ -34,6 +34,7 @@ public class ProductMapper {
         response.setName(product.getName());
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
+        response.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         response.setAvailable(product.getAvailable());
         response.setImageUrl(product.getImageUrl());
         response.setPreparationTime(product.getPreparationTime());

@@ -1,0 +1,1 @@
+Restons toujours dans le menu du caissier. On va le finir avant d'aller sur autre chose. Pour l'instant, je ne vois que l'écran qui permet au caissier de passer directement commande pour un client. Il lui manque l'écran pour 
