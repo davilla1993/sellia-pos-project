@@ -102,31 +102,81 @@ export class SidebarComponent {
     {
       label: 'Tableau de Bord',
       icon: this.getIcon('dashboard'),
-      route: '/admin/dashboard',
-      expanded: false
-    },
-    {
-      label: 'Produits',
-      icon: this.getIcon('products'),
-      route: '/admin/products',
-      expanded: false
-    },
-    {
-      label: 'Utilisateurs',
-      icon: this.getIcon('users'),
-      route: '/admin/users',
+      route: '/dashboard',
       expanded: false
     },
     {
       label: 'Caisse',
       icon: this.getIcon('cashier'),
-      route: '/pos/cashier',
+      children: [
+        { label: 'Caisse Active', route: '/pos/cashier' },
+        { label: 'Historique', route: '/pos/cashier/history' },
+        { label: 'Réductions', route: '/pos/cashier/discounts' }
+      ],
       expanded: false
     },
     {
       label: 'Cuisine',
       icon: this.getIcon('kitchen'),
-      route: '/pos/kitchen',
+      children: [
+        { label: 'Commandes', route: '/pos/kitchen' },
+        { label: 'Historique', route: '/pos/kitchen/history' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Produits',
+      icon: this.getIcon('products'),
+      children: [
+        { label: 'Catalogue', route: '/admin/products' },
+        { label: 'Catégories', route: '/admin/products/categories' },
+        { label: 'Menus', route: '/admin/products/menus' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Inventaire',
+      icon: this.getIcon('inventory'),
+      children: [
+        { label: 'Stock', route: '/admin/inventory' },
+        { label: 'Alertes', route: '/admin/inventory/alerts' },
+        { label: 'Mouvements', route: '/admin/inventory/movements' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Utilisateurs',
+      icon: this.getIcon('users'),
+      children: [
+        { label: 'Équipe', route: '/admin/users' },
+        { label: 'Rôles', route: '/admin/users/roles' },
+        { label: 'Permissions', route: '/admin/users/permissions' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Tables & QR',
+      icon: this.getIcon('tables'),
+      children: [
+        { label: 'Gestion des tables', route: '/admin/tables' },
+        { label: 'QR Codes', route: '/admin/tables/qrcodes' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Rapports',
+      icon: this.getIcon('reports'),
+      children: [
+        { label: 'Ventes', route: '/admin/reports/sales' },
+        { label: 'Produits', route: '/admin/reports/products' },
+        { label: 'Personnel', route: '/admin/reports/staff' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Paramètres',
+      icon: this.getIcon('settings'),
+      route: '/admin/settings',
       expanded: false
     }
   ];
