@@ -194,10 +194,27 @@ interface PaymentMethod {
           </div>
         </div>
 
+        <!-- Cash Payment Amount -->
+        <div *ngIf="selectedPaymentMethod() === 'especes'" class="space-y-2 bg-neutral-800 rounded-lg border border-neutral-700 p-3">
+          <label class="text-sm font-semibold text-neutral-300">Montant remis (FCFA)</label>
+          <input [(ngModel)]="amountPaid" (ngModelChange)="updateAmountPaid($event)" type="number" min="0" step="100" class="w-full input-field bg-neutral-700 border-neutral-600 text-white text-sm" placeholder="0">
+          <div class="space-y-2 pt-2 border-t border-neutral-600">
+            <div class="flex justify-between text-neutral-300">
+              <span>Rendu:</span>
+              <span [class]="amountPaid() >= total() ? 'text-green-400' : 'text-red-400'" class="font-semibold">
+                FCFA {{ (changeAmount() / 100).toFixed(2) }}
+              </span>
+            </div>
+            <p *ngIf="amountPaid() < total()" class="text-xs text-red-400">
+              Montant insuffisant: manque FCFA {{ ((total() - amountPaid()) / 100).toFixed(2) }}
+            </p>
+          </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex gap-3">
           <button (click)="resetCart()" class="flex-1 btn-outline py-3 font-semibold">Annuler</button>
-          <button (click)="completeOrder()" [disabled]="cartItems().length === 0" class="flex-1 btn-primary py-3 font-semibold" [class.opacity-50]="cartItems().length === 0">
+          <button (click)="completeOrder()" [disabled]="cartItems().length === 0 || !isAmountSufficient()" class="flex-1 btn-primary py-3 font-semibold" [class.opacity-50]="cartItems().length === 0 || !isAmountSufficient()">
             Valider (FCFA {{ (total() / 100).toFixed(2) }})
           </button>
         </div>
@@ -216,6 +233,8 @@ export class CashierComponent implements OnInit {
   selectedPaymentMethod = signal('especes');
   discountPercent = signal(0);
   discountAmount = signal(0);
+  amountPaid = signal(0);
+  changeAmount = signal(0);
   isLoadingProducts = signal(false);
   currentPage = signal(1);
   itemsPerPage = 10;
@@ -375,6 +394,20 @@ export class CashierComponent implements OnInit {
     return Math.max(0, this.subtotal() - this.discountAmount());
   }
 
+  updateAmountPaid(amount: number): void {
+    this.amountPaid.set(amount);
+    this.calculateChange();
+  }
+
+  calculateChange(): void {
+    const change = this.amountPaid() - this.total();
+    this.changeAmount.set(Math.max(0, change));
+  }
+
+  isAmountSufficient(): boolean {
+    return this.selectedPaymentMethod() !== 'especes' || this.amountPaid() >= this.total();
+  }
+
   selectPaymentMethod(method: string): void {
     this.selectedPaymentMethod.set(method);
   }
@@ -403,6 +436,8 @@ export class CashierComponent implements OnInit {
     this.cartItems.set([]);
     this.discountPercent.set(0);
     this.discountAmount.set(0);
+    this.amountPaid.set(0);
+    this.changeAmount.set(0);
   }
 }
 
