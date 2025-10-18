@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Product, MenuItem, Order, CustomerSession, Invoice, DailySalesReport } from '@shared/models/types';
 
@@ -14,22 +15,49 @@ export class ApiService {
 
   // Products
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products/available/list`);
+    return this.http.get<any>(`${this.apiUrl}/products/available/list`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   searchProducts(name: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products/search`, {
+    return this.http.get<any>(`${this.apiUrl}/products/search`, {
       params: { name }
-    });
+    }).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   getProductsByCategory(categoryId: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products/category/${categoryId}`);
+    return this.http.get<any>(`${this.apiUrl}/products/category/${categoryId}`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   // Menu Items
   getMenuItems(): Observable<MenuItem[]> {
-    return this.http.get<MenuItem[]>(`${this.apiUrl}/menu-items`);
+    return this.http.get<any>(`${this.apiUrl}/menu-items`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  private extractArray(response: any): any[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+    if (response?.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    if (response?.content && Array.isArray(response.content)) {
+      return response.content;
+    }
+    if (response?.items && Array.isArray(response.items)) {
+      return response.items;
+    }
+    if (response?.products && Array.isArray(response.products)) {
+      return response.products;
+    }
+    return Array.isArray(response) ? response : [];
   }
 
   // Customer Sessions
@@ -43,7 +71,9 @@ export class ApiService {
   }
 
   getSessionOrders(sessionId: string): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/customer-sessions/${sessionId}/orders`);
+    return this.http.get<any>(`${this.apiUrl}/customer-sessions/${sessionId}/orders`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   finalizeSession(sessionId: string): Observable<Invoice> {
@@ -64,7 +94,9 @@ export class ApiService {
   }
 
   getOrdersByStatus(status: string): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/orders/status/${status}`);
+    return this.http.get<any>(`${this.apiUrl}/orders/status/${status}`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   updateOrderStatus(orderId: string, status: string): Observable<Order> {
@@ -102,15 +134,21 @@ export class ApiService {
 
   // Stock
   getStocks(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/stock`);
+    return this.http.get<any>(`${this.apiUrl}/stock`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   getLowStocks(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/stock/low-stock/list`);
+    return this.http.get<any>(`${this.apiUrl}/stock/low-stock/list`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   getBelowMinimumStocks(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/stock/below-minimum/list`);
+    return this.http.get<any>(`${this.apiUrl}/stock/below-minimum/list`).pipe(
+      map(response => this.extractArray(response))
+    );
   }
 
   adjustStock(stockId: string, quantityChange: number, reason: string): Observable<any> {
