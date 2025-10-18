@@ -24,7 +24,7 @@ interface PaymentMethod {
   template: `
     <div class="flex w-full h-full bg-neutral-900 overflow-hidden">
       <!-- LEFT: Products & Categories - FULL WIDTH -->
-      <div class="flex-1 flex flex-col overflow-hidden p-6">
+      <div class="flex-1 flex flex-col overflow-hidden p-8">
         <!-- Top Section: Header + Controls -->
         <div class="space-y-4 mb-6">
           <div class="flex justify-between items-center">

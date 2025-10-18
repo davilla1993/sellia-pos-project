@@ -7,7 +7,7 @@ import { ApiService } from '../../core/services/api.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex flex-col gap-3 p-3 bg-neutral-900 min-h-screen">
+    <div class="flex flex-col gap-6 p-8 bg-neutral-900 h-full overflow-y-auto">
       <!-- Header -->
       <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-white">Mes Commandes</h1>
