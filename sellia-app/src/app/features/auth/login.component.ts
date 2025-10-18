@@ -13,9 +13,9 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="w-full max-w-md animate-slide-up">
         <!-- Logo Section -->
         <div class="text-center mb-8">
-          <img src="/assets/logo.jpg" alt="Maison Recla" class="h-24 w-24 rounded-2xl mx-auto mb-4 shadow-elegant">
-          <h1 class="text-4xl font-bold text-dark mb-2">Maison Recla</h1>
-          <p class="text-neutral-600">POS Management System</p>
+          <img src="/assets/logo.jpg" alt="Sellia" class="h-24 w-24 rounded-2xl mx-auto mb-4 shadow-elegant">
+          <h1 class="text-4xl font-bold text-dark mb-2">Sellia POS</h1>
+          <p class="text-neutral-600 text-lg">La solution complète pour votre restaurant</p>
         </div>
 
         <!-- Login Form -->

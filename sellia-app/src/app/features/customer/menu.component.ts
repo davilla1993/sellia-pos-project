@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { Product } from '../../shared/models/types';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -12,10 +12,20 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="animate-fade-in">
-      <!-- Header -->
-      <div class="section-header">
-        <h1 class="section-title">Our Menu</h1>
-        <p class="section-subtitle">Explore our delicious offerings</p>
+      <!-- Header with Back Button -->
+      <div class="flex justify-between items-center mb-6">
+        <div class="section-header flex-1">
+          <h1 class="section-title">Our Menu</h1>
+          <p class="section-subtitle">Explore our delicious offerings</p>
+        </div>
+        <button 
+          (click)="goBack()" 
+          class="ml-4 flex items-center gap-2 bg-neutral-200 hover:bg-neutral-300 text-dark font-semibold py-2 px-4 rounded-lg transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back
+        </button>
       </div>
 
       <!-- Search & Filter -->
@@ -128,12 +138,17 @@ export class MenuComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
       category: ['']
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/']);
   }
 
   ngOnInit(): void {
