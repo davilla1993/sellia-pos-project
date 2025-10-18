@@ -1,14 +1,22 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <nav class="bg-neutral-800 border-b border-neutral-700 px-8 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-4">
+        <a routerLink="/admin/dashboard" class="text-sm text-primary hover:text-primary-dark transition-colors flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Retour</span>
+        </a>
+        <div class="w-px h-6 bg-neutral-700"></div>
         <h1 class="text-xl font-bold text-white">Tableau de Bord Administrateur</h1>
       </div>
 

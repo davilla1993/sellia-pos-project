@@ -34,6 +34,17 @@ interface MenuItem {
 
       <!-- Navigation Menu -->
       <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-2">
+        <!-- Dashboard Link -->
+        <a routerLink="/admin/dashboard" routerLinkActive="text-primary bg-neutral-800/50" class="flex items-center space-x-3 px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200 font-medium">
+          <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+          <span *ngIf="!collapsed()" class="text-sm truncate">Accueil</span>
+        </a>
+
+        <!-- Divider -->
+        <div class="border-t border-neutral-700 my-2"></div>
+
         <div *ngFor="let item of menuItems" class="group">
           <!-- Menu Item with potential children -->
           <div *ngIf="item.children && item.children.length > 0">
