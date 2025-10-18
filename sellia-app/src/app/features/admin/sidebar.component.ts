@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 interface MenuItem {
   label: string;
@@ -50,7 +51,7 @@ interface MenuItem {
           <div *ngIf="item.children && item.children.length > 0">
             <button (click)="toggleMenu(item)" class="w-full flex items-center justify-between px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200 group-hover:text-primary">
               <div class="flex items-center space-x-3 min-w-0">
-                <svg class="w-5 h-5 flex-shrink-0" [innerHTML]="item.icon" fill="currentColor"></svg>
+                <svg class="w-5 h-5 flex-shrink-0" [innerHTML]="getSafeIcon(item.icon)" fill="currentColor"></svg>
                 <span *ngIf="!collapsed()" class="text-sm font-medium truncate">{{ item.label }}</span>
               </div>
               <svg *ngIf="!collapsed()" class="w-4 h-4 flex-shrink-0 transition-transform" [class.rotate-180]="item.expanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +69,7 @@ interface MenuItem {
 
           <!-- Simple Menu Item -->
           <a *ngIf="!item.children || item.children.length === 0" [routerLink]="item.route" routerLinkActive="text-primary bg-neutral-800/50" class="flex items-center space-x-3 px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200">
-            <svg class="w-5 h-5 flex-shrink-0" [innerHTML]="item.icon" fill="currentColor"></svg>
+            <svg class="w-5 h-5 flex-shrink-0" [innerHTML]="getSafeIcon(item.icon)" fill="currentColor"></svg>
             <span *ngIf="!collapsed()" class="text-sm font-medium truncate">{{ item.label }}</span>
           </a>
         </div>
@@ -89,6 +90,12 @@ interface MenuItem {
 })
 export class SidebarComponent {
   collapsed = signal(false);
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  getSafeIcon(icon: string | undefined): SafeHtml {
+    return icon ? this.sanitizer.bypassSecurityTrustHtml(icon) : this.sanitizer.bypassSecurityTrustHtml('');
+  }
 
   menuItems: MenuItem[] = [
     {
