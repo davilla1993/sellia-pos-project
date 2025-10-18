@@ -111,38 +111,7 @@ export class ApiService {
     return this.http.post<CustomerSession>(`${this.apiUrl}/customer-sessions/start`, {}, { params });
   }
 
-  getSessionOrders(sessionId: string): Observable<Order[]> {
-    return this.http.get<any>(`${this.apiUrl}/customer-sessions/${sessionId}/orders`).pipe(
-      map(response => this.extractArray(response))
-    );
-  }
 
-  finalizeSession(sessionId: string): Observable<Invoice> {
-    return this.http.post<Invoice>(`${this.apiUrl}/customer-sessions/${sessionId}/finalize`, {});
-  }
-
-  // Orders
-  createOrder(order: Order): Observable<Order> {
-    return this.http.post<Order>(`${this.apiUrl}/orders`, order);
-  }
-
-  getOrder(orderNumber: string): Observable<Order> {
-    return this.http.get<Order>(`${this.apiUrl}/orders/${orderNumber}`);
-  }
-
-  updateOrder(orderId: string, order: Partial<Order>): Observable<Order> {
-    return this.http.put<Order>(`${this.apiUrl}/orders/${orderId}`, order);
-  }
-
-  getOrdersByStatus(status: string): Observable<Order[]> {
-    return this.http.get<any>(`${this.apiUrl}/orders/status/${status}`).pipe(
-      map(response => this.extractArray(response))
-    );
-  }
-
-  updateOrderStatus(orderId: string, status: string): Observable<Order> {
-    return this.http.patch<Order>(`${this.apiUrl}/orders/${orderId}/status`, { status });
-  }
 
   // Reports
   getDailySalesReport(startDate: string, endDate: string): Observable<DailySalesReport> {
@@ -269,5 +238,57 @@ export class ApiService {
   // Categories
   getCategories(): Observable<any[]> {
     return this.http.get<any>(`${this.apiUrl}/categories/active/list`);
+  }
+
+  // Orders
+  createOrder(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/orders`, request);
+  }
+
+  getOrder(publicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/orders/${publicId}`);
+  }
+
+  getOrdersByStatus(status: string, page: number = 0, size: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/orders/status/${status}`, {
+      params: { page, size }
+    });
+  }
+
+  updateOrderStatus(publicId: string, status: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/orders/${publicId}/status/${status}`, {});
+  }
+
+  markOrderAsPaid(publicId: string, paymentMethod: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/orders/${publicId}/payment`, {}, {
+      params: { paymentMethod }
+    });
+  }
+
+  addDiscountToOrder(publicId: string, discountAmount: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/orders/${publicId}/discount`, {}, {
+      params: { discountAmount }
+    });
+  }
+
+  getUnpaidPendingOrders(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/orders/pending/unpaid`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  // Customer Sessions
+  getActiveSessionByTable(tablePublicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/customer-sessions/table/${tablePublicId}/active`);
+  }
+
+  getSessionOrders(sessionPublicId: string, page: number = 0, size: number = 100): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/customer-sessions/${sessionPublicId}/orders`, {
+      params: { page, size }
+    });
+  }
+
+  finalizeSession(sessionPublicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/customer-sessions/${sessionPublicId}/finalize`, {});
   }
 }
