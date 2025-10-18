@@ -43,11 +43,11 @@ public class ProductController {
     @GetMapping("/images/{filename}")
     public ResponseEntity<Resource> getProductImage(@PathVariable String filename) throws IOException {
         try {
-            Resource resource = new UrlResource(Paths.get(productsImagesDir)
-                    .resolve(filename)
-                    .toUri());
+            java.nio.file.Path filePath = Paths.get(productsImagesDir).resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
 
-            if (!resource.exists()) {
+            if (!resource.exists() || !resource.isReadable()) {
+                System.err.println("Image not found or not readable: " + filePath.toAbsolutePath());
                 return ResponseEntity.notFound().build();
             }
 
@@ -55,7 +55,12 @@ public class ProductController {
                     .contentType(MediaType.IMAGE_JPEG)
                     .body(resource);
         } catch (MalformedURLException e) {
+            System.err.println("MalformedURLException: " + e.getMessage());
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            System.err.println("Error serving product image: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
