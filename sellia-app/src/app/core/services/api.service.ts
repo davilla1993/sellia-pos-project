@@ -5,6 +5,8 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Product, MenuItem, Order, CustomerSession, Invoice, DailySalesReport } from '@shared/models/types';
 
+const BACKEND_URL = environment.apiUrl.replace('/api', '');
+
 @Injectable({
   providedIn: 'root'
 })
@@ -16,7 +18,8 @@ export class ApiService {
   // Products
   getProducts(): Observable<Product[]> {
     return this.http.get<any>(`${this.apiUrl}/products/available/list`).pipe(
-      map(response => this.extractArray(response))
+      map(response => this.extractArray(response)),
+      map(products => this.fixProductImages(products as Product[]))
     );
   }
 
@@ -24,21 +27,31 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/products/search`, {
       params: { name }
     }).pipe(
-      map(response => this.extractArray(response))
+      map(response => this.extractArray(response)),
+      map(products => this.fixProductImages(products as Product[]))
     );
   }
 
   getProductsByCategory(categoryId: string): Observable<Product[]> {
     return this.http.get<any>(`${this.apiUrl}/products/category/${categoryId}`).pipe(
-      map(response => this.extractArray(response))
+      map(response => this.extractArray(response)),
+      map(products => this.fixProductImages(products as Product[]))
     );
   }
 
   // Menu Items
   getMenuItems(): Observable<MenuItem[]> {
     return this.http.get<any>(`${this.apiUrl}/menu-items`).pipe(
-      map(response => this.extractArray(response))
+      map(response => this.extractArray(response)),
+      map(items => this.fixMenuItemImages(items as MenuItem[]))
     );
+  }
+
+  private fixMenuItemImages(items: MenuItem[]): MenuItem[] {
+    return items.map(item => ({
+      ...item,
+      imageUrl: item.imageUrl ? this.fixImageUrl(item.imageUrl) : undefined
+    }));
   }
 
   private extractArray(response: any): any[] {
@@ -58,6 +71,20 @@ export class ApiService {
       return response.products;
     }
     return Array.isArray(response) ? response : [];
+  }
+
+  private fixProductImages(products: Product[]): Product[] {
+    return products.map(product => ({
+      ...product,
+      imageUrl: product.imageUrl ? this.fixImageUrl(product.imageUrl) : undefined
+    }));
+  }
+
+  private fixImageUrl(imageUrl: string): string {
+    if (!imageUrl) return imageUrl;
+    if (imageUrl.startsWith('http')) return imageUrl;
+    if (imageUrl.startsWith('/')) return `${BACKEND_URL}${imageUrl}`;
+    return `${BACKEND_URL}/uploads/products/${imageUrl}`;
   }
 
   // Customer Sessions
