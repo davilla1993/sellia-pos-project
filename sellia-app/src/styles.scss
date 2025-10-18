@@ -4,12 +4,16 @@
 
 /* Global Styles */
 @layer base {
+  html, body {
+    @apply h-screen w-screen overflow-hidden;
+  }
+
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply bg-primary-light text-dark font-sans;
+    @apply bg-primary-light text-dark font-sans m-0 p-0;
   }
 
   h1 {

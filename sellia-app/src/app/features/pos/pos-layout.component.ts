@@ -8,9 +8,9 @@ import { DomSanitizer } from '@angular/platform-browser';
   standalone: true,
   imports: [CommonModule, RouterOutlet],
   template: `
-    <div class="flex h-screen w-screen bg-neutral-900 overflow-hidden">
+    <div class="flex h-screen w-screen bg-neutral-900 overflow-hidden fixed top-0 left-0">
       <!-- LEFT: Navigation Sidebar -->
-      <div class="w-64 bg-neutral-800 border-r border-neutral-700 flex flex-col overflow-hidden">
+      <div class="w-64 bg-neutral-800 border-r border-neutral-700 flex flex-col overflow-y-auto">
         <!-- Header -->
         <div class="p-6 border-b border-neutral-700">
           <h1 class="text-2xl font-bold text-white">🛒 Caisse</h1>
