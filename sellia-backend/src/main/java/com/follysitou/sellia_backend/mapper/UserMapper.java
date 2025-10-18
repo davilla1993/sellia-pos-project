@@ -34,7 +34,7 @@ public class UserMapper {
         response.setEmail(user.getEmail());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setProfileImage(user.getProfileImage());
-        response.setRole(toRoleResponse(user.getRole()));
+        response.setRole(user.getRole().getName().name());
         response.setActive(user.getActive());
         response.setFirstLogin(user.getFirstLogin());
         response.setLastLogin(user.getLastLogin());
@@ -66,14 +66,5 @@ public class UserMapper {
         if (request.getProfileImage() != null) {
             user.setProfileImage(request.getProfileImage());
         }
-    }
-
-    private UserResponse.RoleResponse toRoleResponse(Role role) {
-        UserResponse.RoleResponse roleResponse = new UserResponse.RoleResponse();
-        roleResponse.setPublicId(role.getPublicId());
-        roleResponse.setName(role.getName().name());
-        roleResponse.setDisplayName(role.getName().getDisplayName());
-        roleResponse.setDescription(role.getDescription());
-        return roleResponse;
     }
 }

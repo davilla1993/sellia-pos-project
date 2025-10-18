@@ -1,6 +1,5 @@
 package com.follysitou.sellia_backend.dto.response;
 
-import com.follysitou.sellia_backend.model.Role;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,18 +13,10 @@ public class UserResponse {
     private String email;
     private String phoneNumber;
     private String profileImage;
-    private RoleResponse role;
+    private String role;
     private Boolean active;
     private Boolean firstLogin;
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    @Data
-    public static class RoleResponse {
-        private String publicId;
-        private String name;
-        private String displayName;
-        private String description;
-    }
 }
