@@ -41,7 +41,7 @@ import { ApiService } from '../../../core/services/api.service';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of users()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+            <tr *ngFor="let user of paginatedUsers()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
               <td class="px-6 py-4 text-white">{{ user.firstName }} {{ user.lastName }}</td>
               <td class="px-6 py-4 text-neutral-300">{{ user.email }}</td>
               <td class="px-6 py-4">
@@ -66,6 +66,28 @@ import { ApiService } from '../../../core/services/api.service';
         </table>
       </div>
 
+      <!-- Pagination Controls -->
+      <div *ngIf="!isLoading() && users().length > 0" class="flex justify-center items-center gap-3 bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
+          ← Précédent
+        </button>
+        <div class="flex gap-1">
+          <button *ngFor="let page of getPageNumbers()" 
+            (click)="goToPage(page)"
+            [class.bg-primary]="currentPage() === page"
+            [class.bg-neutral-700]="currentPage() !== page"
+            [class.text-white]="currentPage() === page"
+            [class.text-neutral-300]="currentPage() !== page"
+            class="w-8 h-8 rounded font-semibold transition-colors text-sm">
+            {{ page }}
+          </button>
+        </div>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
+          Suivant →
+        </button>
+        <span class="text-neutral-400 text-sm ml-2">{{ currentPage() }} / {{ totalPages() }} ({{ users().length }} utilisateurs)</span>
+      </div>
+
       <!-- Empty State -->
       <div *ngIf="!isLoading() && users().length === 0" class="text-center py-12">
         <p class="text-neutral-400 mb-4">Aucun utilisateur trouvé</p>
@@ -81,6 +103,8 @@ export class UsersListComponent implements OnInit {
   users = signal<any[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
+  currentPage = signal(1);
+  itemsPerPage = 10;
 
   ngOnInit(): void {
     this.loadUsers();
@@ -136,5 +160,55 @@ export class UsersListComponent implements OnInit {
       'CUISINE': 'bg-orange-900/30 text-orange-300'
     };
     return classes[role] || 'bg-gray-900/30 text-gray-300';
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.users().length / this.itemsPerPage);
+  }
+
+  paginatedUsers() {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.users().slice(start, end);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages();
+    const current = this.currentPage();
+    
+    let startPage = Math.max(1, current - 2);
+    let endPage = Math.min(total, current + 2);
+    
+    if (endPage - startPage < 4) {
+      if (startPage === 1) {
+        endPage = Math.min(total, 5);
+      } else {
+        startPage = Math.max(1, endPage - 4);
+      }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
   }
 }

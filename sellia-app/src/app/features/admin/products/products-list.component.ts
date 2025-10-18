@@ -30,7 +30,7 @@ import { ApiService } from '../../../core/services/api.service';
 
       <!-- Products Grid -->
       <div *ngIf="!isLoading() && products().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let product of products()" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden hover:border-primary transition-colors">
+        <div *ngFor="let product of paginatedProducts()" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden hover:border-primary transition-colors">
           <!-- Product Image -->
           <div class="h-48 bg-neutral-700 overflow-hidden">
             <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="{{ product.name }}" class="w-full h-full object-cover">
@@ -69,6 +69,28 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
       </div>
 
+      <!-- Pagination Controls -->
+      <div *ngIf="!isLoading() && products().length > 0" class="flex justify-center items-center gap-3 bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
+          ← Précédent
+        </button>
+        <div class="flex gap-1">
+          <button *ngFor="let page of getPageNumbers()" 
+            (click)="goToPage(page)"
+            [class.bg-primary]="currentPage() === page"
+            [class.bg-neutral-700]="currentPage() !== page"
+            [class.text-white]="currentPage() === page"
+            [class.text-neutral-300]="currentPage() !== page"
+            class="w-8 h-8 rounded font-semibold transition-colors text-sm">
+            {{ page }}
+          </button>
+        </div>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
+          Suivant →
+        </button>
+        <span class="text-neutral-400 text-sm ml-2">{{ currentPage() }} / {{ totalPages() }} ({{ products().length }} produits)</span>
+      </div>
+
       <!-- Empty State -->
       <div *ngIf="!isLoading() && products().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
         <p class="text-neutral-400 mb-4">Aucun produit trouvé</p>
@@ -84,6 +106,8 @@ export class ProductsListComponent implements OnInit {
   products = signal<any[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
+  currentPage = signal(1);
+  itemsPerPage = 10;
 
   ngOnInit(): void {
     this.loadProducts();
@@ -111,6 +135,56 @@ export class ProductsListComponent implements OnInit {
         next: () => this.loadProducts(),
         error: () => this.error.set('Erreur lors de la suppression')
       });
+    }
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.products().length / this.itemsPerPage);
+  }
+
+  paginatedProducts() {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.products().slice(start, end);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages();
+    const current = this.currentPage();
+    
+    let startPage = Math.max(1, current - 2);
+    let endPage = Math.min(total, current + 2);
+    
+    if (endPage - startPage < 4) {
+      if (startPage === 1) {
+        endPage = Math.min(total, 5);
+      } else {
+        startPage = Math.max(1, endPage - 4);
+      }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
     }
   }
 }
