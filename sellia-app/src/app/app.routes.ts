@@ -16,6 +16,7 @@ import { KitchenComponent } from './features/pos/kitchen.component';
 import { PendingOrdersComponent } from './features/pos/pending-orders.component';
 import { MyOrdersComponent } from './features/pos/my-orders.component';
 import { CheckoutComponent } from './features/pos/checkout.component';
+import { PosLayoutComponent } from './features/pos/pos-layout.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -75,35 +76,33 @@ export const routes: Routes = [
         component: DashboardComponent
       },
 
-      // POS Routes
+      // POS Routes (with Sidebar Layout)
       {
         path: 'pos',
+        canActivate: [roleGuard(['CAISSE', 'ADMIN', 'CUISINE'])],
+        component: PosLayoutComponent,
         children: [
           {
             path: 'cashier',
-            canActivate: [roleGuard(['CAISSE', 'ADMIN'])],
             component: CashierComponent
           },
           {
             path: 'pending-orders',
-            canActivate: [roleGuard(['CAISSE', 'ADMIN'])],
             component: PendingOrdersComponent
           },
           {
             path: 'my-orders',
-            canActivate: [roleGuard(['CAISSE', 'ADMIN'])],
             component: MyOrdersComponent
           },
           {
             path: 'checkout',
-            canActivate: [roleGuard(['CAISSE', 'ADMIN'])],
             component: CheckoutComponent
           },
           {
             path: 'kitchen',
-            canActivate: [roleGuard(['CUISINE', 'ADMIN'])],
             component: KitchenComponent
-          }
+          },
+          { path: '', redirectTo: 'cashier', pathMatch: 'full' }
         ]
       },
 

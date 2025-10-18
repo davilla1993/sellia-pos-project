@@ -291,4 +291,17 @@ export class ApiService {
   finalizeSession(sessionPublicId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/customer-sessions/${sessionPublicId}/finalize`, {});
   }
+
+  // Tables
+  getTables(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/tables/active/list`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  getAvailableTables(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/tables/available/list`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
 }

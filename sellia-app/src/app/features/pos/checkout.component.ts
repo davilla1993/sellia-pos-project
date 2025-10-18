@@ -228,17 +228,16 @@ export class CheckoutComponent implements OnInit {
 
   loadTables(): void {
     this.isLoadingTables.set(true);
-    // TODO: Call API to get tables
-    // Mock tables for now
-    this.tables.set([
-      { publicId: 'table-1', number: '01', name: 'Table 1', occupied: true, capacity: 4 },
-      { publicId: 'table-2', number: '02', name: 'Table 2', occupied: false, capacity: 2 },
-      { publicId: 'table-3', number: '03', name: 'Table 3', occupied: true, capacity: 6 },
-      { publicId: 'table-4', number: '04', name: 'Table 4', occupied: false, capacity: 4 },
-      { publicId: 'table-5', number: '05', name: 'Table 5', occupied: true, capacity: 8 },
-      { publicId: 'table-6', number: '06', name: 'Bar', occupied: true, capacity: 1 }
-    ]);
-    this.isLoadingTables.set(false);
+    this.apiService.getTables().subscribe({
+      next: (tables) => {
+        this.tables.set(tables);
+        this.isLoadingTables.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading tables:', err);
+        this.isLoadingTables.set(false);
+      }
+    });
   }
 
   selectTable(table: any): void {
