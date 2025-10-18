@@ -7,6 +7,10 @@ import { CheckoutSimpleComponent } from './features/customer/checkout-simple.com
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanner.component';
 import { DashboardComponent } from './features/admin/dashboard.component';
+import { UsersListComponent } from './features/admin/users/users-list.component';
+import { UserFormComponent } from './features/admin/users/user-form.component';
+import { ProductsListComponent } from './features/admin/products/products-list.component';
+import { ProductFormComponent } from './features/admin/products/product-form.component';
 import { CashierComponent } from './features/pos/cashier.component';
 import { KitchenComponent } from './features/pos/kitchen.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
@@ -35,6 +39,22 @@ export const routes: Routes = [
     loadComponent: () => import('./features/admin/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { path: 'dashboard', component: DashboardComponent },
+      {
+        path: 'users',
+        children: [
+          { path: '', component: UsersListComponent },
+          { path: 'add', component: UserFormComponent },
+          { path: ':id/edit', component: UserFormComponent }
+        ]
+      },
+      {
+        path: 'products',
+        children: [
+          { path: '', component: ProductsListComponent },
+          { path: 'add', component: ProductFormComponent },
+          { path: ':id/edit', component: ProductFormComponent }
+        ]
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

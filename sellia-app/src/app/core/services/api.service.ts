@@ -185,4 +185,70 @@ export class ApiService {
     
     return this.http.put<any>(`${this.apiUrl}/stock/${stockId}/adjust`, {}, { params });
   }
+
+  // Users
+  getUsers(page: number = 0, size: number = 10): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/users`, { params }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  getUserById(publicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/users/${publicId}`);
+  }
+
+  createUser(user: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users`, user);
+  }
+
+  updateUser(publicId: string, user: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/users/${publicId}`, user);
+  }
+
+  deactivateUser(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users/${publicId}/deactivate`, {});
+  }
+
+  activateUser(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users/${publicId}/activate`, {});
+  }
+
+  resetPassword(publicId: string, newPassword: string, confirmPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users/${publicId}/reset-password`, { newPassword, confirmPassword });
+  }
+
+  // Products (Management)
+  getAllProductsAdmin(page: number = 0, size: number = 20): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/products`, { params }).pipe(
+      map(response => this.extractArray(response)),
+      map(products => this.fixProductImages(products as any[]))
+    );
+  }
+
+  getProductByIdAdmin(publicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/products/${publicId}`).pipe(
+      map(product => ({
+        ...product,
+        imageUrl: product.imageUrl ? this.fixImageUrl(product.imageUrl) : undefined
+      }))
+    );
+  }
+
+  createProduct(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/products`, formData);
+  }
+
+  updateProduct(publicId: string, formData: FormData): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/products/${publicId}`, formData);
+  }
+
+  deleteProduct(publicId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/products/${publicId}`);
+  }
 }
