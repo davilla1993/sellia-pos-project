@@ -162,4 +162,14 @@ public class CustomerSessionService {
             throw new BusinessException("This session has been finalized and cannot accept new orders");
         }
     }
+
+    public CustomerSessionResponse getActiveSessionByTable(String tablePublicId) {
+        RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+
+        CustomerSession session = customerSessionRepository.findActiveSessionByTableId(table.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No active session found for this table"));
+
+        return customerSessionMapper.toResponse(session);
+    }
 }

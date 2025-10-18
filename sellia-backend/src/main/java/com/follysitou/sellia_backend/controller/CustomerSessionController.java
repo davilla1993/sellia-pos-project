@@ -73,4 +73,10 @@ public class CustomerSessionController {
         );
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/table/{tablePublicId}/active")
+    public ResponseEntity<CustomerSessionResponse> getActiveSessionByTable(@PathVariable String tablePublicId) {
+        CustomerSessionResponse response = customerSessionService.getActiveSessionByTable(tablePublicId);
+        return ResponseEntity.ok(response);
+    }
 }
