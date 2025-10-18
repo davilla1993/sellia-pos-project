@@ -8,12 +8,12 @@ import { ApiService } from '../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex h-full gap-6 p-8 bg-neutral-900 overflow-hidden">
-      <!-- LEFT: Table Selection -->
-      <div class="w-80 flex flex-col gap-4 overflow-hidden">
+    <div class="flex flex-col h-full gap-6 p-8 bg-neutral-900 overflow-hidden">
+      <!-- TOP: Table Selection - FULL WIDTH -->
+      <div class="flex-1 flex flex-col gap-4 overflow-hidden">
         <div>
-          <h2 class="text-2xl font-bold text-white mb-2">Sélectionner une Table</h2>
-          <div class="flex gap-4 text-sm">
+          <h2 class="text-2xl font-bold text-white mb-3">🪑 Sélectionner une Table</h2>
+          <div class="flex gap-6 text-sm">
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full bg-green-500"></div>
               <span class="text-green-400 font-semibold">{{ activeTables() }} Actives</span>
@@ -22,44 +22,73 @@ import { ApiService } from '../../core/services/api.service';
               <div class="w-3 h-3 rounded-full bg-red-500"></div>
               <span class="text-red-400 font-semibold">{{ inactiveTables() }} Libres</span>
             </div>
+            <div class="ml-auto text-neutral-400">
+              {{ paginatedTables().length }} table{{ paginatedTables().length > 1 ? 's' : '' }} affichée{{ paginatedTables().length > 1 ? 's' : '' }}
+            </div>
           </div>
         </div>
         
         <!-- Search -->
         <div class="relative">
-          <input [(ngModel)]="searchTable" type="text" placeholder="Rechercher table..." 
-            class="w-full input-field bg-neutral-800 border-neutral-700 text-white placeholder-neutral-500">
+          <input [(ngModel)]="searchTable" type="text" placeholder="🔍 Rechercher table..." 
+            class="w-full input-field bg-neutral-800 border-neutral-700 text-white placeholder-neutral-500 py-3">
         </div>
 
-        <!-- Tables Grid -->
-        <div class="flex-1 overflow-y-auto grid grid-cols-2 gap-3">
-          <div *ngIf="isLoadingTables()" class="col-span-2 flex justify-center items-center h-full">
+        <!-- Tables Grid - FULL WIDTH HORIZONTAL -->
+        <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+          <div *ngIf="isLoadingTables()" class="flex justify-center items-center h-full">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
 
-          <button *ngFor="let table of filteredTables()"
-            (click)="selectTable(table)"
-            [class.ring-2]="selectedTableId() === table.publicId"
-            [class.ring-primary]="selectedTableId() === table.publicId"
-            [class.bg-green-900]="tablesWithSessions().has(table.publicId)"
-            [class.bg-red-900]="!tablesWithSessions().has(table.publicId)"
-            [class.border-green-600]="tablesWithSessions().has(table.publicId)"
-            [class.border-red-600]="!tablesWithSessions().has(table.publicId)"
-            class="p-3 bg-neutral-800 hover:opacity-80 border border-neutral-700 rounded-lg transition-all">
-            <div class="flex items-center gap-2 mb-2">
-              <div [class.bg-green-500]="tablesWithSessions().has(table.publicId)" [class.bg-red-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
-              <p class="font-bold text-white">{{ table.number }}</p>
+          <div *ngIf="!isLoadingTables()" class="flex-1 overflow-hidden">
+            <div class="grid gap-4" [ngStyle]="{'gridTemplateColumns': 'repeat(auto-fit, minmax(140px, 1fr))'}">
+              <button *ngFor="let table of paginatedTables()"
+                (click)="selectTable(table)"
+                [class.ring-3]="selectedTableId() === table.publicId"
+                [class.ring-primary]="selectedTableId() === table.publicId"
+                [class.bg-green-900]="tablesWithSessions().has(table.publicId)"
+                [class.bg-red-900]="!tablesWithSessions().has(table.publicId)"
+                [class.border-green-600]="tablesWithSessions().has(table.publicId)"
+                [class.border-red-600]="!tablesWithSessions().has(table.publicId)"
+                class="p-4 bg-neutral-800 hover:opacity-80 border-2 border-neutral-700 rounded-lg transition-all">
+                <div class="flex items-center gap-2 mb-2">
+                  <div [class.bg-green-500]="tablesWithSessions().has(table.publicId)" [class.bg-red-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
+                  <p class="font-bold text-white text-lg">{{ table.number }}</p>
+                </div>
+                <p class="text-sm text-neutral-400 mb-2">{{ table.name }}</p>
+                <p class="text-xs font-semibold" [class.text-green-400]="tablesWithSessions().has(table.publicId)" [class.text-red-400]="!tablesWithSessions().has(table.publicId)">
+                  {{ tablesWithSessions().has(table.publicId) ? '✓ Actif' : '○ Libre' }}
+                </p>
+              </button>
             </div>
-            <p class="text-sm text-neutral-400">{{ table.name }}</p>
-            <p class="text-xs" [class.text-green-400]="tablesWithSessions().has(table.publicId)" [class.text-red-400]="!tablesWithSessions().has(table.publicId)">
-              {{ tablesWithSessions().has(table.publicId) ? '✓ Session active' : '○ Libre' }}
-            </p>
-          </button>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="!isLoadingTables() && filteredTables().length > 0" class="flex justify-center items-center gap-3 pt-4 border-t border-neutral-700">
+            <button (click)="previousTablePage()" [disabled]="currentTablePage() === 1" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 rounded-lg font-semibold">
+              ← Précédent
+            </button>
+            <div class="flex gap-2">
+              <button *ngFor="let page of getTablePageNumbers()" 
+                (click)="goToTablePage(page)"
+                [class.bg-primary]="currentTablePage() === page"
+                [class.bg-neutral-700]="currentTablePage() !== page"
+                [class.text-white]="currentTablePage() === page"
+                [class.text-neutral-300]="currentTablePage() !== page"
+                class="w-10 h-10 rounded-lg font-bold transition-colors">
+                {{ page }}
+              </button>
+            </div>
+            <button (click)="nextTablePage()" [disabled]="currentTablePage() === totalTablePages()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 rounded-lg font-semibold">
+              Suivant →
+            </button>
+            <span class="text-neutral-400 text-sm ml-4 font-semibold">{{ currentTablePage() }} / {{ totalTablePages() }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT: Payment Section -->
-      <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+      <!-- BOTTOM: Payment Section - SIDEBAR ON RIGHT -->
+      <div class="flex gap-6 h-1/3 overflow-hidden">
         <!-- Session Info -->
         <div *ngIf="selectedSession()">
           <h2 class="text-2xl font-bold text-white">Encaissement</h2>
@@ -67,7 +96,7 @@ import { ApiService } from '../../core/services/api.service';
         </div>
 
         <!-- Orders Display -->
-        <div *ngIf="selectedSession() && !isLoadingOrders()" class="flex-1 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3">
+        <div *ngIf="selectedSession() && !isLoadingOrders()" class="flex-1 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3 min-w-0">
           <div *ngIf="sessionOrders().length > 0">
             <p class="text-sm font-semibold text-neutral-300 mb-3 uppercase">Commandes ({{ sessionOrders().length }})</p>
             <div *ngFor="let order of sessionOrders()" class="bg-neutral-700 rounded p-3 space-y-2 mb-3">
@@ -95,8 +124,8 @@ import { ApiService } from '../../core/services/api.service';
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
 
-        <!-- Payment Section -->
-        <div *ngIf="selectedSession() && !isLoadingOrders()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4">
+        <!-- Payment Sidebar -->
+        <div *ngIf="selectedSession() && !isLoadingOrders()" class="w-96 flex flex-col gap-4 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4 flex-shrink-0">
           <!-- Totals -->
           <div class="space-y-2">
             <div class="flex justify-between text-neutral-300">
@@ -223,6 +252,8 @@ export class CheckoutComponent implements OnInit {
   isLoadingTables = signal(false);
   activeTables = signal(0);
   inactiveTables = signal(0);
+  currentTablePage = signal(1);
+  tablesPerPage = 20;
 
   // Session & Orders
   selectedSession = signal<any | null>(null);
@@ -503,5 +534,40 @@ export class CheckoutComponent implements OnInit {
 
   getButtonLabel(): string {
     return `💳 Encaisser et Imprimer Reçu - FCFA ${(this.finalTotal() / 100).toFixed(0)}`;
+  }
+
+  // Table Pagination
+  paginatedTables() {
+    const start = (this.currentTablePage() - 1) * this.tablesPerPage;
+    return this.filteredTables().slice(start, start + this.tablesPerPage);
+  }
+
+  totalTablePages() {
+    return Math.ceil(this.filteredTables().length / this.tablesPerPage);
+  }
+
+  getTablePageNumbers(): number[] {
+    const pages = [];
+    const max = this.totalTablePages();
+    for (let i = 1; i <= max && i <= 5; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  previousTablePage(): void {
+    if (this.currentTablePage() > 1) {
+      this.currentTablePage.set(this.currentTablePage() - 1);
+    }
+  }
+
+  nextTablePage(): void {
+    if (this.currentTablePage() < this.totalTablePages()) {
+      this.currentTablePage.set(this.currentTablePage() + 1);
+    }
+  }
+
+  goToTablePage(page: number): void {
+    this.currentTablePage.set(page);
   }
 }
