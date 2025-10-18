@@ -22,53 +22,58 @@ interface PaymentMethod {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex h-full gap-3 p-3 bg-neutral-900 overflow-hidden">
-      <!-- LEFT: Products & Categories -->
-      <div class="flex-1 flex flex-col gap-3 overflow-hidden">
-        <!-- Header -->
-        <div class="flex justify-between items-center">
-          <h1 class="text-3xl font-bold text-white">Nouvelle Commande</h1>
-          <button (click)="resetCart()" *ngIf="cartItems().length > 0" class="text-red-400 hover:text-red-300 font-medium">
-            ✕ Annuler
-          </button>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="relative">
-          <svg class="absolute left-4 top-3 w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input [(ngModel)]="searchQuery" (ngModelChange)="resetPagination()" type="text" placeholder="Rechercher un produit..." class="input-field bg-neutral-800 border-neutral-700 text-white placeholder-neutral-500 pl-12">
-        </div>
-
-        <!-- Categories -->
-        <div class="flex gap-2 overflow-x-auto pb-2">
-          <button (click)="selectCategory(null)"
-            [class.bg-primary]="!selectedCategory()"
-            [class.bg-neutral-700]="selectedCategory()"
-            [class.text-white]="!selectedCategory()"
-            [class.text-neutral-300]="selectedCategory()"
-            class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors">
-            Tous
-          </button>
-          <button *ngFor="let cat of categories()" 
-            (click)="selectCategory(cat.id)"
-            [class.bg-primary]="selectedCategory() === cat.id"
-            [class.bg-neutral-700]="selectedCategory() !== cat.id"
-            [class.text-white]="selectedCategory() === cat.id"
-            [class.text-neutral-300]="selectedCategory() !== cat.id"
-            class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors">
-            {{ cat.name }}
-          </button>
-        </div>
-
-        <!-- Products Grid -->
-        <div class="flex-1 overflow-y-auto">
-          <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    <div class="flex w-full h-full bg-neutral-900 overflow-hidden">
+      <!-- LEFT: Products & Categories - FULL WIDTH -->
+      <div class="flex-1 flex flex-col overflow-hidden p-6">
+        <!-- Top Section: Header + Controls -->
+        <div class="space-y-4 mb-6">
+          <div class="flex justify-between items-center">
+            <h1 class="text-4xl font-bold text-white">🛒 Nouvelle Commande</h1>
+            <button (click)="resetCart()" *ngIf="cartItems().length > 0" class="text-red-400 hover:text-red-300 font-bold text-lg px-6 py-2 bg-red-600/20 rounded-lg transition-colors">
+              ✕ Vider Panier
+            </button>
           </div>
 
-          <div *ngIf="!isLoadingProducts() && paginatedProducts().length > 0" class="grid grid-cols-2 gap-4 pb-4">
+          <!-- Search Bar -->
+          <div class="relative">
+            <svg class="absolute left-4 top-4 w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input [(ngModel)]="searchQuery" (ngModelChange)="resetPagination()" type="text" placeholder="Rechercher un produit..." class="w-full input-field bg-neutral-800 border-neutral-700 text-white placeholder-neutral-500 pl-12 py-3">
+          </div>
+
+          <!-- Categories -->
+          <div class="flex gap-3 overflow-x-auto pb-2">
+            <button (click)="selectCategory(null)"
+              [class.bg-primary]="!selectedCategory()"
+              [class.bg-neutral-700]="selectedCategory()"
+              [class.text-white]="!selectedCategory()"
+              [class.text-neutral-300]="selectedCategory()"
+              class="px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors text-sm">
+              Tous
+            </button>
+            <button *ngFor="let cat of categories()" 
+              (click)="selectCategory(cat.id)"
+              [class.bg-primary]="selectedCategory() === cat.id"
+              [class.bg-neutral-700]="selectedCategory() !== cat.id"
+              [class.text-white]="selectedCategory() === cat.id"
+              [class.text-neutral-300]="selectedCategory() !== cat.id"
+              class="px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors text-sm">
+              {{ cat.name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Grid: Products + Cart -->
+        <div class="flex-1 flex gap-6 overflow-hidden">
+          <!-- Products Grid (70%) -->
+          <div class="flex-1 flex flex-col overflow-hidden">
+            <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+
+            <div *ngIf="!isLoadingProducts() && paginatedProducts().length > 0" class="flex-1 overflow-y-auto">
+              <div class="grid grid-cols-4 gap-5 pb-6">
             <div *ngFor="let product of paginatedProducts()" 
               (click)="addToCart(product)"
               class="bg-neutral-800 rounded-lg border border-neutral-700 hover:border-primary cursor-pointer transition-all hover:shadow-lg overflow-hidden">
