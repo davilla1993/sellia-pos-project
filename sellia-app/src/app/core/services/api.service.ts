@@ -83,8 +83,12 @@ export class ApiService {
   private fixImageUrl(imageUrl: string): string {
     if (!imageUrl) return imageUrl;
     if (imageUrl.startsWith('http')) return imageUrl;
-    if (imageUrl.startsWith('/')) return `${BACKEND_URL}${imageUrl}`;
-    return `${BACKEND_URL}/uploads/products/${imageUrl}`;
+    
+    // Extract filename from path
+    const filename = imageUrl.includes('/') ? imageUrl.split('/').pop() : imageUrl;
+    
+    // Use the API endpoint instead of direct file path
+    return `${this.apiUrl}/products/images/${filename}`;
   }
 
   getImageAsDataUrl(imagePath: string): Observable<string> {
