@@ -52,11 +52,11 @@ interface PaymentMethod {
             Tous
           </button>
           <button *ngFor="let cat of categories()" 
-            (click)="selectCategory(cat.publicId)"
-            [class.bg-primary]="selectedCategory() === cat.publicId"
-            [class.bg-neutral-700]="selectedCategory() !== cat.publicId"
-            [class.text-white]="selectedCategory() === cat.publicId"
-            [class.text-neutral-300]="selectedCategory() !== cat.publicId"
+            (click)="selectCategory(cat.id)"
+            [class.bg-primary]="selectedCategory() === cat.id"
+            [class.bg-neutral-700]="selectedCategory() !== cat.id"
+            [class.text-white]="selectedCategory() === cat.id"
+            [class.text-neutral-300]="selectedCategory() !== cat.id"
             class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors">
             {{ cat.name }}
           </button>
@@ -212,7 +212,7 @@ export class CashierComponent implements OnInit {
   products = signal<any[]>([]);
   cartItems = signal<CartItem[]>([]);
   searchQuery = signal('');
-  selectedCategory = signal<string | null>(null);
+  selectedCategory = signal<number | null>(null);
   selectedPaymentMethod = signal('especes');
   discountPercent = signal(0);
   discountAmount = signal(0);
@@ -259,7 +259,7 @@ export class CashierComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     return this.products().filter(p => 
       p.name.toLowerCase().includes(query) &&
-      (!this.selectedCategory() || p.categoryId?.toString() === this.selectedCategory())
+      (!this.selectedCategory() || p.categoryId === this.selectedCategory())
     );
   }
 
@@ -317,7 +317,7 @@ export class CashierComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  selectCategory(catId: string | null): void {
+  selectCategory(catId: number | null): void {
     this.selectedCategory.set(catId);
     this.resetPagination();
   }
