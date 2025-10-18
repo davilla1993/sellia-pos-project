@@ -197,7 +197,7 @@ interface PaymentMethod {
         <!-- Cash Payment Amount -->
         <div *ngIf="selectedPaymentMethod() === 'especes'" class="space-y-2 bg-neutral-800 rounded-lg border border-neutral-700 p-3">
           <label class="text-sm font-semibold text-neutral-300">Montant remis (FCFA)</label>
-          <input [(ngModel)]="amountPaid" (ngModelChange)="updateAmountPaid($event)" type="number" min="0" step="100" class="w-full input-field bg-neutral-700 border-neutral-600 text-white text-sm" placeholder="0">
+          <input [(ngModel)]="amountPaidInput" (ngModelChange)="updateAmountPaid($event)" type="text" inputmode="numeric" class="w-full input-field bg-neutral-700 border-neutral-600 text-white text-sm" placeholder="0">
           <div class="space-y-2 pt-2 border-t border-neutral-600">
             <div class="flex justify-between text-neutral-300">
               <span>Rendu:</span>
@@ -233,6 +233,7 @@ export class CashierComponent implements OnInit {
   selectedPaymentMethod = signal('especes');
   discountPercent = signal(0);
   discountAmount = signal(0);
+  amountPaidInput = signal('');
   amountPaid = signal(0);
   changeAmount = signal(0);
   isLoadingProducts = signal(false);
@@ -394,7 +395,8 @@ export class CashierComponent implements OnInit {
     return Math.max(0, this.subtotal() - this.discountAmount());
   }
 
-  updateAmountPaid(amount: number): void {
+  updateAmountPaid(amountStr: string): void {
+    const amount = parseInt(amountStr, 10) || 0;
     this.amountPaid.set(amount * 100);
     this.calculateChange();
   }
@@ -436,6 +438,7 @@ export class CashierComponent implements OnInit {
     this.cartItems.set([]);
     this.discountPercent.set(0);
     this.discountAmount.set(0);
+    this.amountPaidInput.set('');
     this.amountPaid.set(0);
     this.changeAmount.set(0);
   }
