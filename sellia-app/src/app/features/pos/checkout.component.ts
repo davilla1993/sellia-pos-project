@@ -10,7 +10,7 @@ import { ApiService } from '../../core/services/api.service';
   template: `
     <div class="flex h-full gap-6 p-6 bg-neutral-900 overflow-hidden">
       <!-- LEFT: Table Selection -->
-      <div class="w-96 flex flex-col gap-4 overflow-hidden">
+      <div class="w-80 flex flex-col gap-4 overflow-hidden">
         <h2 class="text-2xl font-bold text-white">Sélectionner une Table</h2>
         
         <!-- Search -->

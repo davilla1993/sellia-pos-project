@@ -22,9 +22,9 @@ interface PaymentMethod {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex h-full gap-6 p-6 bg-neutral-900 overflow-hidden">
+    <div class="flex h-full gap-3 p-3 bg-neutral-900 overflow-hidden">
       <!-- LEFT: Products & Categories -->
-      <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+      <div class="flex-1 flex flex-col gap-3 overflow-hidden">
         <!-- Header -->
         <div class="flex justify-between items-center">
           <h1 class="text-3xl font-bold text-white">Nouvelle Commande</h1>
@@ -121,7 +121,7 @@ interface PaymentMethod {
       </div>
 
       <!-- RIGHT: Cart & Payment -->
-      <div class="w-96 flex flex-col gap-4 overflow-hidden">
+      <div class="w-80 flex flex-col gap-3 overflow-hidden">
         <!-- Cart Title -->
         <h2 class="text-2xl font-bold text-white">Panier ({{ cartItems().length }})</h2>
 
