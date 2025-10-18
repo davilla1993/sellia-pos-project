@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { AdminSidebarService } from './admin-sidebar.service';
 
 interface MenuItem {
   label: string;
@@ -89,9 +90,9 @@ interface MenuItem {
   styles: []
 })
 export class SidebarComponent {
-  collapsed = signal(false);
-
-  constructor(private sanitizer: DomSanitizer) {}
+  private sidebarService = inject(AdminSidebarService);
+  collapsed = this.sidebarService.collapsed;
+  private sanitizer = inject(DomSanitizer);
 
   getSafeIcon(icon: string | undefined): SafeHtml {
     return icon ? this.sanitizer.bypassSecurityTrustHtml(icon) : this.sanitizer.bypassSecurityTrustHtml('');
@@ -181,7 +182,7 @@ export class SidebarComponent {
   ];
 
   toggleCollapse(): void {
-    this.collapsed.set(!this.collapsed());
+    this.sidebarService.toggleCollapsed();
   }
 
   toggleMenu(item: MenuItem): void {
