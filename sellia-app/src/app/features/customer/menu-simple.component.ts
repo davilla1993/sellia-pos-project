@@ -53,6 +53,6 @@ export class MenuSimpleComponent implements OnInit {
   }
 
   getPrice(product: Product): string {
-    return '$' + product.price.toFixed(2);
+    return '$' + product.price.toFixed(0);
   }
 }

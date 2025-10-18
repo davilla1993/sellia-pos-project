@@ -109,7 +109,7 @@ import { Order } from '../../shared/models/types';
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">{{ '$' + ((order()?.totalAmount || 0).toFixed(2)) }}</span>
+              <span class="text-primary">{{ '$' + ((order()?.totalAmount || 0).toFixed(0)) }}</span>
             </div>
 
             <button
@@ -204,10 +204,10 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   formatItemTotal(price: number, quantity: number): string {
-    return '$' + (price * quantity).toFixed(2);
+    return '$' + (price * quantity).toFixed(0);
   }
 
   formatTotalPrice(totalAmount: number): string {
-    return '$' + totalAmount.toFixed(2);
+    return '$' + totalAmount.toFixed(0);
   }
 }

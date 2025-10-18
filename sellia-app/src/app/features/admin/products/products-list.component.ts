@@ -77,7 +77,7 @@ import { ApiService } from '../../../core/services/api.service';
 
               <!-- Prix -->
               <td class="px-6 py-4">
-                <span class="text-lg font-bold text-primary">€{{ (product.price / 100).toFixed(2) }}</span>
+                <span class="text-lg font-bold text-primary">€{{ (product.price / 100).toFixed(0) }}</span>
               </td>
 
               <!-- Stock -->

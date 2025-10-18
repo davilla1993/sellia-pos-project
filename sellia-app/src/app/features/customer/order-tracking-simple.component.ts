@@ -47,6 +47,6 @@ export class OrderTrackingSimpleComponent implements OnInit {
   }
 
   getTotal(order: Order): string {
-    return '$' + order.totalAmount.toFixed(2);
+    return '$' + order.totalAmount.toFixed(0);
   }
 }

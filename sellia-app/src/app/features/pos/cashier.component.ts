@@ -83,7 +83,7 @@ interface PaymentMethod {
               <div class="p-3">
                 <h3 class="text-sm font-bold text-white truncate">{{ product.name }}</h3>
                 <div class="flex justify-between items-center mt-2">
-                  <span class="text-lg font-bold text-primary">FCFA {{ (product.price / 100).toFixed(2) }}</span>
+                  <span class="text-lg font-bold text-primary">FCFA {{ (product.price / 100).toFixed(0) }}</span>
                   <span class="text-xs" [class]="product.stock > 0 ? 'text-green-400' : 'text-red-400'">
                     {{ product.stock }}
                   </span>
@@ -135,7 +135,7 @@ interface PaymentMethod {
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <p class="font-semibold text-white">{{ item.name }}</p>
-                <p class="text-sm text-neutral-300">€{{ (item.price / 100).toFixed(2) }} x {{ item.quantity }}</p>
+                <p class="text-sm text-neutral-300">FCFA {{ (item.price / 100).toFixed(0) }} x {{ item.quantity }}</p>
               </div>
               <button (click)="removeFromCart(i)" class="text-red-400 hover:text-red-300 font-bold">✕</button>
             </div>
@@ -146,7 +146,7 @@ interface PaymentMethod {
                 <span class="px-2 text-white font-semibold">{{ item.quantity }}</span>
                 <button (click)="incrementQuantity(i)" class="text-neutral-300 hover:text-white font-bold">+</button>
               </div>
-              <span class="font-bold text-primary">€{{ (item.price * item.quantity / 100).toFixed(2) }}</span>
+              <span class="font-bold text-primary">FCFA {{ (item.price * item.quantity / 100).toFixed(0) }}</span>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ interface PaymentMethod {
         <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3">
           <div class="flex justify-between text-neutral-300">
             <span>Sous-total:</span>
-            <span>FCFA {{ (subtotal() / 100).toFixed(2) }}</span>
+            <span>FCFA {{ (subtotal() / 100).toFixed(0) }}</span>
           </div>
 
           <!-- Discount -->
@@ -166,14 +166,14 @@ interface PaymentMethod {
               <button (click)="applyDiscount()" class="px-4 py-2 bg-primary hover:bg-primary-dark rounded font-semibold text-white text-sm">Appliquer</button>
             </div>
             <p *ngIf="discountAmount() > 0" class="text-sm text-yellow-400">
-              -FCFA {{ (discountAmount() / 100).toFixed(2) }}
+              -FCFA {{ (discountAmount() / 100).toFixed(0) }}
             </p>
           </div>
 
           <div class="border-t border-neutral-600 pt-3">
             <div class="flex justify-between items-center">
               <span class="text-lg font-bold text-white">Total:</span>
-              <span class="text-3xl font-bold text-primary">FCFA {{ (total() / 100).toFixed(2) }}</span>
+              <span class="text-3xl font-bold text-primary">FCFA {{ (total() / 100).toFixed(0) }}</span>
             </div>
           </div>
         </div>
@@ -202,11 +202,11 @@ interface PaymentMethod {
             <div class="flex justify-between text-neutral-300">
               <span>Rendu:</span>
               <span [class]="amountPaid() >= total() ? 'text-green-400' : 'text-red-400'" class="font-semibold">
-                FCFA {{ (changeAmount() / 100).toFixed(2) }}
+                FCFA {{ (changeAmount() / 100).toFixed(0) }}
               </span>
             </div>
             <p *ngIf="amountPaid() < total()" class="text-xs text-red-400">
-              Montant insuffisant: manque FCFA {{ ((total() - amountPaid()) / 100).toFixed(2) }}
+              Montant insuffisant: manque FCFA {{ ((total() - amountPaid()) / 100).toFixed(0) }}
             </p>
           </div>
         </div>
@@ -215,7 +215,7 @@ interface PaymentMethod {
         <div class="flex gap-3">
           <button (click)="resetCart()" class="flex-1 btn-outline py-3 font-semibold">Annuler</button>
           <button (click)="completeOrder()" [disabled]="cartItems().length === 0 || !isAmountSufficient()" class="flex-1 btn-primary py-3 font-semibold" [class.opacity-50]="cartItems().length === 0 || !isAmountSufficient()">
-            Valider (FCFA {{ (total() / 100).toFixed(2) }})
+            Valider (FCFA {{ (total() / 100).toFixed(0) }})
           </button>
         </div>
       </div>
@@ -428,7 +428,7 @@ export class CashierComponent implements OnInit {
     };
 
     console.log('Commande complétée:', order);
-    alert(`Commande validée!\nTotal: FCFA ${(order.total / 100).toFixed(2)}`);
+    alert(`Commande validée!\nTotal: FCFA ${(order.total / 100).toFixed(0)}`);
     this.resetCart();
   }
 

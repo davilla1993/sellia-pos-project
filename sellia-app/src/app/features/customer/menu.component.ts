@@ -82,7 +82,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
           <!-- Price & Status -->
           <div class="flex justify-between items-center mt-4 pt-4 border-t border-neutral-200">
-            <span class="text-2xl font-bold text-primary">\${{ product.price.toFixed(2) }}</span>
+            <span class="text-2xl font-bold text-primary">\${{ product.price.toFixed(0) }}</span>
             <span
               *ngIf="!product.available"
               class="text-xs font-semibold text-red-600 bg-red-100 px-3 py-1 rounded-full"
