@@ -395,7 +395,7 @@ export class CashierComponent implements OnInit {
   }
 
   updateAmountPaid(amount: number): void {
-    this.amountPaid.set(amount);
+    this.amountPaid.set(amount * 100);
     this.calculateChange();
   }
 
