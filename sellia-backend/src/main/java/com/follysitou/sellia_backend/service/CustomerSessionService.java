@@ -37,33 +37,69 @@ public class CustomerSessionService {
     private final InvoiceService invoiceService;
 
     public CustomerSessionResponse getOrCreateSession(CustomerSessionCreateRequest request) {
-        RestaurantTable table = restaurantTableRepository.findByPublicId(request.getTablePublicId())
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        // Handle TABLE order type
+        if (request.getOrderType() == null || request.getOrderType().name().equals("TABLE")) {
+            if (request.getTablePublicId() == null || request.getTablePublicId().isBlank()) {
+                throw new BusinessException("Table ID is required for table orders");
+            }
 
-        // Check if an active session already exists for this table
-        var existingSession = customerSessionRepository.findActiveSessionByTableId(table.getId());
+            RestaurantTable table = restaurantTableRepository.findByPublicId(request.getTablePublicId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
-        if (existingSession.isPresent()) {
-            log.info("Returning existing active session for table: {}", table.getNumber());
-            return customerSessionMapper.toResponse(existingSession.get());
+            // Check if an active session already exists for this table
+            var existingSession = customerSessionRepository.findActiveSessionByTableId(table.getId());
+
+            if (existingSession.isPresent()) {
+                log.info("Returning existing active session for table: {}", table.getNumber());
+                return customerSessionMapper.toResponse(existingSession.get());
+            }
+
+            // Create new table session
+            CustomerSession newSession = CustomerSession.builder()
+                    .table(table)
+                    .orderType(com.follysitou.sellia_backend.enums.OrderType.TABLE)
+                    .customerName(request.getCustomerName())
+                    .customerPhone(request.getCustomerPhone())
+                    .active(true)
+                    .sessionStart(LocalDateTime.now())
+                    .isPaid(false)
+                    .totalAmount(0L)
+                    .numberOfCustomers(1)
+                    .build();
+
+            CustomerSession savedSession = customerSessionRepository.save(newSession);
+            log.info("New customer session created: {} for table {}", savedSession.getPublicId(), table.getNumber());
+
+            return customerSessionMapper.toResponse(savedSession);
         }
 
-        // Create new session
-        CustomerSession newSession = CustomerSession.builder()
-                .table(table)
-                .customerName(request.getCustomerName())
-                .customerPhone(request.getCustomerPhone())
-                .active(true)
-                .sessionStart(LocalDateTime.now())
-                .isPaid(false)
-                .totalAmount(0L)
-                .numberOfCustomers(1)
-                .build();
+        // Handle TAKEAWAY order type
+        else if (request.getOrderType().name().equals("TAKEAWAY")) {
+            if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
+                throw new BusinessException("Customer name is required for takeaway orders");
+            }
 
-        CustomerSession savedSession = customerSessionRepository.save(newSession);
-        log.info("New customer session created: {} for table {}", savedSession.getPublicId(), table.getNumber());
+            // For takeaway, create a new session (no check for existing session)
+            // Each takeaway order can be separate or grouped by phone number if provided
+            CustomerSession newSession = CustomerSession.builder()
+                    .table(null) // No table for takeaway
+                    .orderType(com.follysitou.sellia_backend.enums.OrderType.TAKEAWAY)
+                    .customerName(request.getCustomerName())
+                    .customerPhone(request.getCustomerPhone())
+                    .active(true)
+                    .sessionStart(LocalDateTime.now())
+                    .isPaid(false)
+                    .totalAmount(0L)
+                    .numberOfCustomers(1)
+                    .build();
 
-        return customerSessionMapper.toResponse(savedSession);
+            CustomerSession savedSession = customerSessionRepository.save(newSession);
+            log.info("New takeaway session created: {} for customer {}", savedSession.getPublicId(), request.getCustomerName());
+
+            return customerSessionMapper.toResponse(savedSession);
+        }
+
+        throw new BusinessException("Invalid order type");
     }
 
     public CustomerSessionResponse getSessionById(String sessionPublicId) {

@@ -11,6 +11,7 @@ import { UsersListComponent } from './features/admin/users/users-list.component'
 import { UserFormComponent } from './features/admin/users/user-form.component';
 import { ProductsListComponent } from './features/admin/products/products-list.component';
 import { ProductFormComponent } from './features/admin/products/product-form.component';
+import { OrderEntryComponent } from './features/pos/order-entry.component';
 import { CashierComponent } from './features/pos/cashier.component';
 import { KitchenComponent } from './features/pos/kitchen.component';
 import { PendingOrdersComponent } from './features/pos/pending-orders.component';
@@ -83,6 +84,10 @@ export const routes: Routes = [
         component: PosLayoutComponent,
         children: [
           {
+            path: 'order-entry',
+            component: OrderEntryComponent
+          },
+          {
             path: 'cashier',
             component: CashierComponent
           },
@@ -102,7 +107,7 @@ export const routes: Routes = [
             path: 'kitchen',
             component: KitchenComponent
           },
-          { path: '', redirectTo: 'cashier', pathMatch: 'full' }
+          { path: '', redirectTo: 'order-entry', pathMatch: 'full' }
         ]
       },
 

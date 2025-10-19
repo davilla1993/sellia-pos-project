@@ -19,12 +19,12 @@ import { DomSanitizer } from '@angular/platform-browser';
 
         <!-- Menu Buttons -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-          <button (click)="navigate('/pos/cashier')"
-            [class.bg-primary]="isActive('/pos/cashier')"
-            [class.bg-neutral-700]="!isActive('/pos/cashier')"
+          <button (click)="navigate('/pos/order-entry')"
+            [class.bg-primary]="isActive('/pos/order-entry')"
+            [class.bg-neutral-700]="!isActive('/pos/order-entry')"
             class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/cashier')"
-            [class.text-neutral-300]="!isActive('/pos/cashier')">
+            [class.text-white]="isActive('/pos/order-entry')"
+            [class.text-neutral-300]="!isActive('/pos/order-entry')">
             <span class="text-xl">📝</span>
             <span>Nouvelle Commande</span>
           </button>

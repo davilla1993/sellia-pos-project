@@ -6,16 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.follysitou.sellia_backend.enums.OrderType;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "customer_sessions", indexes = {
-        @Index(name = "idx_session_table", columnList = "tableId"),
-        @Index(name = "idx_session_customer", columnList = "customerName"),
+        @Index(name = "idx_session_table", columnList = "table_id"),
+        @Index(name = "idx_session_customer", columnList = "customer_name"),
         @Index(name = "idx_session_active", columnList = "active"),
-        @Index(name = "idx_session_date", columnList = "createdAt")
+        @Index(name = "idx_session_date", columnList = "created_at")
 })
 @Data
 @Builder
@@ -24,8 +25,12 @@ import java.util.List;
 public class CustomerSession extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "table_id", nullable = false)
+    @JoinColumn(name = "table_id", nullable = true)
     private RestaurantTable table;
+
+    @Column(name = "order_type")
+    @Enumerated(EnumType.STRING)
+    private OrderType orderType = OrderType.TABLE; // TABLE ou TAKEAWAY
 
     @Column(name = "customer_name")
     private String customerName;

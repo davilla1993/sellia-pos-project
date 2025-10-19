@@ -278,6 +278,10 @@ export class ApiService {
   }
 
   // Customer Sessions
+  createCustomerSession(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/customer-sessions`, request);
+  }
+
   getActiveSessionByTable(tablePublicId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/customer-sessions/table/${tablePublicId}/active`);
   }
