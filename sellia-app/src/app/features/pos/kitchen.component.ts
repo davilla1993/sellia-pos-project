@@ -44,46 +44,11 @@ interface KitchenOrder {
       <!-- Kanban Board - 4 Columns -->
       <div class="flex-1 grid grid-cols-4 gap-4 overflow-hidden">
         
-        <!-- Column 1: Nouvelles commandes (EN_ATTENTE) -->
-        <div class="flex flex-col bg-red-50 rounded-lg border-2 border-red-400 overflow-hidden">
-          <div class="bg-red-300 px-4 py-3 border-b-2 border-red-400">
-            <div class="flex items-center justify-between">
-              <h2 class="font-bold text-red-900 text-sm">📨 Nouvelles commandes</h2>
-              <span class="bg-red-600 text-white rounded-full px-2 py-1 font-bold text-xs">
-                {{ ordersbyStatus('EN_ATTENTE').length }}
-              </span>
-            </div>
-          </div>
-          <div class="flex-1 overflow-y-auto p-2 space-y-2">
-            <div *ngFor="let order of ordersbyStatus('EN_ATTENTE')" class="bg-white rounded-lg border-2 border-red-300 p-3 shadow-md hover:shadow-lg transition-shadow">
-              <div class="flex justify-between items-start mb-1">
-                <h3 class="font-bold text-gray-900 text-sm">{{ order.table?.number || 'Takeaway' }}</h3>
-                <span *ngIf="isUrgent(order)" class="bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">!</span>
-              </div>
-              <p class="text-xs text-gray-600 mb-2">{{ getElapsedTime(order.createdAt) }}</p>
-              <div class="text-xs space-y-1 mb-2">
-                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
-              </div>
-              <button 
-                (click)="updateOrderStatus(order.publicId, 'ACCEPTEE')"
-                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-1 text-xs rounded transition-colors mb-1">
-                Accepter
-              </button>
-              <button 
-                *ngIf="!navigationService.isCuisine()"
-                (click)="showCancelDialog(order)"
-                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
-                Annuler
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Column 2: À préparer (ACCEPTEE) -->
+        <!-- Column 1: Nouvelles commandes (ACCEPTEE) -->
         <div class="flex flex-col bg-orange-50 rounded-lg border-2 border-orange-400 overflow-hidden">
           <div class="bg-orange-300 px-4 py-3 border-b-2 border-orange-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-orange-900 text-sm">📋 À préparer</h2>
+              <h2 class="font-bold text-orange-900 text-sm">📨 Nouvelles commandes</h2>
               <span class="bg-orange-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('ACCEPTEE').length }}
               </span>
@@ -111,7 +76,7 @@ interface KitchenOrder {
           </div>
         </div>
 
-        <!-- Column 3: En préparation (EN_PREPARATION) -->
+        <!-- Column 2: En préparation (EN_PREPARATION) -->
         <div class="flex flex-col bg-yellow-50 rounded-lg border-2 border-yellow-400 overflow-hidden">
           <div class="bg-yellow-300 px-4 py-3 border-b-2 border-yellow-400">
             <div class="flex items-center justify-between">
@@ -137,7 +102,7 @@ interface KitchenOrder {
           </div>
         </div>
 
-        <!-- Column 4: Prête (PRETE) -->
+        <!-- Column 3: Prête (PRETE) -->
         <div class="flex flex-col bg-green-50 rounded-lg border-2 border-green-400 overflow-hidden">
           <div class="bg-green-300 px-4 py-3 border-b-2 border-green-400">
             <div class="flex items-center justify-between">
@@ -151,6 +116,32 @@ interface KitchenOrder {
             <div *ngFor="let order of ordersbyStatus('PRETE')" class="bg-white rounded-lg border-2 border-green-300 p-3 shadow-md">
               <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
               <p class="text-xs text-gray-600 mb-2">Prête depuis {{ getElapsedTime(order.createdAt) }}</p>
+              <div class="text-xs space-y-1">
+                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
+              </div>
+              <button 
+                (click)="updateOrderStatus(order.publicId, 'LIVREE')"
+                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 text-xs rounded transition-colors mt-2">
+                Livrée
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Livrée (LIVREE) -->
+        <div class="flex flex-col bg-blue-50 rounded-lg border-2 border-blue-400 overflow-hidden">
+          <div class="bg-blue-300 px-4 py-3 border-b-2 border-blue-400">
+            <div class="flex items-center justify-between">
+              <h2 class="font-bold text-blue-900 text-sm">🚚 Livrée</h2>
+              <span class="bg-blue-600 text-white rounded-full px-2 py-1 font-bold text-xs">
+                {{ ordersbyStatus('LIVREE').length }}
+              </span>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div *ngFor="let order of ordersbyStatus('LIVREE')" class="bg-white rounded-lg border-2 border-blue-300 p-3 shadow-md">
+              <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
+              <p class="text-xs text-gray-600 mb-2">Livrée il y a {{ getElapsedTime(order.createdAt) }}</p>
               <div class="text-xs space-y-1">
                 <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
@@ -187,12 +178,14 @@ export class KitchenComponent implements OnInit {
 
   loadOrders(): void {
     this.isLoading.set(true);
-    const statuses = ['EN_ATTENTE', 'ACCEPTEE', 'EN_PREPARATION', 'PRETE'];
+    const statuses = ['ACCEPTEE', 'EN_PREPARATION', 'PRETE', 'LIVREE'];
     let loadedOrders: KitchenOrder[] = [];
     let completed = 0;
 
     statuses.forEach(status => {
-      this.apiService.getOrdersByStatus(status).subscribe({
+      // Load more items for LIVREE status to keep history visible
+      const pageSize = status === 'LIVREE' ? 100 : 10;
+      this.apiService.getOrdersByStatus(status, 0, pageSize).subscribe({
         next: (response) => {
           const statusOrders = Array.isArray(response) ? response : response.content || [];
           loadedOrders = [...loadedOrders, ...statusOrders];

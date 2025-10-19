@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -23,11 +23,22 @@ interface KitchenOrder {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="h-full flex flex-col bg-neutral-900 p-6 overflow-hidden">
+    <div class="h-full flex flex-col bg-neutral-900 p-6 pt-24 overflow-hidden">
       <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">👨‍🍳 Historique Commandes</h1>
-        <p class="text-neutral-400">Vue complète des commandes de la journée</p>
+      <div class="mb-6 space-y-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-2">👨‍🍳 Historique Commandes</h1>
+            <p class="text-neutral-400">Vue complète des commandes de la journée</p>
+          </div>
+          <input 
+            [(ngModel)]="searchTerm"
+            (input)="currentPage.set(0)"
+            type="text"
+            placeholder="Chercher par #..."
+            class="px-4 py-2 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm"
+          />
+        </div>
       </div>
 
       <!-- Filters -->
@@ -36,39 +47,46 @@ interface KitchenOrder {
           <label class="text-white font-semibold mb-2 block text-sm">Filtrer par statut:</label>
           <div class="flex gap-2 flex-wrap">
             <button 
-              (click)="selectedStatus = ''"
+              (click)="changeStatus('')"
               [class.bg-primary]="selectedStatus === ''"
               [class.bg-neutral-700]="selectedStatus !== ''"
               class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
               Tous
             </button>
             <button 
-              (click)="selectedStatus = 'EN_ATTENTE'"
+              (click)="changeStatus('EN_ATTENTE')"
               [class.bg-red-600]="selectedStatus === 'EN_ATTENTE'"
               [class.bg-neutral-700]="selectedStatus !== 'EN_ATTENTE'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
               ⏳ En attente
             </button>
             <button 
-              (click)="selectedStatus = 'EN_PREPARATION'"
+              (click)="changeStatus('EN_PREPARATION')"
               [class.bg-yellow-600]="selectedStatus === 'EN_PREPARATION'"
               [class.bg-neutral-700]="selectedStatus !== 'EN_PREPARATION'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
               👨‍🍳 En préparation
             </button>
             <button 
-              (click)="selectedStatus = 'PRETE'"
+              (click)="changeStatus('PRETE')"
               [class.bg-green-600]="selectedStatus === 'PRETE'"
               [class.bg-neutral-700]="selectedStatus !== 'PRETE'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
               ✅ Prêt à servir
             </button>
             <button 
-              (click)="selectedStatus = 'LIVREE'"
+              (click)="changeStatus('LIVREE')"
               [class.bg-blue-600]="selectedStatus === 'LIVREE'"
               [class.bg-neutral-700]="selectedStatus !== 'LIVREE'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
               📦 Livrée
+            </button>
+            <button 
+              (click)="changeStatus('PAYEE')"
+              [class.bg-purple-600]="selectedStatus === 'PAYEE'"
+              [class.bg-neutral-700]="selectedStatus !== 'PAYEE'"
+              class="px-4 py-2 rounded-lg font-semibold transition-colors text-white text-sm">
+              🧾 Payée
             </button>
           </div>
         </div>
@@ -159,6 +177,27 @@ interface KitchenOrder {
           <p>Aucune commande trouvée</p>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div *ngIf="totalPages() > 1" class="flex items-center justify-between mt-6 pt-4 border-t border-neutral-700">
+        <div class="text-neutral-400 text-sm">
+          Page {{ currentPage() + 1 }} / {{ totalPages() }} - {{ filteredOrders().length }} commandes
+        </div>
+        <div class="flex gap-2">
+          <button 
+            (click)="previousPage()"
+            [disabled]="currentPage() === 0"
+            class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors text-sm">
+            ← Précédent
+          </button>
+          <button 
+            (click)="nextPage()"
+            [disabled]="currentPage() >= totalPages() - 1"
+            class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors text-sm">
+            Suivant →
+          </button>
+        </div>
+      </div>
     </div>
   `,
   styles: []
@@ -169,7 +208,15 @@ export class KitchenListComponent implements OnInit {
 
   orders = signal<KitchenOrder[]>([]);
   selectedStatus = '';
+  searchTerm = signal('');
   isLoading = signal(false);
+  currentPage = signal(0);
+  pageSize = 10;
+
+  totalPages = computed(() => {
+    const filtered = this.allFilteredOrders();
+    return Math.ceil(filtered.length / this.pageSize) || 1;
+  });
 
   ngOnInit(): void {
     this.loadAllOrders();
@@ -177,7 +224,7 @@ export class KitchenListComponent implements OnInit {
 
   loadAllOrders(): void {
     this.isLoading.set(true);
-    const statuses = ['EN_ATTENTE', 'EN_PREPARATION', 'PRETE', 'LIVREE'];
+    const statuses = ['EN_ATTENTE', 'EN_PREPARATION', 'PRETE', 'LIVREE', 'PAYEE'];
     let loadedOrders: KitchenOrder[] = [];
     let completed = 0;
 
@@ -208,21 +255,55 @@ export class KitchenListComponent implements OnInit {
   }
 
   refreshOrders(): void {
+    this.currentPage.set(0);
     this.loadAllOrders();
     this.toast.info('Commandes rafraîchies', 2000);
   }
 
-  filteredOrders(): KitchenOrder[] {
-    if (!this.selectedStatus) {
-      return this.orders();
+  allFilteredOrders(): KitchenOrder[] {
+    let filtered = this.orders();
+    
+    if (this.selectedStatus) {
+      filtered = filtered.filter(o => o.status === this.selectedStatus);
     }
-    return this.orders().filter(o => o.status === this.selectedStatus);
+    
+    if (this.searchTerm()) {
+      const term = this.searchTerm().toLowerCase();
+      filtered = filtered.filter(o => o.orderNumber.toLowerCase().includes(term));
+    }
+    
+    return filtered;
+  }
+
+  filteredOrders(): KitchenOrder[] {
+    const all = this.allFilteredOrders();
+    const start = this.currentPage() * this.pageSize;
+    const end = start + this.pageSize;
+    return all.slice(start, end);
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 0) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  changeStatus(status: string): void {
+    this.selectedStatus = status;
+    this.currentPage.set(0);
   }
 
   updateOrderStatus(orderId: string, newStatus: string): void {
     this.apiService.updateOrderStatus(orderId, newStatus).subscribe({
       next: () => {
         this.toast.success(`Commande: ${newStatus}`);
+        this.currentPage.set(0);
         this.loadAllOrders();
       },
       error: (err) => {
@@ -262,7 +343,8 @@ export class KitchenListComponent implements OnInit {
       'EN_ATTENTE': ['EN_PREPARATION'],
       'EN_PREPARATION': ['PRETE'],
       'PRETE': ['LIVREE'],
-      'LIVREE': []
+      'LIVREE': ['PAYEE'],
+      'PAYEE': []
     };
 
     return validTransitions[currentStatus]?.includes(targetStatus) ?? false;

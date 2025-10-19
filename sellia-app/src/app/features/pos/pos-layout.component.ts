@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationService } from '../../core/services/navigation.service';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-pos-layout',
@@ -43,7 +44,7 @@ import { NavigationService } from '../../core/services/navigation.service';
               [class.text-neutral-300]="!isActive('/pos/pending-orders')">
               <span class="text-xl">⏳</span>
               <span>En Attente</span>
-              <span class="ml-auto text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-bold">0</span>
+              <span class="ml-auto text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-bold" [class.hidden]="pendingOrdersCount() === 0">{{ pendingOrdersCount() }}</span>
             </button>
 
             <button (click)="navigate('/pos/my-orders')"
@@ -116,12 +117,37 @@ import { NavigationService } from '../../core/services/navigation.service';
 })
 export class PosLayoutComponent implements OnInit {
   private router = inject(Router);
+  private apiService = inject(ApiService);
   navigationService = inject(NavigationService);
 
   currentRoute = signal('');
+  pendingOrdersCount = signal(0);
+
+  constructor() {
+    effect(() => {
+      if (this.currentRoute() && this.currentRoute().includes('/pos')) {
+        this.loadPendingOrdersCount();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.currentRoute.set(this.router.url);
+    this.loadPendingOrdersCount();
+    setInterval(() => this.loadPendingOrdersCount(), 5000);
+  }
+
+  loadPendingOrdersCount(): void {
+    this.apiService.getOrdersByStatus('EN_ATTENTE').subscribe({
+      next: (response: any) => {
+        const data = response?.content || response?.data || response || [];
+        const count = Array.isArray(data) ? data.length : 0;
+        this.pendingOrdersCount.set(count);
+      },
+      error: () => {
+        this.pendingOrdersCount.set(0);
+      }
+    });
   }
 
   navigate(route: string): void {
@@ -130,7 +156,16 @@ export class PosLayoutComponent implements OnInit {
   }
 
   isActive(route: string): boolean {
-    return this.currentRoute().includes(route);
+    const currentRoute = this.currentRoute();
+    // Exact match or match with trailing slash
+    if (currentRoute === route || currentRoute === route + '/') {
+      return true;
+    }
+    // For /pos/kitchen, don't match /pos/kitchen/list
+    if (route === '/pos/kitchen' && currentRoute.includes('/pos/kitchen/list')) {
+      return false;
+    }
+    return currentRoute.startsWith(route + '/');
   }
 
   isInKitchenContext(): boolean {

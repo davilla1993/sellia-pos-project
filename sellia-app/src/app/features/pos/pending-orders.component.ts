@@ -10,7 +10,10 @@ import { ApiService } from '../../core/services/api.service';
     <div class="flex flex-col gap-3 p-3 bg-neutral-900 min-h-screen">
       <!-- Header -->
       <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-white">Commandes en Attente</h1>
+        <div>
+          <h1 class="text-3xl font-bold text-white">Commandes en Attente</h1>
+          <p class="text-neutral-400 text-sm">Total: <span class="font-bold text-primary">{{ orders().length }}</span></p>
+        </div>
         <button (click)="loadOrders()" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded font-medium transition-colors">
           🔄 Rafraîchir
         </button>
@@ -98,11 +101,16 @@ export class PendingOrdersComponent implements OnInit {
     
     this.apiService.getOrdersByStatus('EN_ATTENTE').subscribe({
       next: (response: any) => {
-        const data = response.content || response.data || response || [];
-        this.orders.set(Array.isArray(data) ? data : []);
+        console.log('API Response:', response);
+        const data = response?.content || response?.data || response || [];
+        console.log('Extracted data:', data);
+        const ordersArray = Array.isArray(data) ? data : [];
+        this.orders.set(ordersArray);
+        console.log(`Loaded ${ordersArray.length} orders`);
         this.isLoading.set(false);
       },
       error: (err) => {
+        console.error('Error loading orders:', err);
         this.errorMessage.set('Erreur lors du chargement des commandes');
         this.isLoading.set(false);
       }

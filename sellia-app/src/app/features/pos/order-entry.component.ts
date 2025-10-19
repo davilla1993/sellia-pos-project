@@ -109,8 +109,8 @@ import { ToastService } from '../../shared/services/toast.service';
               </select>
             </div>
 
-            <!-- Products Grid -->
-            <div class="flex-1 overflow-y-auto">
+            <!-- Products by Category -->
+            <div class="flex-1 overflow-y-auto pr-2">
               <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
@@ -119,23 +119,31 @@ import { ToastService } from '../../shared/services/toast.service';
                 <p class="text-neutral-400 text-center">Aucun produit trouvé</p>
               </div>
 
-              <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
-                <button 
-                  *ngFor="let product of filteredProducts()"
-                  (click)="addProductToCart(product)"
-                  type="button"
-                  class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 lg:p-3 text-center text-white text-xs lg:text-sm transform hover:scale-105">
-                  <div class="w-full h-16 lg:h-24 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
-                    <img 
-                      *ngIf="product.imageUrl" 
-                      [src]="product.imageUrl" 
-                      alt="{{ product.name }}"
-                      class="w-full h-full object-cover">
-                    <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
+              <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="space-y-4">
+                <!-- By Category -->
+                <div *ngFor="let category of getGroupedProducts()" class="space-y-2">
+                  <h4 class="text-sm font-bold text-primary border-b border-neutral-700 pb-1">
+                    {{ category.name }}
+                  </h4>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
+                    <button 
+                      *ngFor="let product of category.products"
+                      (click)="addProductToCart(product)"
+                      type="button"
+                      class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
+                      <div class="w-full h-16 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
+                        <img 
+                          *ngIf="product.imageUrl" 
+                          [src]="product.imageUrl" 
+                          alt="{{ product.name }}"
+                          class="w-full h-full object-cover">
+                        <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
+                      </div>
+                      <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
+                      <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
+                    </button>
                   </div>
-                  <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
-                  <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
-                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -303,6 +311,31 @@ export class OrderEntryComponent implements OnInit {
     this.filteredProducts.set(filtered);
   }
 
+  getGroupedProducts(): any[] {
+    const products = this.filteredProducts();
+    const groupedMap = new Map<string, any>();
+
+    // Group products by category
+    products.forEach(product => {
+      const categoryId = product.categoryId;
+      if (!groupedMap.has(categoryId)) {
+        const category = this.categories().find(c => c.id === categoryId);
+        groupedMap.set(categoryId, {
+          id: categoryId,
+          name: category?.name || 'Autres',
+          products: []
+        });
+      }
+      groupedMap.get(categoryId)?.products.push(product);
+    });
+
+    // Convert map to array and sort by category order
+    return Array.from(groupedMap.values()).sort((a, b) => 
+      this.categories().findIndex(c => c.id === a.id) - 
+      this.categories().findIndex(c => c.id === b.id)
+    );
+  }
+
   addProductToCart(product: any): void {
     const cart = [...this.cartItems()];
     const existingItem = cart.find(item => item.productId === product.publicId);
@@ -366,14 +399,18 @@ export class OrderEntryComponent implements OnInit {
 
     this.apiService.createCustomerSession(sessionRequest).subscribe({
       next: (session) => {
-        const orderRequest = {
-          sessionPublicId: session.publicId,
+        const orderRequest: any = {
+          customerSessionPublicId: session.publicId,
           orderType: this.orderType,
           items: this.cartItems().map(item => ({
             productPublicId: item.productId,
             quantity: item.quantity
           }))
         };
+
+        if (this.orderType === 'TABLE') {
+          orderRequest.tablePublicId = this.selectedTableId();
+        }
 
         this.apiService.createOrder(orderRequest).subscribe({
           next: () => {

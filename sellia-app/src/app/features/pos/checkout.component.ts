@@ -8,7 +8,7 @@ import { ApiService } from '../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex flex-col h-full gap-6 px-8 pb-8 pt-24 bg-neutral-900 overflow-hidden">
+    <div class="flex flex-col h-full gap-6 px-8 pb-8 pt-24 pr-96 bg-neutral-900 overflow-hidden">
       <!-- TOP: Table Selection - FULL WIDTH -->
       <div class="flex-1 flex flex-col gap-4 overflow-hidden">
         <div>
@@ -87,7 +87,7 @@ import { ApiService } from '../../core/services/api.service';
         </div>
       </div>
 
-      <!-- BOTTOM: Payment Section - SIDEBAR ON RIGHT -->
+      <!-- BOTTOM: Payment Section - SIDEBAR ON RIGHT (FIXED) -->
       <div class="flex gap-6 h-1/3 overflow-hidden">
         <!-- Session Info -->
         <div *ngIf="selectedSession()">
@@ -124,8 +124,8 @@ import { ApiService } from '../../core/services/api.service';
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
 
-        <!-- Payment Sidebar -->
-        <div *ngIf="selectedSession() && !isLoadingOrders()" class="w-96 flex flex-col gap-4 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4 flex-shrink-0">
+        <!-- Payment Sidebar - FIXED -->
+        <div *ngIf="selectedSession() && !isLoadingOrders()" class="fixed bottom-8 right-8 w-96 flex flex-col gap-4 bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4 shadow-2xl" style="max-height: calc(100vh - 120px); overflow-y: auto;">
           <!-- Totals -->
           <div class="space-y-2">
             <div class="flex justify-between text-neutral-300">
