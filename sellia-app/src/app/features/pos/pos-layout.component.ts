@@ -14,13 +14,16 @@ import { NavigationService } from '../../core/services/navigation.service';
       <div class="w-64 bg-neutral-800 border-r border-neutral-700 flex flex-col overflow-y-auto">
         <!-- Header -->
         <div class="p-6 border-b border-neutral-700">
-          <h1 class="text-2xl font-bold text-white">🛒 Caisse</h1>
+          <h1 class="text-2xl font-bold text-white">
+            <span *ngIf="!navigationService.isCuisine()">🛒 Caisse</span>
+            <span *ngIf="navigationService.isCuisine()">👨‍🍳 Cuisine</span>
+          </h1>
           <p class="text-xs text-neutral-400 mt-2">{{ getCurrentUserInfo() }}</p>
         </div>
 
         <!-- Menu Buttons -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-          <!-- Caissier Menu -->
+          <!-- Caissier Menu (ONLY for cashiers) -->
           <ng-container *ngIf="!navigationService.isCuisine()">
             <button (click)="navigate('/pos/order-entry')"
               [class.bg-primary]="isActive('/pos/order-entry')"
@@ -62,30 +65,30 @@ import { NavigationService } from '../../core/services/navigation.service';
               <span class="text-xl">💳</span>
               <span>Encaissement</span>
             </button>
-
-            <div class="border-t border-neutral-600 my-4"></div>
           </ng-container>
 
-          <!-- Kitchen Menu -->
-          <button (click)="navigate('/pos/kitchen')"
-            [class.bg-primary]="isActive('/pos/kitchen')"
-            [class.bg-neutral-700]="!isActive('/pos/kitchen')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/kitchen')"
-            [class.text-neutral-300]="!isActive('/pos/kitchen')">
-            <span class="text-xl">👨‍🍳</span>
-            <span>Cuisine Kanban</span>
-          </button>
+          <!-- Kitchen Menu (ONLY for kitchen staff) -->
+          <ng-container *ngIf="navigationService.isCuisine()">
+            <button (click)="navigate('/pos/kitchen')"
+              [class.bg-primary]="isActive('/pos/kitchen')"
+              [class.bg-neutral-700]="!isActive('/pos/kitchen')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/kitchen')"
+              [class.text-neutral-300]="!isActive('/pos/kitchen')">
+              <span class="text-xl">👨‍🍳</span>
+              <span>Cuisine Kanban</span>
+            </button>
 
-          <button (click)="navigate('/pos/kitchen/list')"
-            [class.bg-primary]="isActive('/pos/kitchen/list')"
-            [class.bg-neutral-700]="!isActive('/pos/kitchen/list')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/kitchen/list')"
-            [class.text-neutral-300]="!isActive('/pos/kitchen/list')">
-            <span class="text-xl">📋</span>
-            <span>Historique Cuisine</span>
-          </button>
+            <button (click)="navigate('/pos/kitchen/list')"
+              [class.bg-primary]="isActive('/pos/kitchen/list')"
+              [class.bg-neutral-700]="!isActive('/pos/kitchen/list')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/kitchen/list')"
+              [class.text-neutral-300]="!isActive('/pos/kitchen/list')">
+              <span class="text-xl">📋</span>
+              <span>Historique Cuisine</span>
+            </button>
+          </ng-container>
         </nav>
 
         <!-- Footer -->
