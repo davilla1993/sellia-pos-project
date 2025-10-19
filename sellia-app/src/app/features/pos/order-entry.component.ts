@@ -1,166 +1,202 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-order-entry',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="h-full flex flex-col gap-6 overflow-hidden">
-      <!-- Order Type Selection -->
-      <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-        <h2 class="text-2xl font-bold text-white mb-4">📝 Nouvelle Commande</h2>
-        
-        <div class="flex gap-4 mb-6">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input 
-              type="radio" 
-              [(ngModel)]="orderType" 
-              value="TABLE"
-              (change)="onOrderTypeChange()"
-              class="w-5 h-5 accent-primary">
-            <span class="text-white font-semibold">🪑 Table</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input 
-              type="radio" 
-              [(ngModel)]="orderType" 
-              value="TAKEAWAY"
-              (change)="onOrderTypeChange()"
-              class="w-5 h-5 accent-primary">
-            <span class="text-white font-semibold">🛍️ À Emporter</span>
-          </label>
-        </div>
-
-        <!-- Table Selection (for TABLE orders) -->
-        <div *ngIf="orderType === 'TABLE'" class="mb-4">
-          <label class="block text-white font-semibold mb-2">Sélectionner une table:</label>
-          <select 
-            [(ngModel)]="selectedTableId" 
-            class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
-            <option value="">-- Choisir une table --</option>
-            <option *ngFor="let table of availableTables()" [value]="table.publicId">
-              {{ table.number }} - {{ table.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Customer Info (for TAKEAWAY orders) -->
-        <div *ngIf="orderType === 'TAKEAWAY'" class="space-y-4">
-          <div>
-            <label class="block text-white font-semibold mb-2">Nom du client:</label>
-            <input 
-              [(ngModel)]="customerName" 
-              type="text"
-              placeholder="Nom du client"
-              class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-400">
-          </div>
-          <div>
-            <label class="block text-white font-semibold mb-2">Téléphone (optionnel):</label>
-            <input 
-              [(ngModel)]="customerPhone" 
-              type="tel"
-              placeholder="Numéro de téléphone"
-              class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-400">
-          </div>
-        </div>
+    <div class="h-full flex flex-col gap-4 lg:gap-6 overflow-hidden p-3 lg:p-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl lg:text-3xl font-bold text-white">📝 Nouvelle Commande</h1>
+        <button 
+          (click)="goBack()"
+          class="text-neutral-400 hover:text-white text-sm lg:text-base">
+          ← Retour
+        </button>
       </div>
 
-      <!-- Products Selection -->
-      <div class="flex-1 flex flex-col gap-4 overflow-hidden bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-        <h3 class="text-xl font-bold text-white">🍽️ Sélectionner les produits:</h3>
+      <!-- Main Content: Two Column Layout on Desktop, Stacked on Mobile -->
+      <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 overflow-hidden">
         
-        <!-- Search & Category Filter -->
-        <div class="space-y-2">
-          <input 
-            [(ngModel)]="searchTerm" 
-            type="text"
-            placeholder="🔍 Rechercher un produit..."
-            class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-400">
+        <!-- Left: Order Config & Products (2/3 width) -->
+        <div class="lg:col-span-2 flex flex-col gap-4 lg:gap-6 overflow-hidden">
           
-          <select 
-            [(ngModel)]="selectedCategory" 
-            (change)="filterProducts()"
-            class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
-            <option value="">Toutes les catégories</option>
-            <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name }}</option>
-          </select>
-        </div>
-
-        <!-- Products Grid -->
-        <div class="flex-1 overflow-y-auto">
-          <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-
-          <div *ngIf="!isLoadingProducts()" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <button 
-              *ngFor="let product of filteredProducts()"
-              (click)="addProductToCart(product)"
-              class="bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg p-4 transition text-center">
-              <div class="w-full h-24 bg-neutral-600 rounded mb-2 flex items-center justify-center overflow-hidden">
-                <img 
-                  *ngIf="product.imageUrl" 
-                  [src]="product.imageUrl" 
-                  alt="{{ product.name }}"
-                  class="w-full h-full object-cover">
-              </div>
-              <p class="font-semibold mb-1 line-clamp-2">{{ product.name }}</p>
-              <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cart & Submit -->
-      <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-white">🛒 Panier ({{ cartItems().length }} articles)</h3>
-          <button 
-            (click)="clearCart()"
-            class="text-red-400 hover:text-red-300 font-semibold">
-            Vider
-          </button>
-        </div>
-
-        <!-- Cart Items -->
-        <div class="max-h-48 overflow-y-auto mb-4 space-y-2">
-          <div *ngFor="let item of cartItems()" class="bg-neutral-700 rounded p-3 flex justify-between items-center">
-            <div>
-              <p class="text-white font-semibold">{{ item.name }}</p>
-              <p class="text-neutral-400 text-sm">x{{ item.quantity }}</p>
+          <!-- Order Type Selection -->
+          <div class="bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+            <h3 class="text-lg font-bold text-white mb-3">Type de commande</h3>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  [(ngModel)]="orderType" 
+                  value="TABLE"
+                  (change)="onOrderTypeChange()"
+                  class="w-4 h-4 accent-primary">
+                <span class="text-white text-sm lg:text-base">🪑 Table</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  [(ngModel)]="orderType" 
+                  value="TAKEAWAY"
+                  (change)="onOrderTypeChange()"
+                  class="w-4 h-4 accent-primary">
+                <span class="text-white text-sm lg:text-base">🛍️ À Emporter</span>
+              </label>
             </div>
-            <div class="flex items-center gap-3">
-              <p class="text-primary font-bold">FCFA {{ ((item.price / 100) * item.quantity).toFixed(0) }}</p>
+          </div>
+
+          <!-- Table Selection -->
+          <div *ngIf="orderType === 'TABLE'" class="bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+            <label class="block text-white font-semibold mb-2 text-sm lg:text-base">Table:</label>
+            <select 
+              [(ngModel)]="selectedTableId" 
+              class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary text-sm lg:text-base">
+              <option value="">-- Sélectionnez une table --</option>
+              <option *ngFor="let table of availableTables()" [value]="table.publicId">
+                {{ table.number }} - {{ table.name }} ({{ table.capacity }} places)
+              </option>
+            </select>
+            <p *ngIf="!selectedTableId()" class="text-red-400 text-xs lg:text-sm mt-1">⚠ Table requise</p>
+          </div>
+
+          <!-- Customer Info (TAKEAWAY) -->
+          <div *ngIf="orderType === 'TAKEAWAY'" class="bg-neutral-800 rounded-lg p-4 border border-neutral-700 space-y-3">
+            <div>
+              <label class="block text-white font-semibold mb-1 text-sm lg:text-base">Nom du client:</label>
+              <input 
+                [(ngModel)]="customerName" 
+                type="text"
+                placeholder="Ex: Jean Dupont"
+                class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm lg:text-base">
+              <p *ngIf="!customerName()" class="text-red-400 text-xs lg:text-sm mt-1">⚠ Nom requis</p>
+            </div>
+            <div>
+              <label class="block text-white font-semibold mb-1 text-sm lg:text-base">Téléphone:</label>
+              <input 
+                [(ngModel)]="customerPhone" 
+                type="tel"
+                placeholder="Ex: +221 77 123 45 67"
+                class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm lg:text-base">
+            </div>
+          </div>
+
+          <!-- Products Section -->
+          <div class="flex-1 flex flex-col gap-3 overflow-hidden bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+            <h3 class="text-base lg:text-lg font-bold text-white">🍽️ Produits</h3>
+            
+            <!-- Filters -->
+            <div class="space-y-2">
+              <input 
+                [(ngModel)]="searchTerm" 
+                (input)="filterProducts()"
+                type="text"
+                placeholder="Rechercher..."
+                class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm">
+              
+              <select 
+                [(ngModel)]="selectedCategory" 
+                (change)="filterProducts()"
+                class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary text-sm">
+                <option value="">Toutes les catégories</option>
+                <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name }}</option>
+              </select>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="flex-1 overflow-y-auto">
+              <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+
+              <div *ngIf="!isLoadingProducts() && filteredProducts().length === 0" class="flex justify-center items-center h-full">
+                <p class="text-neutral-400 text-center">Aucun produit trouvé</p>
+              </div>
+
+              <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
+                <button 
+                  *ngFor="let product of filteredProducts()"
+                  (click)="addProductToCart(product)"
+                  type="button"
+                  class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 lg:p-3 text-center text-white text-xs lg:text-sm transform hover:scale-105">
+                  <div class="w-full h-16 lg:h-24 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
+                    <img 
+                      *ngIf="product.imageUrl" 
+                      [src]="product.imageUrl" 
+                      alt="{{ product.name }}"
+                      class="w-full h-full object-cover">
+                    <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
+                  </div>
+                  <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
+                  <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Cart (1/3 width) -->
+        <div class="lg:col-span-1 flex flex-col gap-3 overflow-hidden bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+          <div class="flex justify-between items-center">
+            <h3 class="text-base lg:text-lg font-bold text-white">🛒 Panier</h3>
+            <span class="text-primary font-bold text-sm">{{ cartItems().length }}</span>
+          </div>
+
+          <!-- Cart Items -->
+          <div class="flex-1 overflow-y-auto space-y-2 pb-2">
+            <div *ngIf="cartItems().length === 0" class="flex items-center justify-center h-full">
+              <p class="text-neutral-400 text-center text-sm">Panier vide</p>
+            </div>
+
+            <div *ngFor="let item of cartItems()" class="bg-neutral-700 rounded p-2 lg:p-3 flex justify-between items-start gap-2 text-xs lg:text-sm">
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold truncate">{{ item.name }}</p>
+                <p class="text-neutral-400">x{{ item.quantity }}</p>
+                <p class="text-primary font-bold">FCFA {{ ((item.price / 100) * item.quantity).toFixed(0) }}</p>
+              </div>
               <button 
                 (click)="removeFromCart(item.productId)"
-                class="text-red-400 hover:text-red-300 font-bold">
+                type="button"
+                class="text-red-400 hover:text-red-300 font-bold flex-shrink-0">
                 ✕
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Total & Submit -->
-        <div class="bg-neutral-700 rounded p-4">
-          <div class="flex justify-between items-center mb-4 text-white text-lg">
-            <span class="font-semibold">Total:</span>
-            <span class="text-primary font-bold">FCFA {{ (cartTotal() / 100).toFixed(0) }}</span>
+          <!-- Total & Actions -->
+          <div class="border-t border-neutral-600 pt-3 space-y-2">
+            <div class="flex justify-between items-center text-white text-sm lg:text-base">
+              <span class="font-semibold">Total:</span>
+              <span class="text-primary font-bold text-lg">FCFA {{ (cartTotal() / 100).toFixed(0) }}</span>
+            </div>
+
+            <button 
+              (click)="clearCart()"
+              type="button"
+              [disabled]="cartItems().length === 0"
+              class="w-full bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 hover:text-white font-semibold py-2 rounded-lg transition text-xs lg:text-sm">
+              Vider
+            </button>
+
+            <button 
+              (click)="submitOrder()"
+              type="button"
+              [disabled]="!canSubmitOrder() || isSubmitting()"
+              class="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition text-sm lg:text-base flex items-center justify-center gap-2">
+              <span *ngIf="!isSubmitting()">✓ Enregistrer</span>
+              <span *ngIf="isSubmitting()">⏳ En cours...</span>
+            </button>
+
+            <p *ngIf="!canSubmitOrder() && cartItems().length > 0" class="text-red-400 text-xs text-center">
+              {{ orderType === 'TABLE' ? '⚠ Choisir une table' : '⚠ Entrer un nom' }}
+            </p>
           </div>
-
-          <button 
-            (click)="submitOrder()"
-            [disabled]="!canSubmitOrder()"
-            class="w-full bg-primary hover:bg-primary-dark disabled:bg-neutral-600 text-white font-bold py-3 rounded-lg transition">
-            ✓ Enregistrer la Commande
-          </button>
-
-          <p *ngIf="!canSubmitOrder()" class="text-red-400 text-sm mt-2">
-            {{ orderType === 'TABLE' ? 'Sélectionnez une table et ajoutez des produits' : 'Entrez un nom et ajoutez des produits' }}
-          </p>
         </div>
       </div>
     </div>
@@ -168,8 +204,12 @@ import { ApiService } from '../../core/services/api.service';
   styles: []
 })
 export class OrderEntryComponent implements OnInit {
+  private apiService = inject(ApiService);
+  private router = inject(Router);
+  private toast = inject(ToastService);
+
   // Order Type
-  orderType = 'TABLE'; // Using plain property, not signal for template binding
+  orderType = 'TABLE';
 
   // Tables
   availableTables = signal<any[]>([]);
@@ -189,11 +229,7 @@ export class OrderEntryComponent implements OnInit {
 
   // Cart
   cartItems = signal<any[]>([]);
-
-  constructor(
-    private apiService: ApiService,
-    private router: Router
-  ) {}
+  isSubmitting = signal(false);
 
   ngOnInit(): void {
     this.loadTables();
@@ -205,6 +241,10 @@ export class OrderEntryComponent implements OnInit {
     this.apiService.getTables().subscribe({
       next: (tables) => {
         this.availableTables.set(tables);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des tables:', err);
+        this.toast.error('Impossible de charger les tables');
       }
     });
   }
@@ -216,6 +256,11 @@ export class OrderEntryComponent implements OnInit {
         this.allProducts.set(products);
         this.filteredProducts.set(products);
         this.isLoadingProducts.set(false);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des produits:', err);
+        this.toast.error('Impossible de charger les produits');
+        this.isLoadingProducts.set(false);
       }
     });
   }
@@ -224,12 +269,14 @@ export class OrderEntryComponent implements OnInit {
     this.apiService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des catégories:', err);
       }
     });
   }
 
   onOrderTypeChange(): void {
-    // Reset fields when switching order type
     if (this.orderType === 'TABLE') {
       this.customerName.set('');
       this.customerPhone.set('');
@@ -241,12 +288,10 @@ export class OrderEntryComponent implements OnInit {
   filterProducts(): void {
     let filtered = this.allProducts();
 
-    // Filter by category
     if (this.selectedCategory()) {
       filtered = filtered.filter(p => p.categoryId === this.selectedCategory());
     }
 
-    // Filter by search term
     if (this.searchTerm()) {
       const term = this.searchTerm().toLowerCase();
       filtered = filtered.filter(p =>
@@ -274,6 +319,7 @@ export class OrderEntryComponent implements OnInit {
     }
 
     this.cartItems.set(cart);
+    this.toast.info(`${product.name} ajouté au panier`, 2000);
   }
 
   removeFromCart(productId: string): void {
@@ -300,9 +346,13 @@ export class OrderEntryComponent implements OnInit {
   }
 
   submitOrder(): void {
-    if (!this.canSubmitOrder()) return;
+    if (!this.canSubmitOrder()) {
+      this.toast.warning('Veuillez remplir tous les champs requis');
+      return;
+    }
 
-    // Create session first
+    this.isSubmitting.set(true);
+
     const sessionRequest = this.orderType === 'TABLE'
       ? {
           tablePublicId: this.selectedTableId(),
@@ -316,9 +366,9 @@ export class OrderEntryComponent implements OnInit {
 
     this.apiService.createCustomerSession(sessionRequest).subscribe({
       next: (session) => {
-        // Create order with cart items
         const orderRequest = {
           sessionPublicId: session.publicId,
+          orderType: this.orderType,
           items: this.cartItems().map(item => ({
             productPublicId: item.productId,
             quantity: item.quantity
@@ -327,23 +377,34 @@ export class OrderEntryComponent implements OnInit {
 
         this.apiService.createOrder(orderRequest).subscribe({
           next: () => {
-            // Success! Go to next screen or show confirmation
-            alert('Commande enregistrée avec succès!');
+            this.isSubmitting.set(false);
+            this.toast.success('✓ Commande enregistrée avec succès!');
             this.clearCart();
             this.selectedTableId.set('');
             this.customerName.set('');
             this.customerPhone.set('');
+            setTimeout(() => {
+              this.router.navigate(['/pos/pending-orders']);
+            }, 1500);
           },
           error: (err) => {
-            console.error('Error creating order:', err);
-            alert('Erreur lors de l\'enregistrement de la commande');
+            this.isSubmitting.set(false);
+            console.error('Erreur lors de la création de commande:', err);
+            const errorMsg = err.error?.message || 'Erreur lors de la création de la commande';
+            this.toast.error(errorMsg);
           }
         });
       },
       error: (err) => {
-        console.error('Error creating session:', err);
-        alert('Erreur lors de la création de la session');
+        this.isSubmitting.set(false);
+        console.error('Erreur lors de la création de session:', err);
+        const errorMsg = err.error?.message || 'Erreur lors de la création de la session';
+        this.toast.error(errorMsg);
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/pos']);
   }
 }
