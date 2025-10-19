@@ -308,4 +308,8 @@ export class ApiService {
       map(response => this.extractArray(response))
     );
   }
+
+  generateTableQrCode(tablePublicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/tables/${tablePublicId}/qrcode/generate`, {});
+  }
 }

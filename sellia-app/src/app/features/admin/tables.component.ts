@@ -11,6 +11,7 @@ interface RestaurantTable {
   capacity: number;
   status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED';
   qrCode?: string;
+  qrCodeUrl?: string;
   orderUrl?: string;
 }
 
@@ -104,8 +105,11 @@ interface RestaurantTable {
 
           <!-- Actions -->
           <div class="flex gap-2">
-            <button class="flex-1 px-2 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-semibold transition-colors">
-              ⬇️ Télécharger
+            <button 
+              (click)="generateQrCode(table.publicId)"
+              [disabled]="table.qrCodeUrl"
+              class="flex-1 px-2 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded text-xs font-semibold transition-colors">
+              {{ table.qrCodeUrl ? '✓ Généré' : '🎯 Générer' }}
             </button>
             <button class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
               👁️ Prévisualiser
@@ -226,5 +230,18 @@ export class TablesComponent implements OnInit {
       'RESERVED': 'bg-yellow-100 text-yellow-800'
     };
     return classes[status] || 'bg-neutral-700 text-neutral-300';
+  }
+
+  generateQrCode(tablePublicId: string): void {
+    this.apiService.generateTableQrCode(tablePublicId).subscribe({
+      next: () => {
+        this.toast.success('QR code généré avec succès');
+        this.loadTables();
+      },
+      error: (err) => {
+        console.error('Erreur:', err);
+        this.toast.error('Erreur lors de la génération du QR code');
+      }
+    });
   }
 }
