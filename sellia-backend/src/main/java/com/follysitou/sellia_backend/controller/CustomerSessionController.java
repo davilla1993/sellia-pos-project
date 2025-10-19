@@ -43,7 +43,7 @@ public class CustomerSessionController {
     public ResponseEntity<PagedResponse<OrderResponse>> getSessionOrders(
             @PathVariable String sessionPublicId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         var ordersPage = customerSessionService.getSessionOrdersPaginated(sessionPublicId, pageable);
         PagedResponse<OrderResponse> response = PagedResponse.of(ordersPage.map(orderMapper::toResponse));

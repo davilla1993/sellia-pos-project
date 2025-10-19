@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
+import { NavigationService } from '../../core/services/navigation.service';
 
 @Component({
   selector: 'app-pos-layout',
@@ -63,6 +64,12 @@ import { DomSanitizer } from '@angular/platform-browser';
 
         <!-- Footer -->
         <div class="p-4 border-t border-neutral-700 space-y-2">
+          <button 
+            *ngIf="navigationService.isAdmin()"
+            (click)="goToDashboard()" 
+            class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm mb-2">
+            📊 Dashboard
+          </button>
           <button (click)="logout()" 
             class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors text-sm">
             🚪 Déconnexion
@@ -80,6 +87,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class PosLayoutComponent implements OnInit {
   private router = inject(Router);
+  navigationService = inject(NavigationService);
 
   currentRoute = signal('');
 
@@ -97,12 +105,14 @@ export class PosLayoutComponent implements OnInit {
   }
 
   getCurrentUserInfo(): string {
-    // TODO: Get from auth service
-    return 'Admin User • Caissier';
+    return `${this.navigationService.getCurrentUserName()} • ${this.navigationService.getCurrentUserRole()}`;
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/admin/dashboard']);
   }
 
   logout(): void {
-    // TODO: Call logout endpoint
     this.router.navigate(['/auth/login']);
   }
 }

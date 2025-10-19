@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { AdminHeaderComponent } from '../../../shared/components/admin-header.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminHeaderComponent],
   template: `
     <style>
       .image-zoom {
@@ -21,10 +22,10 @@ import { ApiService } from '../../../core/services/api.service';
     
     <div class="space-y-6">
       <!-- Header -->
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center bg-neutral-800 border-b border-neutral-700 px-6 py-4 -mx-8 -mt-6 mb-6">
         <div>
-          <h1 class="text-3xl font-bold text-white mb-2">Catalogue de Produits</h1>
-          <p class="text-neutral-400">Gérez votre catalogue de produits</p>
+          <h1 class="text-3xl font-bold text-white">Catalogue de Produits</h1>
+          <p class="text-neutral-400 text-sm mt-1">Gérez votre catalogue de produits</p>
         </div>
         <a routerLink="add" class="btn-primary">+ Nouveau Produit</a>
       </div>
