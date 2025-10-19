@@ -53,6 +53,10 @@ public class QrCodeService {
         String fileName = generateFileName();
         String filePath = saveQrCodeImage(qrCodeContent, fileName);
 
+        // Save QR code URL to table
+        table.setQrCodeUrl(filePath);
+        restaurantTableRepository.save(table);
+
         log.info("QR code generated for table {}: {}", table.getNumber(), filePath);
         return filePath;
     }
