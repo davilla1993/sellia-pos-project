@@ -11,7 +11,6 @@ import { UserFormComponent } from './features/admin/users/user-form.component';
 import { ProductsListComponent } from './features/admin/products/products-list.component';
 import { ProductFormComponent } from './features/admin/products/product-form.component';
 import { OrderEntryComponent } from './features/pos/order-entry.component';
-import { CashierComponent } from './features/pos/cashier.component';
 import { KitchenComponent } from './features/pos/kitchen.component';
 import { PendingOrdersComponent } from './features/pos/pending-orders.component';
 import { MyOrdersComponent } from './features/pos/my-orders.component';
@@ -85,10 +84,6 @@ export const routes: Routes = [
           {
             path: 'order-entry',
             component: OrderEntryComponent
-          },
-          {
-            path: 'cashier',
-            component: CashierComponent
           },
           {
             path: 'pending-orders',
