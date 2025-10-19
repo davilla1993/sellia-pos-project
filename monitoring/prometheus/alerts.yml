@@ -1,0 +1,83 @@
+groups:
+  - name: sellia_pos_alerts
+    interval: 30s
+    rules:
+      # Backend Health
+      - alert: BackendDown
+        expr: up{job="sellia-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sellia Backend is DOWN"
+          description: "Backend service has been down for more than 1 minute"
+
+      # CPU Usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage ({{ $value }}%)"
+          description: "CPU usage is above 80% on {{ $labels.instance }}"
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage ({{ $value }}%)"
+          description: "Memory usage is above 85% on {{ $labels.instance }}"
+
+      # Disk Usage
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Disk Usage ({{ $value }}%)"
+          description: "Disk usage is above 90% on {{ $labels.instance }}"
+
+      # Database Connection Pool
+      - alert: HighDatabaseConnections
+        expr: (hikaricp_connections_active / hikaricp_connections) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Database Connection Usage ({{ $value }}%)"
+          description: "Database connection pool is above 80% utilized"
+
+      # HTTP Errors
+      - alert: HighErrorRate
+        expr: (sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m]))) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP Error Rate ({{ $value }}%)"
+          description: "HTTP 5xx error rate is above 5%"
+
+      # JVM Heap Memory
+      - alert: HighJVMHeapUsage
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM Heap Memory Usage ({{ $value }}%)"
+          description: "JVM heap memory usage is above 85%"
+
+      # Loki Down
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Loki is DOWN"
+          description: "Loki service has been down for more than 1 minute"
