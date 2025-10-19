@@ -20,12 +20,6 @@ import { AuthService } from '../../core/services/auth.service';
           <!-- Navigation Links -->
           <div *ngIf="authService.getCurrentUser() as user" class="hidden md:flex items-center space-x-8">
             <ng-container [ngSwitch]="user.role">
-              <!-- Customer Links -->
-              <ng-container *ngSwitchCase="'CUSTOMER'">
-                <a routerLink="/menu" routerLinkActive="text-primary" class="text-dark hover:text-primary transition">Menu</a>
-                <a routerLink="/orders" routerLinkActive="text-primary" class="text-dark hover:text-primary transition">My Orders</a>
-              </ng-container>
-
               <!-- Admin/Staff Links -->
               <ng-container *ngSwitchDefault>
                 <a routerLink="/dashboard" routerLinkActive="text-primary" class="text-dark hover:text-primary transition">Dashboard</a>

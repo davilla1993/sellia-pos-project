@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar-simple',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <nav class="bg-white shadow-elegant sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4">
@@ -22,7 +21,6 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- Navigation -->
           <div class="flex items-center space-x-4">
-            <a routerLink="/customer/menu" class="text-dark hover:text-primary">Menu</a>
             <button (click)="logout()" class="btn-outline text-sm py-2 px-4">
               Logout
             </button>
