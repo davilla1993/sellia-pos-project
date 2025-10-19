@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { LayoutSimpleComponent } from './shared/components/layout-simple.component';
 import { LoginComponent } from './features/auth/login.component';
 import { ChangePasswordComponent } from './features/auth/change-password.component';
-import { MenuSimpleComponent } from './features/customer/menu-simple.component';
 import { CheckoutSimpleComponent } from './features/customer/checkout-simple.component';
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanner.component';
@@ -115,7 +114,6 @@ export const routes: Routes = [
       {
         path: 'customer',
         children: [
-          { path: 'menu', component: MenuSimpleComponent },
           { path: 'checkout', component: CheckoutSimpleComponent },
           { path: 'order-tracking/:id', component: OrderTrackingSimpleComponent }
         ]
