@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { NavigationService } from '../../core/services/navigation.service';
 import { CancelOrderDialogComponent } from './cancel-order-dialog.component';
 
 interface KitchenOrder {
@@ -43,11 +44,11 @@ interface KitchenOrder {
       <!-- Kanban Board - 4 Columns -->
       <div class="flex-1 grid grid-cols-4 gap-4 overflow-hidden">
         
-        <!-- Column 1: À accepter (EN_ATTENTE) -->
+        <!-- Column 1: Nouvelles commandes (EN_ATTENTE) -->
         <div class="flex flex-col bg-red-50 rounded-lg border-2 border-red-400 overflow-hidden">
           <div class="bg-red-300 px-4 py-3 border-b-2 border-red-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-red-900 text-sm">📥 À accepter</h2>
+              <h2 class="font-bold text-red-900 text-sm">📨 Nouvelles commandes</h2>
               <span class="bg-red-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('EN_ATTENTE').length }}
               </span>
@@ -69,6 +70,7 @@ interface KitchenOrder {
                 Accepter
               </button>
               <button 
+                *ngIf="!navigationService.isCuisine()"
                 (click)="showCancelDialog(order)"
                 class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
                 Annuler
@@ -100,6 +102,7 @@ interface KitchenOrder {
                 Commencer
               </button>
               <button 
+                *ngIf="!navigationService.isCuisine()"
                 (click)="showCancelDialog(order)"
                 class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
                 Annuler
@@ -170,6 +173,7 @@ interface KitchenOrder {
 export class KitchenComponent implements OnInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
+  navigationService = inject(NavigationService);
 
   orders = signal<KitchenOrder[]>([]);
   isLoading = signal(false);
