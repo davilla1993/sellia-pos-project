@@ -75,50 +75,77 @@ interface RestaurantTable {
       </div>
 
       <!-- Tables Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div *ngFor="let table of tables()" class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-neutral-600 transition">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let table of getPaginatedTables()" class="bg-neutral-800 rounded-lg p-4 border border-neutral-700 hover:border-neutral-600 transition">
           <!-- Header -->
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-white">{{ table.name }}</h3>
-              <p class="text-sm text-neutral-400">{{ table.location }}</p>
+          <div class="flex justify-between items-start mb-3">
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-white truncate">{{ table.name }}</h3>
+              <p class="text-xs text-neutral-400 truncate">{{ table.location }}</p>
             </div>
-            <span [ngClass]="getStatusBadgeClass(table.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+            <span [ngClass]="getStatusBadgeClass(table.status)" class="px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0">
               {{ getStatusLabel(table.status) }}
             </span>
           </div>
 
           <!-- Capacity -->
-          <p class="text-sm text-neutral-400 mb-4">{{ table.capacity }} places</p>
+          <p class="text-xs text-neutral-400 mb-3">{{ table.capacity }} places</p>
 
           <!-- QR Code Placeholder -->
-          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-8 flex items-center justify-center mb-4 h-32">
+          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-4 flex items-center justify-center mb-3 h-20">
             <div class="text-center">
-              <div class="text-3xl mb-2">📱</div>
-              <p class="text-xs text-neutral-500">QR Code</p>
+              <div class="text-2xl">📱</div>
             </div>
           </div>
 
           <!-- Order URL -->
-          <p class="text-xs text-neutral-500 mb-2">URL de commande:</p>
-          <p class="text-xs text-neutral-400 bg-neutral-700 p-2 rounded mb-4 truncate">{{ table.orderUrl }}</p>
+          <p class="text-xs text-neutral-500 mb-1">URL:</p>
+          <p class="text-xs text-neutral-400 bg-neutral-700 p-1.5 rounded mb-3 truncate">{{ table.orderUrl }}</p>
 
           <!-- Actions -->
-          <div class="flex gap-2">
-            <button class="flex-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-orange-500 rounded text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-              <span>⬇️</span> Télécharger
+          <div class="flex gap-1 text-xs">
+            <button class="flex-1 px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-orange-500 rounded font-semibold transition-colors">
+              ⬇️
             </button>
-            <button class="flex-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-blue-500 rounded text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-              <span>👁️</span> Prévisualiser
+            <button class="flex-1 px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-blue-500 rounded font-semibold transition-colors">
+              👁️
             </button>
-            <button class="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded text-sm transition-colors">
+            <button class="px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
               ✏️
             </button>
-            <button class="px-3 py-2 bg-neutral-700 hover:bg-red-700 text-neutral-400 hover:text-red-400 rounded text-sm transition-colors">
+            <button class="px-2 py-1.5 bg-neutral-700 hover:bg-red-700 text-neutral-400 hover:text-red-400 rounded transition-colors">
               🗑️
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-center items-center gap-2 mt-8">
+        <button 
+          (click)="previousPage()"
+          [disabled]="currentPage() === 1"
+          class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-white rounded-lg transition-colors">
+          ← Précédent
+        </button>
+        
+        <div class="flex gap-2">
+          <button 
+            *ngFor="let page of getPageNumbers()"
+            (click)="goToPage(page)"
+            [class.bg-orange-500]="currentPage() === page"
+            [class.bg-neutral-700]="currentPage() !== page"
+            class="px-3 py-2 rounded-lg text-white transition-colors">
+            {{ page }}
+          </button>
+        </div>
+
+        <button 
+          (click)="nextPage()"
+          [disabled]="currentPage() === getTotalPages()"
+          class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-white rounded-lg transition-colors">
+          Suivant →
+        </button>
       </div>
     </div>
   `
@@ -128,60 +155,55 @@ export class TablesComponent implements OnInit {
   private toast = inject(ToastService);
 
   tables = signal<RestaurantTable[]>([]);
+  currentPage = signal(1);
+  readonly ITEMS_PER_PAGE = 6;
 
   ngOnInit(): void {
     this.loadTables();
   }
 
   loadTables(): void {
-    const mockTables: RestaurantTable[] = [
-      {
-        publicId: '1',
-        number: 1,
-        name: 'Table 1',
-        location: 'Table Terrasse 1',
-        capacity: 4,
-        status: 'AVAILABLE',
-        orderUrl: 'https://application-de-gesti-zdmm.bolt.host/menu?table=1'
+    this.apiService.getTables().subscribe({
+      next: (response: any) => {
+        const tablesList = Array.isArray(response) ? response : [];
+        this.tables.set(tablesList);
       },
-      {
-        publicId: '2',
-        number: 2,
-        name: 'Table 2',
-        location: 'Table Terrasse 2',
-        capacity: 4,
-        status: 'OCCUPIED',
-        orderUrl: 'https://application-de-gesti-zdmm.bolt.host/menu?table=2'
-      },
-      {
-        publicId: '3',
-        number: 3,
-        name: 'Table 3',
-        location: 'Table Intérieur 1',
-        capacity: 2,
-        status: 'AVAILABLE',
-        orderUrl: 'https://application-de-gesti-zdmm.bolt.host/menu?table=3'
-      },
-      {
-        publicId: '4',
-        number: 4,
-        name: 'Table 4',
-        location: 'Table Bar 1',
-        capacity: 2,
-        status: 'RESERVED',
-        orderUrl: 'https://application-de-gesti-zdmm.bolt.host/menu?table=4'
-      },
-      {
-        publicId: '5',
-        number: 5,
-        name: 'Table 5',
-        location: 'Table VIP 1',
-        capacity: 6,
-        status: 'AVAILABLE',
-        orderUrl: 'https://application-de-gesti-zdmm.bolt.host/menu?table=5'
+      error: (err) => {
+        console.error('Erreur:', err);
+        this.toast.error('Erreur lors du chargement des tables');
       }
-    ];
-    this.tables.set(mockTables);
+    });
+  }
+
+  getPaginatedTables(): RestaurantTable[] {
+    const start = (this.currentPage() - 1) * this.ITEMS_PER_PAGE;
+    const end = start + this.ITEMS_PER_PAGE;
+    return this.tables().slice(start, end);
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.tables().length / this.ITEMS_PER_PAGE);
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.getTotalPages();
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.getTotalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
   }
 
   getTablesByStatus(status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED'): RestaurantTable[] {
