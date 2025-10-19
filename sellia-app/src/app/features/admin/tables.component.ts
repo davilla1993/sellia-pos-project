@@ -76,7 +76,7 @@ interface RestaurantTable {
 
       <!-- Tables Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div *ngFor="let table of getPaginatedTables()" class="bg-neutral-800 rounded-lg p-4 border border-neutral-700 hover:border-neutral-600 transition">
+        <div *ngFor="let table of getPaginatedTables()" class="bg-neutral-800 rounded-lg p-5 border border-neutral-700 hover:border-neutral-600 transition flex flex-col">
           <!-- Header -->
           <div class="flex justify-between items-start mb-3">
             <div class="min-w-0">
@@ -92,28 +92,28 @@ interface RestaurantTable {
           <p class="text-xs text-neutral-400 mb-3">{{ table.capacity }} places</p>
 
           <!-- QR Code Placeholder -->
-          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-4 flex items-center justify-center mb-3 h-20">
+          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-5 flex items-center justify-center mb-3 h-28 flex-shrink-0">
             <div class="text-center">
-              <div class="text-2xl">📱</div>
+              <div class="text-3xl">📱</div>
             </div>
           </div>
 
           <!-- Order URL -->
-          <p class="text-xs text-neutral-500 mb-1">URL:</p>
-          <p class="text-xs text-neutral-400 bg-neutral-700 p-1.5 rounded mb-3 truncate">{{ table.orderUrl }}</p>
+          <p class="text-xs text-neutral-500 mb-1.5">URL:</p>
+          <p class="text-xs text-neutral-400 bg-neutral-700 p-2 rounded mb-3 truncate">{{ table.orderUrl }}</p>
 
           <!-- Actions -->
-          <div class="flex gap-1 text-xs">
-            <button class="flex-1 px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-orange-500 rounded font-semibold transition-colors">
-              ⬇️
+          <div class="flex gap-2">
+            <button class="flex-1 px-2 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-semibold transition-colors">
+              ⬇️ Télécharger
             </button>
-            <button class="flex-1 px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-blue-500 rounded font-semibold transition-colors">
-              👁️
+            <button class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+              👁️ Prévisualiser
             </button>
-            <button class="px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
+            <button class="px-2 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
               ✏️
             </button>
-            <button class="px-2 py-1.5 bg-neutral-700 hover:bg-red-700 text-neutral-400 hover:text-red-400 rounded transition-colors">
+            <button class="px-2 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors">
               🗑️
             </button>
           </div>
