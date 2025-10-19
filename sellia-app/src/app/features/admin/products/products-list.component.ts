@@ -2,12 +2,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { AdminHeaderComponent } from '../../../shared/components/admin-header.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, AdminHeaderComponent],
+  imports: [CommonModule, RouterLink],
   template: `
     <style>
       .image-zoom {
