@@ -314,6 +314,7 @@ export class ApiService {
   }
 
   downloadFile(filePath: string): Observable<Blob> {
-    return this.http.get(filePath, { responseType: 'blob' });
+    const fullUrl = BACKEND_URL + filePath;
+    return this.http.get(fullUrl, { responseType: 'blob' });
   }
 }

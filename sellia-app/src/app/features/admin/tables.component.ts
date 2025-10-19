@@ -120,7 +120,10 @@ interface RestaurantTable {
               </button>
             </div>
             <div class="flex gap-2">
-              <button class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+              <button 
+                *ngIf="table.qrCodeUrl"
+                (click)="previewQrCode(table.qrCodeUrl)"
+                class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
                 👁️ Prévisualiser
               </button>
               <button class="px-2 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
@@ -256,6 +259,11 @@ export class TablesComponent implements OnInit {
   }
 
   downloadQrCode(tableNumber: number, qrCodeUrl: string): void {
+    if (!qrCodeUrl) {
+      this.toast.error('Aucun QR code à télécharger');
+      return;
+    }
+
     this.apiService.downloadFile(qrCodeUrl).subscribe({
       next: (blob) => {
         const fileName = `QR_Code_Table_${tableNumber}.png`;
@@ -271,5 +279,18 @@ export class TablesComponent implements OnInit {
         this.toast.error('Erreur lors du téléchargement du QR code');
       }
     });
+  }
+
+  previewQrCode(qrCodeUrl: string): void {
+    if (!qrCodeUrl) {
+      this.toast.error('Aucun QR code à prévisualiser');
+      return;
+    }
+
+    const backendUrl = window.location.origin.includes('localhost:4200') 
+      ? 'http://localhost:8080' 
+      : window.location.origin;
+    const fullUrl = backendUrl + qrCodeUrl;
+    window.open(fullUrl, '_blank');
   }
 }
