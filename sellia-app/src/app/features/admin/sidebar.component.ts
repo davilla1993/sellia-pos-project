@@ -110,6 +110,7 @@ export class SidebarComponent {
       icon: this.getIcon('cashier'),
       children: [
         { label: 'Nouvelle Commande', route: '/pos/order-entry' },
+        { label: 'En Attente', route: '/pos/pending-orders' },
         { label: 'Mes Commandes', route: '/pos/my-orders' },
         { label: 'Encaissement', route: '/pos/checkout' }
       ],
@@ -119,8 +120,8 @@ export class SidebarComponent {
       label: 'Cuisine',
       icon: this.getIcon('kitchen'),
       children: [
-        { label: 'Commandes', route: '/pos/kitchen' },
-        { label: 'En Attente', route: '/pos/pending-orders' }
+        { label: 'Cuisine Kanban', route: '/pos/kitchen' },
+        { label: 'Historique Cuisine', route: '/pos/kitchen/list' }
       ],
       expanded: false
     },

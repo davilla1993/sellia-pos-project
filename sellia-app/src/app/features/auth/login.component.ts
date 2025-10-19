@@ -152,7 +152,7 @@ export class LoginComponent {
   private navigateByRole(role: string): void {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/admin/dashboard',
-      'CAISSE': '/pos/cashier',
+      'CAISSE': '/pos/order-entry',
       'CUISINE': '/pos/kitchen'
     };
 

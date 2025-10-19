@@ -15,16 +15,16 @@ import { NavigationService } from '../../core/services/navigation.service';
         <!-- Header -->
         <div class="p-6 border-b border-neutral-700">
           <h1 class="text-2xl font-bold text-white">
-            <span *ngIf="!navigationService.isCuisine()">🛒 Caisse</span>
-            <span *ngIf="navigationService.isCuisine()">👨‍🍳 Cuisine</span>
+            <span *ngIf="!isInKitchenContext()">🛒 Caisse</span>
+            <span *ngIf="isInKitchenContext()">👨‍🍳 Cuisine</span>
           </h1>
           <p class="text-xs text-neutral-400 mt-2">{{ getCurrentUserInfo() }}</p>
         </div>
 
         <!-- Menu Buttons -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-          <!-- Caissier Menu (ONLY for cashiers) -->
-          <ng-container *ngIf="!navigationService.isCuisine()">
+          <!-- Caissier Menu (for cashiers or admin in cashier context) -->
+          <ng-container *ngIf="!isInKitchenContext()">
             <button (click)="navigate('/pos/order-entry')"
               [class.bg-primary]="isActive('/pos/order-entry')"
               [class.bg-neutral-700]="!isActive('/pos/order-entry')"
@@ -67,8 +67,8 @@ import { NavigationService } from '../../core/services/navigation.service';
             </button>
           </ng-container>
 
-          <!-- Kitchen Menu (ONLY for kitchen staff) -->
-          <ng-container *ngIf="navigationService.isCuisine()">
+          <!-- Kitchen Menu (for kitchen staff or admin in kitchen context) -->
+          <ng-container *ngIf="isInKitchenContext()">
             <button (click)="navigate('/pos/kitchen')"
               [class.bg-primary]="isActive('/pos/kitchen')"
               [class.bg-neutral-700]="!isActive('/pos/kitchen')"
@@ -131,6 +131,11 @@ export class PosLayoutComponent implements OnInit {
 
   isActive(route: string): boolean {
     return this.currentRoute().includes(route);
+  }
+
+  isInKitchenContext(): boolean {
+    const route = this.currentRoute();
+    return route.includes('/pos/kitchen');
   }
 
   getCurrentUserInfo(): string {
