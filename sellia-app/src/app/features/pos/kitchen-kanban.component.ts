@@ -18,7 +18,7 @@ interface KitchenOrder {
 }
 
 @Component({
-  selector: 'app-kitchen',
+  selector: 'app-kitchen-kanban',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -68,6 +68,9 @@ interface KitchenOrder {
               <div class="space-y-1 mb-3 text-sm">
                 <div *ngFor="let item of order.items" class="flex justify-between">
                   <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
+                  <span *ngIf="getCategoryTag(item)" [ngClass]="getCategoryClass(item)" class="px-2 py-1 rounded text-xs font-semibold">
+                    {{ getCategoryTag(item) }}
+                  </span>
                 </div>
               </div>
 
@@ -106,6 +109,9 @@ interface KitchenOrder {
               <div class="space-y-1 mb-3 text-sm">
                 <div *ngFor="let item of order.items" class="flex justify-between">
                   <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
+                  <span *ngIf="getCategoryTag(item)" [ngClass]="getCategoryClass(item)" class="px-2 py-1 rounded text-xs font-semibold">
+                    {{ getCategoryTag(item) }}
+                  </span>
                 </div>
               </div>
 
@@ -144,6 +150,9 @@ interface KitchenOrder {
               <div class="space-y-1 text-sm">
                 <div *ngFor="let item of order.items" class="flex justify-between">
                   <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
+                  <span *ngIf="getCategoryTag(item)" [ngClass]="getCategoryClass(item)" class="px-2 py-1 rounded text-xs font-semibold">
+                    {{ getCategoryTag(item) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -154,7 +163,7 @@ interface KitchenOrder {
   `,
   styles: []
 })
-export class KitchenComponent implements OnInit {
+export class KitchenKanbanComponent implements OnInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
 
@@ -240,5 +249,33 @@ export class KitchenComponent implements OnInit {
     if (minutes === 0) return '< 1 min';
     if (minutes === 1) return '1 min';
     return `${minutes} min`;
+  }
+
+  getCategoryTag(item: any): string {
+    // Map category to tag - could be enhanced with actual category data
+    const categoryId = item.product?.categoryId;
+    if (!categoryId) return '';
+    
+    // Simple mapping - you can enhance this
+    const categoryMap: { [key: string]: string } = {
+      'appetizer': 'starter',
+      'main': 'main',
+      'dessert': 'dessert',
+      'drink': 'drink'
+    };
+    
+    return categoryMap[categoryId] || '';
+  }
+
+  getCategoryClass(item: any): string {
+    const tag = this.getCategoryTag(item);
+    const classMap: { [key: string]: string } = {
+      'starter': 'bg-red-100 text-red-800',
+      'main': 'bg-orange-100 text-orange-800',
+      'dessert': 'bg-purple-100 text-purple-800',
+      'drink': 'bg-blue-100 text-blue-800'
+    };
+    
+    return classMap[tag] || 'bg-gray-100 text-gray-800';
   }
 }

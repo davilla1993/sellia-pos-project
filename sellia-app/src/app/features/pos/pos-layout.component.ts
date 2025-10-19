@@ -60,6 +60,28 @@ import { NavigationService } from '../../core/services/navigation.service';
             <span class="text-xl">💳</span>
             <span>Encaissement</span>
           </button>
+
+          <div class="border-t border-neutral-600 my-4"></div>
+
+          <button (click)="navigate('/pos/kitchen')"
+            [class.bg-primary]="isActive('/pos/kitchen')"
+            [class.bg-neutral-700]="!isActive('/pos/kitchen')"
+            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+            [class.text-white]="isActive('/pos/kitchen')"
+            [class.text-neutral-300]="!isActive('/pos/kitchen')">
+            <span class="text-xl">👨‍🍳</span>
+            <span>Cuisine Kanban</span>
+          </button>
+
+          <button (click)="navigate('/pos/kitchen/list')"
+            [class.bg-primary]="isActive('/pos/kitchen/list')"
+            [class.bg-neutral-700]="!isActive('/pos/kitchen/list')"
+            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+            [class.text-white]="isActive('/pos/kitchen/list')"
+            [class.text-neutral-300]="!isActive('/pos/kitchen/list')">
+            <span class="text-xl">📋</span>
+            <span>Historique Cuisine</span>
+          </button>
         </nav>
 
         <!-- Footer -->
