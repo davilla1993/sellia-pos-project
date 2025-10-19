@@ -20,49 +20,53 @@ import { NavigationService } from '../../core/services/navigation.service';
 
         <!-- Menu Buttons -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-          <button (click)="navigate('/pos/order-entry')"
-            [class.bg-primary]="isActive('/pos/order-entry')"
-            [class.bg-neutral-700]="!isActive('/pos/order-entry')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/order-entry')"
-            [class.text-neutral-300]="!isActive('/pos/order-entry')">
-            <span class="text-xl">📝</span>
-            <span>Nouvelle Commande</span>
-          </button>
+          <!-- Caissier Menu -->
+          <ng-container *ngIf="!navigationService.isCuisine()">
+            <button (click)="navigate('/pos/order-entry')"
+              [class.bg-primary]="isActive('/pos/order-entry')"
+              [class.bg-neutral-700]="!isActive('/pos/order-entry')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/order-entry')"
+              [class.text-neutral-300]="!isActive('/pos/order-entry')">
+              <span class="text-xl">📝</span>
+              <span>Nouvelle Commande</span>
+            </button>
 
-          <button (click)="navigate('/pos/pending-orders')"
-            [class.bg-primary]="isActive('/pos/pending-orders')"
-            [class.bg-neutral-700]="!isActive('/pos/pending-orders')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/pending-orders')"
-            [class.text-neutral-300]="!isActive('/pos/pending-orders')">
-            <span class="text-xl">⏳</span>
-            <span>En Attente</span>
-            <span class="ml-auto text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-bold">0</span>
-          </button>
+            <button (click)="navigate('/pos/pending-orders')"
+              [class.bg-primary]="isActive('/pos/pending-orders')"
+              [class.bg-neutral-700]="!isActive('/pos/pending-orders')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/pending-orders')"
+              [class.text-neutral-300]="!isActive('/pos/pending-orders')">
+              <span class="text-xl">⏳</span>
+              <span>En Attente</span>
+              <span class="ml-auto text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-bold">0</span>
+            </button>
 
-          <button (click)="navigate('/pos/my-orders')"
-            [class.bg-primary]="isActive('/pos/my-orders')"
-            [class.bg-neutral-700]="!isActive('/pos/my-orders')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/my-orders')"
-            [class.text-neutral-300]="!isActive('/pos/my-orders')">
-            <span class="text-xl">📋</span>
-            <span>Mes Commandes</span>
-          </button>
+            <button (click)="navigate('/pos/my-orders')"
+              [class.bg-primary]="isActive('/pos/my-orders')"
+              [class.bg-neutral-700]="!isActive('/pos/my-orders')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/my-orders')"
+              [class.text-neutral-300]="!isActive('/pos/my-orders')">
+              <span class="text-xl">📋</span>
+              <span>Mes Commandes</span>
+            </button>
 
-          <button (click)="navigate('/pos/checkout')"
-            [class.bg-primary]="isActive('/pos/checkout')"
-            [class.bg-neutral-700]="!isActive('/pos/checkout')"
-            class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-            [class.text-white]="isActive('/pos/checkout')"
-            [class.text-neutral-300]="!isActive('/pos/checkout')">
-            <span class="text-xl">💳</span>
-            <span>Encaissement</span>
-          </button>
+            <button (click)="navigate('/pos/checkout')"
+              [class.bg-primary]="isActive('/pos/checkout')"
+              [class.bg-neutral-700]="!isActive('/pos/checkout')"
+              class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
+              [class.text-white]="isActive('/pos/checkout')"
+              [class.text-neutral-300]="!isActive('/pos/checkout')">
+              <span class="text-xl">💳</span>
+              <span>Encaissement</span>
+            </button>
 
-          <div class="border-t border-neutral-600 my-4"></div>
+            <div class="border-t border-neutral-600 my-4"></div>
+          </ng-container>
 
+          <!-- Kitchen Menu -->
           <button (click)="navigate('/pos/kitchen')"
             [class.bg-primary]="isActive('/pos/kitchen')"
             [class.bg-neutral-700]="!isActive('/pos/kitchen')"

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { CancelOrderDialogComponent } from './cancel-order-dialog.component';
 
 interface KitchenOrder {
   publicId: string;
@@ -20,7 +21,7 @@ interface KitchenOrder {
 @Component({
   selector: 'app-kitchen',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CancelOrderDialogComponent],
   template: `
     <div class="h-full flex flex-col bg-neutral-900 p-6 overflow-hidden">
       <!-- Header -->
@@ -39,117 +40,129 @@ interface KitchenOrder {
         </div>
       </div>
 
-      <!-- Kanban Board -->
-      <div class="flex-1 grid grid-cols-3 gap-4 overflow-hidden">
-        <!-- En Attente Column -->
-        <div class="flex flex-col bg-red-50 rounded-lg border-2 border-red-300 overflow-hidden">
-          <div class="bg-red-200 px-4 py-3 border-b-2 border-red-300">
+      <!-- Kanban Board - 4 Columns -->
+      <div class="flex-1 grid grid-cols-4 gap-4 overflow-hidden">
+        
+        <!-- Column 1: À accepter (EN_ATTENTE) -->
+        <div class="flex flex-col bg-red-50 rounded-lg border-2 border-red-400 overflow-hidden">
+          <div class="bg-red-300 px-4 py-3 border-b-2 border-red-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-red-800 text-lg">⏳ En attente</h2>
-              <span class="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm">
+              <h2 class="font-bold text-red-900 text-sm">📥 À accepter</h2>
+              <span class="bg-red-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('EN_ATTENTE').length }}
               </span>
             </div>
           </div>
-          <div class="flex-1 overflow-y-auto p-3 space-y-3">
-            <div *ngFor="let order of ordersbyStatus('EN_ATTENTE')" class="bg-white rounded-lg border-2 border-red-300 p-4 shadow-md cursor-move hover:shadow-lg transition-shadow">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <h3 class="font-bold text-gray-900 text-lg">{{ order.table?.number || 'Takeaway' }}</h3>
-                  <p class="text-sm text-gray-600">{{ order.table?.name }}</p>
-                </div>
-                <span *ngIf="isUrgent(order)" class="bg-red-600 text-white px-2 py-1 rounded font-bold text-xs">URGENT</span>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div *ngFor="let order of ordersbyStatus('EN_ATTENTE')" class="bg-white rounded-lg border-2 border-red-300 p-3 shadow-md hover:shadow-lg transition-shadow">
+              <div class="flex justify-between items-start mb-1">
+                <h3 class="font-bold text-gray-900 text-sm">{{ order.table?.number || 'Takeaway' }}</h3>
+                <span *ngIf="isUrgent(order)" class="bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">!</span>
               </div>
-              
-              <div class="text-sm text-gray-700 mb-3">
-                <p class="font-semibold">{{ getElapsedTime(order.createdAt) }}</p>
+              <p class="text-xs text-gray-600 mb-2">{{ getElapsedTime(order.createdAt) }}</p>
+              <div class="text-xs space-y-1 mb-2">
+                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
-
-              <div class="space-y-1 mb-3 text-sm">
-                <div *ngFor="let item of order.items" class="flex justify-between">
-                  <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
-                </div>
-              </div>
-
               <button 
-                (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
-                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 rounded-lg transition-colors">
-                Commencer la préparation
+                (click)="updateOrderStatus(order.publicId, 'ACCEPTEE')"
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-1 text-xs rounded transition-colors mb-1">
+                Accepter
+              </button>
+              <button 
+                (click)="showCancelDialog(order)"
+                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
+                Annuler
               </button>
             </div>
           </div>
         </div>
 
-        <!-- En Préparation Column -->
-        <div class="flex flex-col bg-yellow-50 rounded-lg border-2 border-yellow-300 overflow-hidden">
-          <div class="bg-yellow-200 px-4 py-3 border-b-2 border-yellow-300">
+        <!-- Column 2: À préparer (ACCEPTEE) -->
+        <div class="flex flex-col bg-orange-50 rounded-lg border-2 border-orange-400 overflow-hidden">
+          <div class="bg-orange-300 px-4 py-3 border-b-2 border-orange-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-yellow-800 text-lg">👨‍🍳 En préparation</h2>
-              <span class="bg-yellow-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm">
+              <h2 class="font-bold text-orange-900 text-sm">📋 À préparer</h2>
+              <span class="bg-orange-600 text-white rounded-full px-2 py-1 font-bold text-xs">
+                {{ ordersbyStatus('ACCEPTEE').length }}
+              </span>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div *ngFor="let order of ordersbyStatus('ACCEPTEE')" class="bg-white rounded-lg border-2 border-orange-300 p-3 shadow-md hover:shadow-lg transition-shadow">
+              <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
+              <p class="text-xs text-gray-600 mb-2">{{ getElapsedTime(order.createdAt) }}</p>
+              <div class="text-xs space-y-1 mb-2">
+                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
+              </div>
+              <button 
+                (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
+                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 text-xs rounded transition-colors mb-1">
+                Commencer
+              </button>
+              <button 
+                (click)="showCancelDialog(order)"
+                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: En préparation (EN_PREPARATION) -->
+        <div class="flex flex-col bg-yellow-50 rounded-lg border-2 border-yellow-400 overflow-hidden">
+          <div class="bg-yellow-300 px-4 py-3 border-b-2 border-yellow-400">
+            <div class="flex items-center justify-between">
+              <h2 class="font-bold text-yellow-900 text-sm">👨‍🍳 En préparation</h2>
+              <span class="bg-yellow-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('EN_PREPARATION').length }}
               </span>
             </div>
           </div>
-          <div class="flex-1 overflow-y-auto p-3 space-y-3">
-            <div *ngFor="let order of ordersbyStatus('EN_PREPARATION')" class="bg-white rounded-lg border-2 border-yellow-300 p-4 shadow-md cursor-move hover:shadow-lg transition-shadow">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <h3 class="font-bold text-gray-900 text-lg">{{ order.table?.number || 'Takeaway' }}</h3>
-                  <p class="text-sm text-gray-600">{{ order.table?.name }}</p>
-                </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div *ngFor="let order of ordersbyStatus('EN_PREPARATION')" class="bg-white rounded-lg border-2 border-yellow-300 p-3 shadow-md hover:shadow-lg transition-shadow">
+              <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
+              <p class="text-xs text-gray-600 mb-2">{{ getElapsedTime(order.createdAt) }}</p>
+              <div class="text-xs space-y-1 mb-2">
+                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
-              
-              <div class="text-sm text-yellow-700 mb-3">
-                <p class="font-semibold">{{ getElapsedTime(order.createdAt) }}</p>
-              </div>
-
-              <div class="space-y-1 mb-3 text-sm">
-                <div *ngFor="let item of order.items" class="flex justify-between">
-                  <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
-                </div>
-              </div>
-
               <button 
                 (click)="updateOrderStatus(order.publicId, 'PRETE')"
-                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition-colors">
-                Marquer comme prêt
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 text-xs rounded transition-colors">
+                Marquer prêt
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Prêt à servir Column -->
-        <div class="flex flex-col bg-green-50 rounded-lg border-2 border-green-300 overflow-hidden">
-          <div class="bg-green-200 px-4 py-3 border-b-2 border-green-300">
+        <!-- Column 4: Prête (PRETE) -->
+        <div class="flex flex-col bg-green-50 rounded-lg border-2 border-green-400 overflow-hidden">
+          <div class="bg-green-300 px-4 py-3 border-b-2 border-green-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-green-800 text-lg">✅ Prêt à servir</h2>
-              <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm">
+              <h2 class="font-bold text-green-900 text-sm">✅ Prête</h2>
+              <span class="bg-green-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('PRETE').length }}
               </span>
             </div>
           </div>
-          <div class="flex-1 overflow-y-auto p-3 space-y-3">
-            <div *ngFor="let order of ordersbyStatus('PRETE')" class="bg-white rounded-lg border-2 border-green-300 p-4 shadow-md hover:shadow-lg transition-shadow">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <h3 class="font-bold text-gray-900 text-lg">{{ order.table?.number || 'Takeaway' }}</h3>
-                  <p class="text-sm text-gray-600">{{ order.table?.name }}</p>
-                </div>
-              </div>
-              
-              <div class="text-sm text-green-700 mb-3">
-                <p class="font-semibold">Prêt depuis {{ getElapsedTime(order.createdAt) }}</p>
-              </div>
-
-              <div class="space-y-1 text-sm">
-                <div *ngFor="let item of order.items" class="flex justify-between">
-                  <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
-                </div>
+          <div class="flex-1 overflow-y-auto p-2 space-y-2">
+            <div *ngFor="let order of ordersbyStatus('PRETE')" class="bg-white rounded-lg border-2 border-green-300 p-3 shadow-md">
+              <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
+              <p class="text-xs text-gray-600 mb-2">Prête depuis {{ getElapsedTime(order.createdAt) }}</p>
+              <div class="text-xs space-y-1">
+                <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Cancel Dialog -->
+      <app-cancel-order-dialog 
+        *ngIf="showCancelDialogFlag()"
+        [orderNumber]="orderToCancel()?.orderNumber || ''"
+        (onConfirmClick)="confirmCancelOrder($event)"
+        (onCancelClick)="hideCancelDialog()">
+      </app-cancel-order-dialog>
     </div>
   `,
   styles: []
@@ -160,45 +173,39 @@ export class KitchenComponent implements OnInit {
 
   orders = signal<KitchenOrder[]>([]);
   isLoading = signal(false);
+  showCancelDialogFlag = signal(false);
+  orderToCancel = signal<KitchenOrder | null>(null);
 
   ngOnInit(): void {
     this.loadOrders();
-    // Poll for new orders every 5 seconds
     setInterval(() => this.loadOrders(), 5000);
   }
 
   loadOrders(): void {
     this.isLoading.set(true);
-    this.apiService.getOrdersByStatus('EN_ATTENTE').subscribe({
-      next: (response) => {
-        const enAttente = Array.isArray(response) ? response : response.content || [];
-        
-        this.apiService.getOrdersByStatus('EN_PREPARATION').subscribe({
-          next: (response) => {
-            const enPrep = Array.isArray(response) ? response : response.content || [];
-            
-            this.apiService.getOrdersByStatus('PRETE').subscribe({
-              next: (response) => {
-                const prete = Array.isArray(response) ? response : response.content || [];
-                this.orders.set([...enAttente, ...enPrep, ...prete]);
-                this.isLoading.set(false);
-              },
-              error: () => {
-                this.orders.set([...enAttente, ...enPrep]);
-                this.isLoading.set(false);
-              }
-            });
-          },
-          error: () => {
-            this.orders.set(enAttente);
+    const statuses = ['EN_ATTENTE', 'ACCEPTEE', 'EN_PREPARATION', 'PRETE'];
+    let loadedOrders: KitchenOrder[] = [];
+    let completed = 0;
+
+    statuses.forEach(status => {
+      this.apiService.getOrdersByStatus(status).subscribe({
+        next: (response) => {
+          const statusOrders = Array.isArray(response) ? response : response.content || [];
+          loadedOrders = [...loadedOrders, ...statusOrders];
+          completed++;
+          
+          if (completed === statuses.length) {
+            this.orders.set(loadedOrders);
             this.isLoading.set(false);
           }
-        });
-      },
-      error: () => {
-        this.isLoading.set(false);
-        this.toast.error('Erreur lors du chargement des commandes');
-      }
+        },
+        error: () => {
+          completed++;
+          if (completed === statuses.length) {
+            this.isLoading.set(false);
+          }
+        }
+      });
     });
   }
 
@@ -212,18 +219,50 @@ export class KitchenComponent implements OnInit {
   }
 
   activeOrdersCount = computed(() => {
-    return this.orders().filter(o => o.status !== 'LIVREE' && o.status !== 'PAYEE').length;
+    return this.orders().filter(o => !['LIVREE', 'PAYEE', 'ANNULEE'].includes(o.status)).length;
   });
 
   updateOrderStatus(orderId: string, newStatus: string): void {
     this.apiService.updateOrderStatus(orderId, newStatus).subscribe({
-      next: (response) => {
-        this.toast.success(`Commande mise à jour: ${newStatus}`);
+      next: () => {
+        this.toast.success(`✓ ${newStatus}`);
         this.loadOrders();
       },
       error: (err) => {
         console.error('Erreur:', err);
         this.toast.error('Erreur lors de la mise à jour');
+      }
+    });
+  }
+
+  showCancelDialog(order: KitchenOrder): void {
+    // Can only cancel EN_ATTENTE and ACCEPTEE orders
+    if (!['EN_ATTENTE', 'ACCEPTEE'].includes(order.status)) {
+      this.toast.warning('Impossible d\'annuler une commande en préparation');
+      return;
+    }
+    this.orderToCancel.set(order);
+    this.showCancelDialogFlag.set(true);
+  }
+
+  hideCancelDialog(): void {
+    this.showCancelDialogFlag.set(false);
+    this.orderToCancel.set(null);
+  }
+
+  confirmCancelOrder(reason: string): void {
+    const order = this.orderToCancel();
+    if (!order) return;
+
+    this.apiService.updateOrderStatus(order.publicId, 'ANNULEE').subscribe({
+      next: () => {
+        this.toast.success('✓ Commande annulée');
+        this.hideCancelDialog();
+        this.loadOrders();
+      },
+      error: (err) => {
+        console.error('Erreur:', err);
+        this.toast.error('Erreur lors de l\'annulation');
       }
     });
   }
