@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.model;
 
 import com.follysitou.sellia_backend.enums.OrderStatus;
+import com.follysitou.sellia_backend.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,8 +31,12 @@ public class Order extends BaseEntity {
     private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "table_id", nullable = false)
+    @JoinColumn(name = "table_id", nullable = true)
     private RestaurantTable table;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false)
+    private OrderType orderType = OrderType.TABLE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_session_id")

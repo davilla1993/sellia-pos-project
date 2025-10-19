@@ -49,9 +49,24 @@ public class OrderService {
     private final StockRepository stockRepository;
 
     public OrderResponse createOrder(OrderCreateRequest request) {
-        // Get table
-        RestaurantTable table = restaurantTableRepository.findByPublicId(request.getTablePublicId())
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        // Validate based on order type
+        RestaurantTable table = null;
+        if (request.getOrderType() != null && request.getOrderType().name().equals("TABLE")) {
+            if (request.getTablePublicId() == null || request.getTablePublicId().isBlank()) {
+                throw new BusinessException("Table ID is required for TABLE orders");
+            }
+            table = restaurantTableRepository.findByPublicId(request.getTablePublicId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        } else if (request.getOrderType() != null && request.getOrderType().name().equals("TAKEAWAY")) {
+            // TAKEAWAY order - no table required
+            table = null;
+        } else {
+            // Default to TABLE if order type not specified
+            if (request.getTablePublicId() != null && !request.getTablePublicId().isBlank()) {
+                table = restaurantTableRepository.findByPublicId(request.getTablePublicId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+            }
+        }
 
         // Get or null customer session
         CustomerSession customerSession = null;
@@ -71,6 +86,7 @@ public class OrderService {
         order.setOrderNumber(orderNumber);
         order.setTable(table);
         order.setCustomerSession(customerSession);
+        order.setOrderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE);
 
         // Create order items
         List<OrderItem> items = new ArrayList<>();

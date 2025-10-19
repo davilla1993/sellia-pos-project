@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.dto.response;
 
 import com.follysitou.sellia_backend.enums.OrderStatus;
+import com.follysitou.sellia_backend.enums.OrderType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ public class OrderResponse {
     private String publicId;
     private String orderNumber;
     private RestaurantTableResponse table;
+    private OrderType orderType;
     private CustomerSessionResponse customerSession;
     private InvoiceResponse invoice;
     private List<OrderItemResponse> items;

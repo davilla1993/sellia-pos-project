@@ -17,6 +17,7 @@ public class OrderMapper {
     public Order toEntity(OrderCreateRequest request) {
         Order order = Order.builder()
                 .orderNumber(generateOrderNumber())
+                .orderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE)
                 .discountAmount(request.getDiscountAmount())
                 .notes(request.getNotes())
                 .customerName(request.getCustomerName())
@@ -35,6 +36,7 @@ public class OrderMapper {
         response.setPublicId(order.getPublicId());
         response.setOrderNumber(order.getOrderNumber());
         response.setTable(toRestaurantTableResponse(order.getTable()));
+        response.setOrderType(order.getOrderType());
         response.setCustomerSession(toCustomerSessionResponse(order.getCustomerSession()));
         response.setInvoice(toInvoiceResponse(order.getInvoice()));
         

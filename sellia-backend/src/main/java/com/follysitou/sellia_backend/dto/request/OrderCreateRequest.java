@@ -5,16 +5,18 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
+import com.follysitou.sellia_backend.enums.OrderType;
 
 import java.util.List;
 
 @Data
 public class OrderCreateRequest {
 
-    @NotBlank(message = "Table ID is required")
-    private String tablePublicId;
+    private String tablePublicId; // Optional for TAKEAWAY orders
 
     private String customerSessionPublicId;
+
+    private OrderType orderType = OrderType.TABLE;
 
     @NotEmpty(message = "At least one item is required")
     @NotNull(message = "Order items are required")
