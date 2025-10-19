@@ -92,15 +92,15 @@ interface RestaurantTable {
           <p class="text-xs text-neutral-400 mb-3">{{ table.capacity }} places</p>
 
           <!-- QR Code Placeholder -->
-          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-5 flex items-center justify-center mb-3 h-28 flex-shrink-0">
+          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-4 flex items-center justify-center mb-2 h-24">
             <div class="text-center">
               <div class="text-3xl">📱</div>
             </div>
           </div>
 
           <!-- Order URL -->
-          <p class="text-xs text-neutral-500 mb-1.5">URL:</p>
-          <p class="text-xs text-neutral-400 bg-neutral-700 p-2 rounded mb-3 truncate">{{ table.orderUrl }}</p>
+          <p class="text-xs text-neutral-500 mb-1">URL:</p>
+          <p class="text-xs text-neutral-400 bg-neutral-700 p-1.5 rounded mb-3 break-all">{{ table.orderUrl }}</p>
 
           <!-- Actions -->
           <div class="flex gap-2">
