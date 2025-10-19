@@ -16,6 +16,10 @@ import { PendingOrdersComponent } from './features/pos/pending-orders.component'
 import { MyOrdersComponent } from './features/pos/my-orders.component';
 import { CheckoutComponent } from './features/pos/checkout.component';
 import { PosLayoutComponent } from './features/pos/pos-layout.component';
+import { InventoryComponent } from './features/admin/inventory.component';
+import { TablesComponent } from './features/admin/tables.component';
+import { ReportsComponent } from './features/admin/reports.component';
+import { SettingsComponent } from './features/admin/settings.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -58,6 +62,18 @@ export const routes: Routes = [
           { path: ':id/edit', component: ProductFormComponent }
         ]
       },
+      { path: 'inventory', component: InventoryComponent },
+      { path: 'tables', component: TablesComponent },
+      {
+        path: 'reports',
+        children: [
+          { path: '', component: ReportsComponent },
+          { path: 'sales', component: ReportsComponent },
+          { path: 'products', component: ReportsComponent },
+          { path: 'staff', component: ReportsComponent }
+        ]
+      },
+      { path: 'settings', component: SettingsComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

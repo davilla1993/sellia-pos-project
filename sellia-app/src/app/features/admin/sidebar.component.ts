@@ -127,13 +127,44 @@ export class SidebarComponent {
     {
       label: 'Produits',
       icon: this.getIcon('products'),
-      route: '/admin/products',
+      children: [
+        { label: 'Catalogue', route: '/admin/products' },
+        { label: 'Catégories', route: '/admin/products' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Inventaire',
+      icon: this.getIcon('inventory'),
+      route: '/admin/inventory',
       expanded: false
     },
     {
       label: 'Utilisateurs',
       icon: this.getIcon('users'),
       route: '/admin/users',
+      expanded: false
+    },
+    {
+      label: 'Tables & QR',
+      icon: this.getIcon('tables'),
+      route: '/admin/tables',
+      expanded: false
+    },
+    {
+      label: 'Rapports',
+      icon: this.getIcon('reports'),
+      children: [
+        { label: 'Ventes', route: '/admin/reports/sales' },
+        { label: 'Produits', route: '/admin/reports/products' },
+        { label: 'Personnel', route: '/admin/reports/staff' }
+      ],
+      expanded: false
+    },
+    {
+      label: 'Paramètres',
+      icon: this.getIcon('settings'),
+      route: '/admin/settings',
       expanded: false
     }
   ];
