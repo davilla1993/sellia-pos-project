@@ -55,29 +55,16 @@ app:
     first-name: Admin
     last-name: System
 
-# Actuator & Metrics Configuration
+# Actuator Configuration (minimal)
 management:
   endpoints:
     web:
       exposure:
-        include: health,metrics,prometheus
+        include: health
       base-path: /actuator
   endpoint:
     health:
       show-details: always
-  metrics:
-    enable:
-      jvm: true
-      process: true
-      system: true
-      logback: true
-    distribution:
-      percentiles-histogram:
-        http.server.requests: true
-  prometheus:
-    metrics:
-      export:
-        enabled: true
 
 # Logging Configuration
 logging:
@@ -88,7 +75,6 @@ logging:
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
-  config: classpath:logback-spring.xml
 
 # Development Profile
 ---
