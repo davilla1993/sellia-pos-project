@@ -104,22 +104,32 @@ interface RestaurantTable {
           <p class="text-xs text-neutral-400 bg-neutral-700 p-1.5 rounded mb-3 break-all">{{ table.orderUrl }}</p>
 
           <!-- Actions -->
-          <div class="flex gap-2">
-            <button 
-              (click)="generateQrCode(table.publicId)"
-              [disabled]="table.qrCodeUrl"
-              class="flex-1 px-2 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded text-xs font-semibold transition-colors">
-              {{ table.qrCodeUrl ? '✓ Généré' : '🎯 Générer' }}
-            </button>
-            <button class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
-              👁️ Prévisualiser
-            </button>
-            <button class="px-2 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
-              ✏️
-            </button>
-            <button class="px-2 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors">
-              🗑️
-            </button>
+          <div class="flex flex-col gap-2">
+            <div class="flex gap-2">
+              <button 
+                (click)="generateQrCode(table.publicId)"
+                [disabled]="table.qrCodeUrl"
+                class="flex-1 px-2 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded text-xs font-semibold transition-colors">
+                {{ table.qrCodeUrl ? '✓ Généré' : '🎯 Générer' }}
+              </button>
+              <button 
+                (click)="downloadQrCode(table.number, table.qrCodeUrl || '')"
+                [disabled]="!table.qrCodeUrl"
+                class="flex-1 px-2 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded text-xs font-semibold transition-colors">
+                ⬇️ Télécharger
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+                👁️ Prévisualiser
+              </button>
+              <button class="px-2 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-400 rounded transition-colors">
+                ✏️
+              </button>
+              <button class="px-2 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors">
+                🗑️
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -241,6 +251,24 @@ export class TablesComponent implements OnInit {
       error: (err) => {
         console.error('Erreur:', err);
         this.toast.error('Erreur lors de la génération du QR code');
+      }
+    });
+  }
+
+  downloadQrCode(tableNumber: number, qrCodeUrl: string): void {
+    this.apiService.downloadFile(qrCodeUrl).subscribe({
+      next: (blob) => {
+        const fileName = `QR_Code_Table_${tableNumber}.png`;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        this.toast.success('QR code téléchargé');
+      },
+      error: (err) => {
+        console.error('Erreur:', err);
+        this.toast.error('Erreur lors du téléchargement du QR code');
       }
     });
   }

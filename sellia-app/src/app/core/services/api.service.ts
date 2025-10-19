@@ -312,4 +312,8 @@ export class ApiService {
   generateTableQrCode(tablePublicId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/tables/${tablePublicId}/qrcode/generate`, {});
   }
+
+  downloadFile(filePath: string): Observable<Blob> {
+    return this.http.get(filePath, { responseType: 'blob' });
+  }
 }
