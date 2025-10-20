@@ -448,4 +448,41 @@ export class ApiService {
     a.click();
     window.URL.revokeObjectURL(url);
   }
+
+  // Tickets
+  generateSeparatedTickets(sessionId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.apiUrl}/tickets/session/${sessionId}/generate/separated`, {});
+  }
+
+  generateUnifiedTicket(sessionId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/tickets/session/${sessionId}/generate/unified`, {});
+  }
+
+  getUnifiedTicket(sessionId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/tickets/session/${sessionId}/unified`);
+  }
+
+  getSessionTicketsStatus(sessionId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/tickets/session/${sessionId}/status`);
+  }
+
+  getBarTickets(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/tickets/station/BAR/active`);
+  }
+
+  getKitchenTickets(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/tickets/station/KITCHEN/active`);
+  }
+
+  markTicketAsReady(ticketId: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/tickets/${ticketId}/ready`, {});
+  }
+
+  markTicketAsServed(ticketId: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/tickets/${ticketId}/served`, {});
+  }
+
+  markTicketAsPrinted(ticketId: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/tickets/${ticketId}/print`, {});
+  }
 }
