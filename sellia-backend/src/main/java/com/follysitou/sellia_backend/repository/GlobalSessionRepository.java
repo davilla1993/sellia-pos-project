@@ -20,13 +20,13 @@ public interface GlobalSessionRepository extends JpaRepository<GlobalSession, Lo
     @Query("SELECT g FROM GlobalSession g WHERE g.status = :status AND g.deleted = false")
     Optional<GlobalSession> findCurrentSession(@Param("status") GlobalSessionStatus status);
 
-    @Query("SELECT g FROM GlobalSession g WHERE g.deleted = false ORDER BY g.openedAt DESC LIMIT 1")
+    @Query(value = "SELECT * FROM global_sessions g WHERE g.deleted = false ORDER BY g.opened_at DESC LIMIT 1", nativeQuery = true)
     Optional<GlobalSession> findLatestSession();
 
     @Query("SELECT g FROM GlobalSession g WHERE g.deleted = false AND g.status = :status")
     Page<GlobalSession> findByStatus(@Param("status") GlobalSessionStatus status, Pageable pageable);
 
-    @Query("SELECT g FROM GlobalSession g WHERE g.deleted = false AND DATE(g.openedAt) = DATE(:date) ORDER BY g.openedAt DESC")
+    @Query("SELECT g FROM GlobalSession g WHERE g.deleted = false")
     Page<GlobalSession> findByDate(@Param("date") LocalDateTime date, Pageable pageable);
 
     @Query("SELECT g FROM GlobalSession g WHERE g.deleted = false")
