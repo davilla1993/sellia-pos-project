@@ -150,4 +150,54 @@ public class OrderController {
         orderService.deleteOrder(publicId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Ajouter des items à une commande EN_ATTENTE
+     * Caissier peut ajouter des produits tant que la commande n'est pas en préparation
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
+    @PutMapping("/{orderId}/add-items")
+    public ResponseEntity<OrderResponse> addItemsToOrder(
+            @PathVariable String orderId,
+            @Valid @RequestBody OrderCreateRequest request) {
+        OrderResponse response = orderService.addItemsToOrder(orderId, request.getItems());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Récupérer toutes les commandes non payées d'une session
+     * Affiche le récapitulatif avant paiement
+     */
+    @GetMapping("/session/{customerSessionPublicId}/unpaid")
+    public ResponseEntity<List<OrderResponse>> getSessionUnpaidOrders(
+            @PathVariable String customerSessionPublicId) {
+        List<OrderResponse> response = orderService.getSessionUnpaidOrders(customerSessionPublicId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Récupérer toutes les commandes d'une session (paginated)
+     */
+    @GetMapping("/session/{customerSessionPublicId}/all")
+    public ResponseEntity<PagedResponse<OrderResponse>> getSessionOrders(
+            @PathVariable String customerSessionPublicId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        PagedResponse<OrderResponse> response = orderService.getSessionOrders(customerSessionPublicId, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Checkout et paiement de toutes les commandes d'une session
+     * Crée une invoice consolidée et marque toutes les orders comme payées
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
+    @PostMapping("/session/{customerSessionPublicId}/checkout")
+    public ResponseEntity<OrderResponse> checkoutSession(
+            @PathVariable String customerSessionPublicId,
+            @RequestParam String paymentMethod) {
+        OrderResponse response = orderService.checkoutAndPaySession(customerSessionPublicId, paymentMethod);
+        return ResponseEntity.ok(response);
+    }
 }

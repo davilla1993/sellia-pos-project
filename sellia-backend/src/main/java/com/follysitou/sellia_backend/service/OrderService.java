@@ -5,8 +5,10 @@ import com.follysitou.sellia_backend.dto.request.OrderUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.OrderResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.enums.OrderStatus;
+import com.follysitou.sellia_backend.enums.OrderItemStatus;
 import com.follysitou.sellia_backend.exception.BusinessException;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
+import com.follysitou.sellia_backend.model.Invoice;
 import com.follysitou.sellia_backend.mapper.OrderMapper;
 import com.follysitou.sellia_backend.model.CustomerSession;
 import com.follysitou.sellia_backend.model.Order;
@@ -56,6 +58,7 @@ public class OrderService {
     private final InventoryMovementService inventoryMovementService;
     private final StockRepository stockRepository;
     private final CashierSessionRepository cashierSessionRepository;
+    private final InvoiceService invoiceService;
 
     public OrderResponse createOrder(OrderCreateRequest request) {
         // Validate based on order type
@@ -371,6 +374,161 @@ public class OrderService {
         }
 
         return orderNumber;
+    }
+
+    /**
+     * Ajouter des items à une commande EN_ATTENTE
+     * Utilisé quand le caissier ajoute des produits à une commande
+     * qui n'a pas encore été acceptée
+     */
+    public OrderResponse addItemsToOrder(String orderId, List<OrderCreateRequest.OrderItemRequest> newItems) {
+        Order order = orderRepository.findByPublicId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // Vérifier que la commande est EN_ATTENTE (pas encore en préparation)
+        if (order.getStatus() != OrderStatus.EN_ATTENTE) {
+            throw new BusinessException(
+                    "Cannot add items to order in " + order.getStatus() + " status. " +
+                    "Only EN_ATTENTE orders can be modified. Create a new order instead.");
+        }
+
+        if (order.getIsPaid()) {
+            throw new BusinessException("Cannot add items to a paid order");
+        }
+
+        // Ajouter les nouveaux items
+        long additionalAmount = 0;
+        for (OrderCreateRequest.OrderItemRequest itemRequest : newItems) {
+            MenuItem menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
+                    .orElseThrow(() -> new ResourceNotFoundException("MenuItem not found"));
+
+            if (!menuItem.getAvailable()) {
+                throw new BusinessException("MenuItem not available: " + itemRequest.getMenuItemPublicId());
+            }
+
+            long unitPrice = menuItem.getPriceOverride() != null ? menuItem.getPriceOverride() :
+                           menuItem.getBundlePrice() != null ? menuItem.getBundlePrice() : 0L;
+
+            long itemTotal = unitPrice * itemRequest.getQuantity();
+            additionalAmount += itemTotal;
+
+            Product product = null;
+            if (!menuItem.getProducts().isEmpty()) {
+                product = menuItem.getProducts().stream().findFirst().orElse(null);
+            }
+
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .menuItem(menuItem)
+                    .product(product)
+                    .quantity(itemRequest.getQuantity())
+                    .unitPrice(unitPrice)
+                    .totalPrice(itemTotal)
+                    .specialInstructions(itemRequest.getNotes())
+                    .workStation(product != null ? product.getWorkStation() : com.follysitou.sellia_backend.enums.WorkStation.KITCHEN)
+                    .status(com.follysitou.sellia_backend.enums.OrderItemStatus.PENDING)
+                    .build();
+
+            order.getItems().add(orderItem);
+            orderItemRepository.save(orderItem);
+        }
+
+        // Mettre à jour le total de la commande
+        order.setTotalAmount(order.getTotalAmount() + additionalAmount);
+        Order updated = orderRepository.save(order);
+
+        log.info("Items added to order {}: +{} XAF, new total: {} XAF", 
+                orderId, additionalAmount, updated.getTotalAmount());
+
+        return orderMapper.toResponse(updated);
+    }
+
+    /**
+     * Récupérer toutes les commandes non payées d'une CustomerSession
+     * Utilisé pour afficher le récapitulatif avant le paiement
+     */
+    public List<OrderResponse> getSessionUnpaidOrders(String customerSessionPublicId) {
+        CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
+
+        List<Order> orders = orderRepository.findByCustomerSessionId(customerSessionPublicId, Pageable.unpaged())
+                .stream()
+                .filter(order -> !order.getIsPaid() && !order.getStatus().equals(OrderStatus.ANNULEE))
+                .toList();
+
+        return orders.stream()
+                .map(orderMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Récupérer toutes les commandes d'une CustomerSession (paginated)
+     */
+    public PagedResponse<OrderResponse> getSessionOrders(String customerSessionPublicId, Pageable pageable) {
+        customerSessionRepository.findByPublicId(customerSessionPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
+
+        Page<Order> orders = orderRepository.findByCustomerSessionId(customerSessionPublicId, pageable);
+        return PagedResponse.of(orders.map(orderMapper::toResponse));
+    }
+
+    /**
+     * Payer toutes les commandes d'une session (checkout)
+     * Crée une facture consolidée et marque toutes les orders comme payées
+     */
+    public OrderResponse checkoutAndPaySession(String customerSessionPublicId, String paymentMethod) {
+        CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
+
+        if (!session.getActive()) {
+            throw new BusinessException("This session has been finalized");
+        }
+
+        // Récupérer toutes les orders non payées
+        List<Order> orders = orderRepository.findByCustomerSessionId(customerSessionPublicId, Pageable.unpaged())
+                .stream()
+                .filter(order -> !order.getIsPaid())
+                .toList();
+
+        if (orders.isEmpty()) {
+            throw new BusinessException("No unpaid orders found for this session");
+        }
+
+        // Calculer le total
+        long totalAmount = orders.stream()
+                .mapToLong(order -> {
+                    long amount = order.getTotalAmount();
+                    if (order.getDiscountAmount() != null) {
+                        amount -= order.getDiscountAmount();
+                    }
+                    return Math.max(0, amount);
+                })
+                .sum();
+
+        // Créer l'invoice consolidée
+        Invoice invoice = invoiceService.createSessionInvoice(session, orders, totalAmount);
+
+        // Marquer TOUTES les orders comme payées
+        for (Order order : orders) {
+            order.setIsPaid(true);
+            order.setPaymentMethod(paymentMethod);
+            order.setPaidAt(LocalDateTime.now());
+            order.setStatus(OrderStatus.PAYEE);
+            orderRepository.save(order);
+            
+            // Notification
+            notificationService.notifyOrderStatusChange(order);
+        }
+
+        // Marquer la session comme payée
+        session.setIsPaid(true);
+        customerSessionRepository.save(session);
+
+        log.info("Session checkout completed: {} - Invoice: {} - Amount: {} XAF",
+                customerSessionPublicId, invoice.getInvoiceNumber(), totalAmount);
+
+        // Retourner la première order (ou créer une réponse consolidée)
+        return orderMapper.toResponse(orders.get(0));
     }
 
     private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
