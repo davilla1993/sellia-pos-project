@@ -317,4 +317,81 @@ export class ApiService {
     const fullUrl = BACKEND_URL + filePath;
     return this.http.get(fullUrl, { responseType: 'blob' });
   }
+
+  // Cashiers
+  getMyCashiers(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/cashiers/my-cashiers`).pipe(
+      map(response => {
+        if (response?.content && Array.isArray(response.content)) {
+          return response.content;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      })
+    );
+  }
+
+  getAllCashiers(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/cashiers`).pipe(
+      map(response => {
+        if (response?.content && Array.isArray(response.content)) {
+          return response.content;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      })
+    );
+  }
+
+  // Global Sessions
+  getCurrentGlobalSession(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/global-sessions/current`);
+  }
+
+  openGlobalSession(initialAmount: number = 0): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/global-sessions/open`, { initialAmount });
+  }
+
+  closeGlobalSession(sessionId: string, finalAmount: number, notes?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/global-sessions/${sessionId}/close`, {
+      finalAmount,
+      reconciliationNotes: notes
+    });
+  }
+
+  // Cashier Sessions
+  getCurrentCashierSession(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/cashier-sessions/current`);
+  }
+
+  openCashierSession(cashierId: string, pin: string, initialAmount: number = 0): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashier-sessions/open`, {
+      cashierId,
+      pin,
+      initialAmount
+    });
+  }
+
+  lockCashierSession(sessionId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashier-sessions/${sessionId}/lock`, {});
+  }
+
+  unlockCashierSession(sessionId: string, pin: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashier-sessions/${sessionId}/unlock`, { pin });
+  }
+
+  closeCashierSession(sessionId: string, finalAmount: number = 0, notes?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashier-sessions/${sessionId}/close`, {
+      finalAmount,
+      notes
+    });
+  }
+
+  updateCashierSessionActivity(sessionId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/cashier-sessions/${sessionId}/activity`, {});
+  }
 }
