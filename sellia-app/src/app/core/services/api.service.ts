@@ -432,16 +432,12 @@ export class ApiService {
     });
   }
 
-  private downloadFile(blob: Blob, filename: string): void {
+  downloadPdfFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
-  }
-
-  public downloadPdfFile(blob: Blob, filename: string): void {
-    this.downloadFile(blob, filename);
   }
 }
