@@ -143,6 +143,13 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setUnitPrice(unitPrice);
             orderItem.setTotalPrice(itemTotal);
+            
+            // Assigner la station de travail du produit
+            if (product != null) {
+                orderItem.setWorkStation(product.getWorkStation());
+            } else if (!menuItem.getProducts().isEmpty()) {
+                orderItem.setWorkStation(menuItem.getProducts().stream().findFirst().get().getWorkStation());
+            }
 
             items.add(orderItem);
             totalAmount += itemTotal;

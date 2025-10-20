@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import com.follysitou.sellia_backend.enums.WorkStation;
 
 
 
@@ -60,4 +61,8 @@ public class Product extends BaseEntity {
 
     @Column(nullable = false)
     private Integer displayOrder = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WorkStation workStation = WorkStation.KITCHEN;
 }

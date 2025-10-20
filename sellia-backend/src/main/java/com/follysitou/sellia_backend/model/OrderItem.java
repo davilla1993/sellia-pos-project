@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.follysitou.sellia_backend.enums.WorkStation;
+import com.follysitou.sellia_backend.enums.OrderItemStatus;
 
 
 
@@ -58,4 +60,19 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "prepared_at")
     private java.time.LocalDateTime preparedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WorkStation workStation = WorkStation.KITCHEN;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderItemStatus status = OrderItemStatus.PENDING;
+
+    @Column(name = "sent_to_station_at")
+    private java.time.LocalDateTime sentToStationAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id")
+    private Ticket ticket;
 }
