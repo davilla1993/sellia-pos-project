@@ -3,7 +3,7 @@ Restons toujours dans le menu du caissier. On va le finir avant d'aller sur autr
 
 
  Tout passe par le POS, on n'a pas besoin de page web public. Le customer journey: 
- 1) le client scanne le qr code et passe commande -> le caissier accepte la commande -> le cuisine reçoit la commande, accepte et gère les statuts jusqu'à LIVREE -> le client vient à la caisse pour payer -> le caissier encaisse -> le statut change en PAYEE -> FIN: la session de la table est terminée. 
+ 1) le client scanne le qr code et passe commande -> le caissier accepte la commande -> la cuisine reçoit la commande, accepte et gère les statuts jusqu'à LIVREE -> le client vient à la caisse pour payer -> le caissier encaisse -> le statut change en PAYEE -> FIN: la session de la table est terminée. 
  NB: Entre temps, le client peut passer plusieurs commandes à la meme table en scannant le qr code. A la fin, on lui donne un seul reçu qui regroupe toutes les commandes. C'est pour gérer cet aspect qu'on a prévu CustomerSession dans le code.
  
  2) le serveur ou la serveuse prend la commande du client -> le caissier enregistre la commande -> ça passe à la cuisine -> la cuisine accepte et gère les status          

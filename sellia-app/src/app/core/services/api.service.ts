@@ -485,4 +485,17 @@ export class ApiService {
   markTicketAsPrinted(ticketId: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/tickets/${ticketId}/print`, {});
   }
+
+  // Public/QR Code Endpoints (No authentication required)
+  getPublicMenu(qrToken: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/public/menu/${qrToken}`);
+  }
+
+  createPublicOrder(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/public/orders`, request);
+  }
+
+  getPublicMenuHealth(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/public/health`);
+  }
 }

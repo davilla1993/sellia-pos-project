@@ -1,0 +1,169 @@
+<div class="public-menu-container">
+  <!-- Header -->
+  <header class="qr-header">
+    <div class="header-content">
+      <h1>Bienvenue!</h1>
+      <p class="table-info">
+        Table {{ tableNumber }} 
+        <span class="badge" [ngClass]="{'vip': isVip}">
+          {{ isTableVip }}
+        </span>
+      </p>
+    </div>
+  </header>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement du menu...</p>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="orderSuccess" class="alert alert-success">
+    <h3>✓ Commande Reçue!</h3>
+    <p>Numéro de commande: <strong>{{ orderNumber }}</strong></p>
+    <p>Votre commande a été enregistrée. Merci de votre visite!</p>
+  </div>
+
+  <!-- Main Content (Menu + Cart) -->
+  <div *ngIf="!loading && !orderSuccess" class="menu-main">
+    <!-- Menu Section -->
+    <div class="menu-section">
+      <div class="menu-header">
+        <h2>Notre Menu</h2>
+      </div>
+
+      <!-- Popular Items -->
+      <section *ngIf="popularItems.length > 0" class="popular-section">
+        <h3 class="section-title">✨ Spécialités du Jour</h3>
+        <div class="items-grid">
+          <div *ngFor="let item of popularItems" class="menu-item-card popular">
+            <div class="item-header">
+              <h4>{{ item.itemName }}</h4>
+              <span class="price">{{ formatPrice(item.price) }}</span>
+            </div>
+            <p class="description">{{ item.description }}</p>
+            <p *ngIf="item.specialDescription" class="special-note">
+              {{ item.specialDescription }}
+            </p>
+            <button class="btn-add" (click)="addToCart(item)">
+              Ajouter
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Regular Items by Category -->
+      <section *ngFor="let category of categories" class="category-section">
+        <h3 class="section-title">{{ category.name }}</h3>
+        <p class="category-desc">{{ category.description }}</p>
+        
+        <div class="items-grid">
+          <!-- Items would be rendered here - need to fetch items per category -->
+          <p class="placeholder">Articles: {{ category.itemCount }}</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Cart Sidebar / Toggle Button -->
+    <div class="cart-toggle-mobile">
+      <button class="btn-cart-toggle" (click)="toggleCart()">
+        <span class="cart-icon">🛒</span>
+        Panier ({{ cart.length }})
+        <span class="cart-count" *ngIf="cart.length > 0">{{ cart.length }}</span>
+      </button>
+    </div>
+
+    <!-- Cart Section -->
+    <aside class="cart-section" [ngClass]="{'show': showCart}">
+      <div class="cart-header">
+        <h2>Votre Panier</h2>
+        <button class="close-btn" (click)="toggleCart()" *ngIf="showCart">×</button>
+      </div>
+
+      <!-- Empty Cart Message -->
+      <div *ngIf="cart.length === 0" class="empty-cart">
+        <p class="empty-message">🛒 Votre panier est vide</p>
+        <p class="hint">Ajoutez des articles pour commencer</p>
+      </div>
+
+      <!-- Cart Items -->
+      <div *ngIf="cart.length > 0" class="cart-items">
+        <div *ngFor="let item of cart; let i = index" class="cart-item">
+          <div class="item-info">
+            <h4>{{ item.itemName }}</h4>
+            <p class="item-price">{{ formatPrice(item.unitPrice) }} x {{ item.quantity }}</p>
+          </div>
+          
+          <div class="item-controls">
+            <button class="qty-btn" (click)="item.quantity = item.quantity - 1; updateQuantity(item)">-</button>
+            <span class="qty-display">{{ item.quantity }}</span>
+            <button class="qty-btn" (click)="item.quantity = item.quantity + 1; updateQuantity(item)">+</button>
+            <button class="remove-btn" (click)="removeFromCart(i)">🗑</button>
+          </div>
+
+          <div class="item-total">
+            {{ formatPrice(item.totalPrice) }}
+          </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span>Sous-total</span>
+            <span>{{ formatPrice(cartTotal) }}</span>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="customer-info">
+          <h4>Vos informations</h4>
+          
+          <div class="form-group">
+            <label>Nom (optionnel)</label>
+            <input 
+              type="text" 
+              [(ngModel)]="customerName" 
+              placeholder="Votre nom"
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Téléphone (optionnel)</label>
+            <input 
+              type="tel" 
+              [(ngModel)]="customerPhone" 
+              placeholder="+237..."
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Notes spéciales</label>
+            <textarea 
+              [(ngModel)]="notes" 
+              placeholder="Allergies, préférences..."
+              class="form-textarea"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="btn-submit" 
+          (click)="submitOrder()"
+          [disabled]="submitting"
+        >
+          <span *ngIf="!submitting">Commander ({{ formatPrice(cartTotal) }})</span>
+          <span *ngIf="submitting">Envoi en cours...</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+</div>

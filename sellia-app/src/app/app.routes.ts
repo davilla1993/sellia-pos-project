@@ -5,6 +5,7 @@ import { ChangePasswordComponent } from './features/auth/change-password.compone
 import { CheckoutSimpleComponent } from './features/customer/checkout-simple.component';
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanner.component';
+import { PublicMenuComponent } from './features/public/public-menu.component';
 import { DashboardComponent } from './features/admin/dashboard.component';
 import { UsersListComponent } from './features/admin/users/users-list.component';
 import { UserFormComponent } from './features/admin/users/user-form.component';
@@ -27,6 +28,10 @@ import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Public Routes (No Auth Required)
+  {
+    path: 'qr/:token',
+    component: PublicMenuComponent
+  },
   {
     path: 'scan',
     component: QrScannerComponent

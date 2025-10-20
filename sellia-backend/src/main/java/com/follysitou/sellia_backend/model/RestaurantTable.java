@@ -43,6 +43,9 @@ public class RestaurantTable extends BaseEntity {
     @Column(name = "qr_code_url")
     private String qrCodeUrl;
 
+    @Column(name = "qr_code_token", unique = true)
+    private String qrCodeToken;
+
     @Column(name = "current_order_id")
     private String currentOrderId;
 

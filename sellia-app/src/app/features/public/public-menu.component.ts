@@ -1,0 +1,189 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiService } from '@core/services/api.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+interface MenuItem {
+  publicId: string;
+  menuName: string;
+  itemName: string;
+  price: number;
+  description: string;
+  preparationTime: number;
+  isSpecial: boolean;
+  specialDescription: string;
+}
+
+interface CartItem {
+  menuItemPublicId: string;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+@Component({
+  selector: 'app-public-menu',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './public-menu.component.html',
+  styleUrls: ['./public-menu.component.css']
+})
+export class PublicMenuComponent implements OnInit {
+
+  qrToken: string = '';
+  tableNumber: string = '';
+  isVip: boolean = false;
+  loading: boolean = false;
+  error: string = '';
+  
+  categories: any[] = [];
+  menuItems: MenuItem[] = [];
+  popularItems: MenuItem[] = [];
+  
+  cart: CartItem[] = [];
+  cartTotal: number = 0;
+  customerName: string = '';
+  customerPhone: string = '';
+  notes: string = '';
+  
+  showCart: boolean = false;
+  submitting: boolean = false;
+  orderSuccess: boolean = false;
+  orderNumber: string = '';
+  
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private apiService: ApiService
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      this.qrToken = params['token'];
+      this.loadMenu();
+    });
+  }
+
+  loadMenu(): void {
+    this.loading = true;
+    this.error = '';
+    
+    this.apiService.getPublicMenu(this.qrToken).subscribe(
+      response => {
+        this.tableNumber = response.tableNumber;
+        this.isVip = response.isVip;
+        this.categories = response.categories;
+        this.popularItems = response.popularItems;
+        this.flattenMenuItems();
+        this.loading = false;
+      },
+      error => {
+        this.error = 'QR code invalide ou table non trouvée';
+        this.loading = false;
+        setTimeout(() => this.router.navigate(['/']), 3000);
+      }
+    );
+  }
+
+  flattenMenuItems(): void {
+    this.menuItems = [];
+    // Récupérer tous les items (à partir des catégories ou du service)
+    this.categories.forEach(cat => {
+      // Note: À adapter selon la structure réelle des données
+    });
+  }
+
+  addToCart(item: MenuItem): void {
+    const existingItem = this.cart.find(c => c.menuItemPublicId === item.publicId);
+    
+    if (existingItem) {
+      existingItem.quantity++;
+      existingItem.totalPrice = existingItem.quantity * existingItem.unitPrice;
+    } else {
+      this.cart.push({
+        menuItemPublicId: item.publicId,
+        itemName: item.itemName,
+        quantity: 1,
+        unitPrice: item.price,
+        totalPrice: item.price
+      });
+    }
+    
+    this.updateCartTotal();
+  }
+
+  removeFromCart(index: number): void {
+    this.cart.splice(index, 1);
+    this.updateCartTotal();
+  }
+
+  updateQuantity(cartItem: CartItem): void {
+    if (cartItem.quantity < 1) {
+      cartItem.quantity = 1;
+    }
+    cartItem.totalPrice = cartItem.quantity * cartItem.unitPrice;
+    this.updateCartTotal();
+  }
+
+  updateCartTotal(): void {
+    this.cartTotal = this.cart.reduce((total, item) => total + item.totalPrice, 0);
+  }
+
+  submitOrder(): void {
+    if (this.cart.length === 0) {
+      this.error = 'Votre panier est vide';
+      return;
+    }
+
+    this.submitting = true;
+    this.error = '';
+
+    const orderRequest = {
+      customerSessionToken: this.qrToken,
+      items: this.cart.map(item => ({
+        menuItemPublicId: item.menuItemPublicId,
+        quantity: item.quantity
+      })),
+      customerName: this.customerName,
+      customerPhone: this.customerPhone,
+      notes: this.notes
+    };
+
+    this.apiService.createPublicOrder(orderRequest).subscribe(
+      response => {
+        this.orderSuccess = true;
+        this.orderNumber = response.orderNumber;
+        this.submitting = false;
+        this.cart = [];
+        this.updateCartTotal();
+        
+        // Afficher confirmation pendant 5 secondes
+        setTimeout(() => {
+          this.orderSuccess = false;
+          this.cart = [];
+        }, 5000);
+      },
+      error => {
+        this.error = error.error?.message || 'Erreur lors de la création de la commande';
+        this.submitting = false;
+      }
+    );
+  }
+
+  toggleCart(): void {
+    this.showCart = !this.showCart;
+  }
+
+  formatPrice(price: number): string {
+    return (price / 100).toLocaleString('fr-CM', {
+      style: 'currency',
+      currency: 'XAF'
+    });
+  }
+
+  get isTableVip(): string {
+    return this.isVip ? 'VIP' : 'Standard';
+  }
+}

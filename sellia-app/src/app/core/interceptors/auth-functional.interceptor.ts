@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { catchError, throwError, BehaviorSubject, filter, take, switchMap } from 'rxjs';
 
-const publicUrls = ['/auth/login', '/auth/public', '/health', '/api/auth'];
+const publicUrls = ['/auth/login', '/auth/public', '/health', '/api/auth', '/api/public'];
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);

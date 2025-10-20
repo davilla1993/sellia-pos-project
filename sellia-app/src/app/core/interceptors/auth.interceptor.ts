@@ -3,76 +3,66 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse
+  HttpInterceptor
 } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, filter, take, switchMap } from 'rxjs/operators';
-import { AuthService } from '../services/auth.service';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  private isRefreshing = false;
-  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
-  constructor(private authService: AuthService) {}
+  private publicRoutes = [
+    '/api/public/menu',
+    '/api/public/orders',
+    '/api/public/health'
+  ];
+
+  constructor() {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token = this.authService.getToken();
-
-    if (token && !this.isPublicUrl(request.url)) {
-      request = this.addToken(request, token);
+    
+    // Vérifier si c'est une route publique
+    const isPublicRoute = this.publicRoutes.some(route => request.url.includes(route));
+    
+    if (isPublicRoute) {
+      // Ne pas ajouter le token pour les routes publiques
+      return next.handle(request);
     }
 
-    return next.handle(request).pipe(
-      catchError(error => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          return this.handle401Error(request, next);
-        } else {
-          return throwError(() => error);
+    // Pour les autres routes, ajouter le token JWT
+    const authToken = localStorage.getItem('auth_token');
+    
+    if (authToken && !this.isTokenExpired(authToken)) {
+      request = request.clone({
+        setHeaders: {
+          Authorization: `Bearer ${authToken}`
         }
-      })
-    );
+      });
+    }
+
+    return next.handle(request);
   }
 
-  private addToken(request: HttpRequest<any>, token: string): HttpRequest<any> {
-    return request.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
+  private isTokenExpired(token: string): boolean {
+    try {
+      const decoded = this.parseJwt(token);
+      if (!decoded.exp) {
+        return false;
       }
-    });
-  }
-
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (!this.isRefreshing) {
-      this.isRefreshing = true;
-      this.refreshTokenSubject.next(null);
-
-      return this.authService.refreshToken().pipe(
-        switchMap((response) => {
-          this.isRefreshing = false;
-          this.refreshTokenSubject.next(response.accessToken);
-          return next.handle(this.addToken(request, response.accessToken));
-        }),
-        catchError((err) => {
-          this.isRefreshing = false;
-          this.authService.logout();
-          return throwError(() => err);
-        })
-      );
-    } else {
-      return this.refreshTokenSubject.pipe(
-        filter(token => token != null),
-        take(1),
-        switchMap(token => {
-          return next.handle(this.addToken(request, token));
-        })
-      );
+      const currentTime = Date.now() / 1000;
+      return decoded.exp < currentTime;
+    } catch {
+      return true;
     }
   }
 
-  private isPublicUrl(url: string): boolean {
-    const publicUrls = ['/auth/login', '/auth/public', '/health'];
-    return publicUrls.some(publicUrl => url.includes(publicUrl));
+  private parseJwt(token: string): any {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join('')
+    );
+    return JSON.parse(jsonPayload);
   }
 }

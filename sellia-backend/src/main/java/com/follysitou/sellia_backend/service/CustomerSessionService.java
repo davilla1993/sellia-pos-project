@@ -47,7 +47,7 @@ public class CustomerSessionService {
                     .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
             // Check if an active session already exists for this table
-            var existingSession = customerSessionRepository.findActiveSessionByTableId(table.getId());
+            var existingSession = customerSessionRepository.findActiveByTable(table.getPublicId());
 
             if (existingSession.isPresent()) {
                 log.info("Returning existing active session for table: {}", table.getNumber());
@@ -203,7 +203,7 @@ public class CustomerSessionService {
         RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
-        CustomerSession session = customerSessionRepository.findActiveSessionByTableId(table.getId())
+        CustomerSession session = customerSessionRepository.findActiveByTable(tablePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("No active session found for this table"));
 
         return customerSessionMapper.toResponse(session);
