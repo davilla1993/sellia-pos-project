@@ -21,6 +21,8 @@ import { InventoryComponent } from './features/admin/inventory.component';
 import { TablesComponent } from './features/admin/tables.component';
 import { ReportsComponent } from './features/admin/reports.component';
 import { SettingsComponent } from './features/admin/settings.component';
+import { GlobalSessionComponent } from './features/admin/global-session.component';
+import { CashiersComponent } from './features/admin/cashiers.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -65,12 +67,15 @@ export const routes: Routes = [
       },
       { path: 'inventory', component: InventoryComponent },
       { path: 'tables', component: TablesComponent },
+      { path: 'global-session', component: GlobalSessionComponent },
+      { path: 'cashiers', component: CashiersComponent },
       {
         path: 'reports',
         children: [
           { path: '', component: ReportsComponent },
           { path: 'sales', component: ReportsComponent },
           { path: 'products', component: ReportsComponent },
+          { path: 'cashiers', component: ReportsComponent },
           { path: 'staff', component: ReportsComponent }
         ]
       },

@@ -347,6 +347,14 @@ export class ApiService {
     );
   }
 
+  createCashier(cashierData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashiers`, cashierData);
+  }
+
+  changeCashierPin(cashierId: string, newPin: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashiers/${cashierId}/change-pin`, { pin: newPin });
+  }
+
   // Global Sessions
   getCurrentGlobalSession(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/global-sessions/current`);

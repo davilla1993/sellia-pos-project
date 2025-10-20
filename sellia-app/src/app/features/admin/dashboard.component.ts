@@ -98,6 +98,22 @@ export class DashboardComponent {
       buttonText: 'Gérer l\'équipe'
     },
     {
+      title: 'Session Globale',
+      description: 'Ouverture/fermeture session journalière',
+      icon: '🔓',
+      color: '#F59E0B',
+      route: '/admin/global-session',
+      buttonText: 'Gérer session'
+    },
+    {
+      title: 'Gestion Caisses',
+      description: 'Créer et gérer les caisses',
+      icon: '💳',
+      color: '#8B5CF6',
+      route: '/admin/cashiers',
+      buttonText: 'Gérer les caisses'
+    },
+    {
       title: 'Rapports',
       description: 'Statistiques et analyses',
       icon: '📈',

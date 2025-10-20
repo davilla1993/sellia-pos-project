@@ -153,12 +153,24 @@ export class SidebarComponent {
       expanded: false
     },
     {
+      label: 'Session Globale',
+      icon: this.getIcon('settings'),
+      route: '/admin/global-session',
+      expanded: false
+    },
+    {
+      label: 'Gestion Caisses',
+      icon: this.getIcon('cashier'),
+      route: '/admin/cashiers',
+      expanded: false
+    },
+    {
       label: 'Rapports',
       icon: this.getIcon('reports'),
       children: [
+        { label: 'Caisses', route: '/admin/reports/cashiers' },
         { label: 'Ventes', route: '/admin/reports/sales' },
-        { label: 'Produits', route: '/admin/reports/products' },
-        { label: 'Personnel', route: '/admin/reports/staff' }
+        { label: 'Produits', route: '/admin/reports/products' }
       ],
       expanded: false
     },
