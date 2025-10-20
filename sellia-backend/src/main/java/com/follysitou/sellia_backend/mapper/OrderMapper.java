@@ -4,6 +4,9 @@ import com.follysitou.sellia_backend.dto.request.OrderCreateRequest;
 import com.follysitou.sellia_backend.dto.request.OrderUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.OrderResponse;
 import com.follysitou.sellia_backend.model.*;
+import com.follysitou.sellia_backend.model.Cashier;
+import com.follysitou.sellia_backend.model.CashierSession;
+import com.follysitou.sellia_backend.model.User;
 import com.follysitou.sellia_backend.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,6 +41,7 @@ public class OrderMapper {
         response.setTable(toRestaurantTableResponse(order.getTable()));
         response.setOrderType(order.getOrderType());
         response.setCustomerSession(toCustomerSessionResponse(order.getCustomerSession()));
+        response.setCashierSession(toCashierSessionResponse(order.getCashierSession()));
         response.setInvoice(toInvoiceResponse(order.getInvoice()));
         
         if (order.getItems() != null) {
@@ -160,6 +164,39 @@ public class OrderMapper {
         response.setName(product.getName());
         response.setImageUrl(product.getImageUrl());
         response.setPreparationTime(product.getPreparationTime());
+        return response;
+    }
+
+    private OrderResponse.CashierSessionResponse toCashierSessionResponse(CashierSession session) {
+        if (session == null) return null;
+        
+        OrderResponse.CashierSessionResponse response = new OrderResponse.CashierSessionResponse();
+        response.setPublicId(session.getPublicId());
+        response.setCashier(toCashierResponse(session.getCashier()));
+        response.setUser(toUserResponse(session.getUser()));
+        response.setOpenedAt(session.getOpenedAt());
+        response.setClosedAt(session.getClosedAt());
+        return response;
+    }
+
+    private OrderResponse.CashierResponse toCashierResponse(Cashier cashier) {
+        if (cashier == null) return null;
+        
+        OrderResponse.CashierResponse response = new OrderResponse.CashierResponse();
+        response.setPublicId(cashier.getPublicId());
+        response.setName(cashier.getName());
+        response.setCashierNumber(cashier.getCashierNumber());
+        return response;
+    }
+
+    private OrderResponse.UserResponse toUserResponse(User user) {
+        if (user == null) return null;
+        
+        OrderResponse.UserResponse response = new OrderResponse.UserResponse();
+        response.setPublicId(user.getPublicId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setUsername(user.getUsername());
         return response;
     }
 }

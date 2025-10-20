@@ -13,6 +13,8 @@ import com.follysitou.sellia_backend.model.Order;
 import com.follysitou.sellia_backend.model.OrderItem;
 import com.follysitou.sellia_backend.model.Product;
 import com.follysitou.sellia_backend.model.RestaurantTable;
+import com.follysitou.sellia_backend.model.User;
+import com.follysitou.sellia_backend.repository.CashierSessionRepository;
 import com.follysitou.sellia_backend.repository.CustomerSessionRepository;
 import com.follysitou.sellia_backend.repository.OrderItemRepository;
 import com.follysitou.sellia_backend.repository.OrderRepository;
@@ -25,6 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,6 +52,7 @@ public class OrderService {
     private final CustomerSessionService customerSessionService;
     private final InventoryMovementService inventoryMovementService;
     private final StockRepository stockRepository;
+    private final CashierSessionRepository cashierSessionRepository;
 
     public OrderResponse createOrder(OrderCreateRequest request) {
         // Validate based on order type
@@ -78,6 +84,19 @@ public class OrderService {
             customerSessionService.validateSessionIsActive(request.getCustomerSessionPublicId());
         }
 
+        // Get current cashier session for CAISSIER/ADMIN users
+        com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        // Only get cashier session if user is CAISSIER or ADMIN
+        if (currentUser.getRole().getName().toString().equals("CAISSIER") || 
+            currentUser.getRole().getName().toString().equals("ADMIN")) {
+            var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUser.getPublicId());
+            if (optionalSession.isPresent()) {
+                cashierSession = optionalSession.get();
+            }
+        }
+
         // Generate unique order number
         String orderNumber = generateUniqueOrderNumber();
 
@@ -86,6 +105,7 @@ public class OrderService {
         order.setOrderNumber(orderNumber);
         order.setTable(table);
         order.setCustomerSession(customerSession);
+        order.setCashierSession(cashierSession);
         order.setOrderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE);
 
         // Create order items

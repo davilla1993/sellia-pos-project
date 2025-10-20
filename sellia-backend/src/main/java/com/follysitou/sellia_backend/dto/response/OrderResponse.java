@@ -15,6 +15,7 @@ public class OrderResponse {
     private RestaurantTableResponse table;
     private OrderType orderType;
     private CustomerSessionResponse customerSession;
+    private CashierSessionResponse cashierSession;
     private InvoiceResponse invoice;
     private List<OrderItemResponse> items;
     private OrderStatus status;
@@ -49,6 +50,30 @@ public class OrderResponse {
         private String qrCode;
         private LocalDateTime startedAt;
         private LocalDateTime endedAt;
+    }
+
+    @Data
+    public static class CashierSessionResponse {
+        private String publicId;
+        private CashierResponse cashier;
+        private UserResponse user;
+        private LocalDateTime openedAt;
+        private LocalDateTime closedAt;
+    }
+
+    @Data
+    public static class CashierResponse {
+        private String publicId;
+        private String name;
+        private String cashierNumber;
+    }
+
+    @Data
+    public static class UserResponse {
+        private String publicId;
+        private String firstName;
+        private String lastName;
+        private String username;
     }
 
     @Data
