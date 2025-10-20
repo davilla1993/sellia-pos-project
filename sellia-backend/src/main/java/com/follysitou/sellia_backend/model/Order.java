@@ -43,6 +43,10 @@ public class Order extends BaseEntity {
     private CustomerSession customerSession;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cashier_session_id")
+    private CashierSession cashierSession;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 

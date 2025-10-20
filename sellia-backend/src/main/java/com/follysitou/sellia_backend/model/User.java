@@ -11,7 +11,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -65,6 +67,9 @@ public class User extends BaseEntity implements UserDetails {
     private String phoneNumber;
 
     private String profileImage;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "assignedUsers")
+    private Set<Cashier> assignedCashiers = new HashSet<>();
 
     // UserDetails implementation
     @Override

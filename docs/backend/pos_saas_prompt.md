@@ -143,3 +143,9 @@ Je veux que tu :
 
 
 Soumets ta réponse sous forme de document structuré et professionnel, prêt à être utilisé comme spécification technique pour le développement du MVP.
+
+
+
+- Gestion de caisse multiple
+- Module bar
+- Ajout de code PIN
