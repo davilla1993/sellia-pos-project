@@ -1,5 +1,8 @@
 package com.follysitou.sellia_backend.controller;
 
+import com.follysitou.sellia_backend.dto.response.CashierReportResponse;
+import com.follysitou.sellia_backend.dto.response.GlobalSessionReportResponse;
+import com.follysitou.sellia_backend.dto.response.UserReportResponse;
 import com.follysitou.sellia_backend.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -56,5 +59,33 @@ public class ReportController {
     public ResponseEntity<Map<String, Object>> getSystemHealthReport() {
         Map<String, Object> health = reportService.getSystemHealthReport();
         return ResponseEntity.ok(health);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/global-session/{globalSessionId}")
+    public ResponseEntity<GlobalSessionReportResponse> getGlobalSessionReport(
+            @PathVariable String globalSessionId) {
+        GlobalSessionReportResponse report = reportService.getGlobalSessionReport(globalSessionId);
+        return ResponseEntity.ok(report);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/cashier/{cashierId}")
+    public ResponseEntity<CashierReportResponse> getCashierReport(
+            @PathVariable String cashierId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        CashierReportResponse report = reportService.getCashierReport(cashierId, startDate, endDate);
+        return ResponseEntity.ok(report);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<UserReportResponse> getUserReport(
+            @PathVariable String userId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        UserReportResponse report = reportService.getUserReport(userId, startDate, endDate);
+        return ResponseEntity.ok(report);
     }
 }

@@ -394,4 +394,21 @@ export class ApiService {
   updateCashierSessionActivity(sessionId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/cashier-sessions/${sessionId}/activity`, {});
   }
+
+  // Reports
+  getGlobalSessionReport(globalSessionId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/global-session/${globalSessionId}`);
+  }
+
+  getCashierReport(cashierId: string, startDate: string, endDate: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/cashier/${cashierId}`, {
+      params: { startDate, endDate }
+    });
+  }
+
+  getUserReport(userId: string, startDate: string, endDate: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/user/${userId}`, {
+      params: { startDate, endDate }
+    });
+  }
 }
