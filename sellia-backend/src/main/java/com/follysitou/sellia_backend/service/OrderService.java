@@ -12,6 +12,7 @@ import com.follysitou.sellia_backend.model.CustomerSession;
 import com.follysitou.sellia_backend.model.Order;
 import com.follysitou.sellia_backend.model.OrderItem;
 import com.follysitou.sellia_backend.model.Product;
+import com.follysitou.sellia_backend.model.MenuItem;
 import com.follysitou.sellia_backend.model.RestaurantTable;
 import com.follysitou.sellia_backend.model.User;
 import com.follysitou.sellia_backend.repository.CashierSessionRepository;
@@ -21,6 +22,7 @@ import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.repository.ProductRepository;
 import com.follysitou.sellia_backend.repository.RestaurantTableRepository;
 import com.follysitou.sellia_backend.repository.StockRepository;
+import com.follysitou.sellia_backend.repository.MenuItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -46,6 +48,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final RestaurantTableRepository restaurantTableRepository;
     private final ProductRepository productRepository;
+    private final MenuItemRepository menuItemRepository;
     private final CustomerSessionRepository customerSessionRepository;
     private final OrderMapper orderMapper;
     private final NotificationService notificationService;
@@ -108,19 +111,35 @@ public class OrderService {
         order.setCashierSession(cashierSession);
         order.setOrderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE);
 
-        // Create order items
+        // Create order items (via MenuItems, not Products directly)
         List<OrderItem> items = new ArrayList<>();
         long totalAmount = 0;
 
         for (OrderCreateRequest.OrderItemRequest itemRequest : request.getItems()) {
-            Product product = productRepository.findByPublicId(itemRequest.getProductPublicId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
+            // Get MenuItem (required)
+            com.follysitou.sellia_backend.model.MenuItem menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found: " + itemRequest.getMenuItemPublicId()));
 
-            long unitPrice = product.getPrice();
+            // Calculate unit price from MenuItem
+            long unitPrice = menuItem.getPriceOverride() != null ? menuItem.getPriceOverride() : 
+                           menuItem.getBundlePrice() != null ? menuItem.getBundlePrice() :
+                           menuItem.getProducts().isEmpty() ? 0L : 
+                           menuItem.getProducts().stream().mapToLong(Product::getPrice).sum();
+
             long itemTotal = unitPrice * itemRequest.getQuantity();
+
+            // Get specific Product if provided, otherwise use first from MenuItem
+            Product product = null;
+            if (itemRequest.getProductPublicId() != null && !itemRequest.getProductPublicId().isBlank()) {
+                product = productRepository.findByPublicId(itemRequest.getProductPublicId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
+            } else if (!menuItem.getProducts().isEmpty()) {
+                product = menuItem.getProducts().stream().findFirst().orElse(null);
+            }
 
             OrderItem orderItem = orderMapper.toItemEntity(itemRequest);
             orderItem.setOrder(order);
+            orderItem.setMenuItem(menuItem);
             orderItem.setProduct(product);
             orderItem.setUnitPrice(unitPrice);
             orderItem.setTotalPrice(itemTotal);

@@ -87,10 +87,10 @@ public class OrderMapper {
         OrderItem item = OrderItem.builder()
                 .quantity(request.getQuantity())
                 .specialInstructions(request.getNotes())
-                .unitPrice(0L) // Will be set when product is attached
+                .unitPrice(0L) // Will be set when MenuItem is attached
                 .totalPrice(0L) // Will be calculated
                 .build();
-        // Note: Product will be set in service layer
+        // Note: MenuItem and Product will be set in service layer
         return item;
     }
 
@@ -148,11 +148,23 @@ public class OrderMapper {
     private OrderResponse.OrderItemResponse toOrderItemResponse(OrderItem item) {
         OrderResponse.OrderItemResponse response = new OrderResponse.OrderItemResponse();
         response.setPublicId(item.getPublicId());
+        response.setMenuItem(toMenuItemResponse(item.getMenuItem()));
         response.setProduct(toProductSimpleResponse(item.getProduct()));
         response.setQuantity(item.getQuantity());
         response.setUnitPrice(item.getUnitPrice());
         response.setTotalPrice(item.getTotalPrice());
         response.setNotes(item.getSpecialInstructions());
+        return response;
+    }
+
+    private OrderResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem) {
+        if (menuItem == null) return null;
+        
+        OrderResponse.MenuItemResponse response = new OrderResponse.MenuItemResponse();
+        response.setPublicId(menuItem.getPublicId());
+        response.setMenuName(menuItem.getMenu() != null ? menuItem.getMenu().getName() : "Unknown");
+        response.setPriceOverride(menuItem.getPriceOverride());
+        response.setBundlePrice(menuItem.getBundlePrice());
         return response;
     }
 

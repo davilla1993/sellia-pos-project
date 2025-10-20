@@ -88,11 +88,20 @@ public class OrderResponse {
     @Data
     public static class OrderItemResponse {
         private String publicId;
+        private MenuItemResponse menuItem;
         private ProductSimpleResponse product;
         private Integer quantity;
         private Long unitPrice;
         private Long totalPrice;
         private String notes;
+    }
+
+    @Data
+    public static class MenuItemResponse {
+        private String publicId;
+        private String menuName;
+        private Long priceOverride;
+        private Long bundlePrice;
     }
 
     @Data

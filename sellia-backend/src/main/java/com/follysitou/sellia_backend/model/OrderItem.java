@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "order_items", indexes = {
         @Index(name = "idx_order_item_order", columnList = "orderId"),
+        @Index(name = "idx_order_item_menu_item", columnList = "menuItemId"),
         @Index(name = "idx_order_item_product", columnList = "productId")
 })
 @Data
@@ -27,7 +28,11 @@ public class OrderItem extends BaseEntity {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "menu_item_id", nullable = false)
+    private MenuItem menuItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = true)
     private Product product;
 
     @NotNull(message = "Quantity is required")
