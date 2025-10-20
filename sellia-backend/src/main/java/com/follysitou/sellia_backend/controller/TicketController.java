@@ -3,6 +3,7 @@ package com.follysitou.sellia_backend.controller;
 import com.follysitou.sellia_backend.model.Ticket;
 import com.follysitou.sellia_backend.service.TicketService;
 import com.follysitou.sellia_backend.enums.WorkStation;
+import com.follysitou.sellia_backend.dto.response.SessionTicketsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +20,21 @@ public class TicketController {
     private final TicketService ticketService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
-    @PostMapping("/session/{customerSessionPublicId}/generate")
-    public ResponseEntity<List<Ticket>> generateTickets(
+    @PostMapping("/session/{customerSessionPublicId}/generate/separated")
+    public ResponseEntity<List<Ticket>> generateSeparatedTickets(
             @PathVariable String customerSessionPublicId) {
-        List<Ticket> tickets = ticketService.generateTicketsForSession(customerSessionPublicId);
+        List<Ticket> tickets = ticketService.generateSeparatedTickets(customerSessionPublicId);
         return ResponseEntity.status(HttpStatus.CREATED).body(tickets);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
+    @PostMapping("/session/{customerSessionPublicId}/generate/unified")
+    public ResponseEntity<Ticket> generateUnifiedTicket(
+            @PathVariable String customerSessionPublicId) {
+        Ticket ticket = ticketService.generateUnifiedTicket(customerSessionPublicId);
+        return ticket != null ? 
+            ResponseEntity.status(HttpStatus.CREATED).body(ticket) :
+            ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CUISINE', 'BAR')")
@@ -64,5 +75,13 @@ public class TicketController {
             @PathVariable String ticketPublicId) {
         ticketService.deleteTicket(ticketPublicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'SERVEUR')")
+    @GetMapping("/session/{customerSessionPublicId}/status")
+    public ResponseEntity<SessionTicketsResponse> getSessionTicketsStatus(
+            @PathVariable String customerSessionPublicId) {
+        SessionTicketsResponse response = ticketService.getSessionTicketsStatus(customerSessionPublicId);
+        return ResponseEntity.ok(response);
     }
 }

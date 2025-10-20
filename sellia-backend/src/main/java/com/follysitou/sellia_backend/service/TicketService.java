@@ -31,8 +31,8 @@ public class TicketService {
     private final OrderItemRepository orderItemRepository;
 
     /**
-     * Génère les tickets pour une CustomerSession
-     * UN SEUL ticket par WorkStation, regroupant tous les OrderItems
+     * Génère les tickets SÉPARÉS pour une CustomerSession
+     * UN ticket par WorkStation, regroupant tous les OrderItems de cette station
      * 
      * Exemple:
      * - Table 5 a commandé: Pizza + Coca + Bière + Tiramisu
@@ -40,7 +40,7 @@ public class TicketService {
      *   - TICKET BAR: Coca + Bière + Tiramisu
      *   - TICKET KITCHEN: Pizza
      */
-    public List<Ticket> generateTicketsForSession(String customerSessionPublicId) {
+    public List<Ticket> generateSeparatedTickets(String customerSessionPublicId) {
         CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
 
@@ -217,5 +217,260 @@ public class TicketService {
         ticket.setDeleted(true);
         ticketRepository.save(ticket);
         log.info("Ticket supprimé: {}", ticketPublicId);
+    }
+
+    /**
+     * Génère UN SEUL ticket UNIFIÉ pour une CustomerSession
+     * Tous les items dans un seul ticket, groupés par WorkStation
+     */
+    public Ticket generateUnifiedTicket(String customerSessionPublicId) {
+        CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
+
+        List<OrderItem> orderItems = orderItemRepository.findAll().stream()
+                .filter(oi -> oi.getOrder().getCustomerSession() != null &&
+                        oi.getOrder().getCustomerSession().getPublicId().equals(customerSessionPublicId) &&
+                        oi.getTicket() == null)
+                .collect(Collectors.toList());
+
+        if (orderItems.isEmpty()) {
+            log.info("Aucun OrderItem pour la session: {}", customerSessionPublicId);
+            return null;
+        }
+
+        Ticket unifiedTicket = Ticket.builder()
+                .customerSession(session)
+                .workStation(WorkStation.CHECKOUT)
+                .status(TicketStatus.PENDING)
+                .priority(0)
+                .items(orderItems)
+                .ticketNumber(generateUnifiedTicketNumber())
+                .message("TICKET COMPLET - Cuisine & Bar")
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        for (OrderItem item : orderItems) {
+            item.setTicket(unifiedTicket);
+        }
+
+        Ticket savedTicket = ticketRepository.save(unifiedTicket);
+        log.info("Ticket unifié créé - Session: {}", customerSessionPublicId);
+        return savedTicket;
+    }
+
+    private String generateUnifiedTicketNumber() {
+        long count = ticketRepository.findAll().stream()
+                .filter(t -> t.getWorkStation() == WorkStation.CHECKOUT && !t.getDeleted())
+                .count();
+        return String.format("RECEIPT-%03d", count + 1);
+    }
+
+    /**
+     * Récupère le statut des tickets groupés par session
+     * Vue synthétique pour le serveur/caissier
+     */
+    public com.follysitou.sellia_backend.dto.response.SessionTicketsResponse getSessionTicketsStatus(String customerSessionPublicId) {
+        CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
+
+        // Récupérer tous les tickets de cette session
+        List<Ticket> tickets = ticketRepository.findByCustomerSessionId(customerSessionPublicId);
+
+        if (tickets.isEmpty()) {
+            log.warn("Aucun ticket trouvé pour la session: {}", customerSessionPublicId);
+            return buildEmptySessionTicketsResponse(session);
+        }
+
+        // Construire la réponse
+        com.follysitou.sellia_backend.dto.response.SessionTicketsResponse response = 
+                new com.follysitou.sellia_backend.dto.response.SessionTicketsResponse();
+
+        response.setSessionPublicId(session.getPublicId());
+        response.setTableNumber(session.getTable() != null ? 
+                session.getTable().getNumber() : "N/A");
+        response.setCustomerName(session.getCustomerName());
+
+        // Grouper les tickets par station
+        Map<WorkStation, com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.StationTicketInfo> ticketsByStation = 
+                new java.util.LinkedHashMap<>();
+
+        int readyCount = 0;
+        int preparingCount = 0;
+        int pendingCount = 0;
+
+        for (Ticket ticket : tickets) {
+            com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.StationTicketInfo stationInfo = 
+                    buildStationTicketInfo(ticket);
+            ticketsByStation.put(ticket.getWorkStation(), stationInfo);
+
+            // Compter les stations par status
+            switch (ticket.getStatus()) {
+                case READY -> readyCount++;
+                case PREPARING, PRINTING, PRINTED -> preparingCount++;
+                case PENDING -> pendingCount++;
+            }
+        }
+
+        response.setTicketsByStation(ticketsByStation);
+        response.setTotalStations(tickets.size());
+        response.setReadyStations(readyCount);
+        response.setPreparingStations(preparingCount);
+        response.setPendingStations(pendingCount);
+
+        // Calculer le pourcentage de progression
+        int progressPercentage = (int) ((readyCount * 100) / Math.max(1, tickets.size()));
+        response.setProgressPercentage(progressPercentage);
+
+        // Déterminer le statut de session
+        com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus sessionStatus = 
+                determineSessionStatus(tickets);
+        response.setSessionStatus(sessionStatus);
+
+        // Message pour le serveur
+        response.setServerMessage(buildServerMessage(sessionStatus, readyCount, tickets.size()));
+
+        response.setCreatedAt(session.getSessionStart());
+
+        return response;
+    }
+
+    /**
+     * Construit les infos d'un ticket pour la réponse
+     */
+    private com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.StationTicketInfo buildStationTicketInfo(Ticket ticket) {
+        com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.StationTicketInfo stationInfo = 
+                new com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.StationTicketInfo();
+
+        stationInfo.setTicketPublicId(ticket.getPublicId());
+        stationInfo.setStation(ticket.getWorkStation());
+        stationInfo.setStatus(ticket.getStatus());
+        stationInfo.setItemCount(ticket.getItems() != null ? ticket.getItems().size() : 0);
+        stationInfo.setMessage(ticket.getMessage());
+        stationInfo.setPriority(ticket.getPriority());
+        stationInfo.setPrintedAt(ticket.getPrintedAt());
+        stationInfo.setReadyAt(ticket.getReadyAt());
+
+        // Construire la liste des items
+        if (ticket.getItems() != null) {
+            List<com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.TicketItemInfo> items = 
+                    new ArrayList<>();
+
+            for (OrderItem orderItem : ticket.getItems()) {
+                com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.TicketItemInfo itemInfo = 
+                        new com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.TicketItemInfo();
+
+                String itemName = orderItem.getMenuItem() != null ? 
+                        orderItem.getMenuItem().getMenu().getName() : "Unknown";
+                itemInfo.setPublicId(orderItem.getPublicId());
+                itemInfo.setItemName(itemName);
+                itemInfo.setQuantity(orderItem.getQuantity());
+                itemInfo.setNotes(orderItem.getSpecialInstructions());
+
+                items.add(itemInfo);
+            }
+
+            stationInfo.setItems(items);
+        }
+
+        return stationInfo;
+    }
+
+    /**
+     * Détermine le statut global de la session basé sur les tickets
+     */
+    private com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus determineSessionStatus(
+            List<Ticket> tickets) {
+
+        if (tickets.isEmpty()) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PENDING;
+        }
+
+        int totalTickets = tickets.size();
+        long readyTickets = tickets.stream()
+                .filter(t -> t.getStatus() == TicketStatus.READY || t.getStatus() == TicketStatus.SERVED)
+                .count();
+        long servedTickets = tickets.stream()
+                .filter(t -> t.getStatus() == TicketStatus.SERVED)
+                .count();
+
+        // Tous les tickets servis
+        if (servedTickets == totalTickets) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.SERVED;
+        }
+
+        // Tous les tickets prêts
+        if (readyTickets == totalTickets) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.READY;
+        }
+
+        // Certains tickets prêts
+        if (readyTickets > 0) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PARTIALLY_READY;
+        }
+
+        // Au moins un ticket en préparation
+        long preparingTickets = tickets.stream()
+                .filter(t -> t.getStatus() == TicketStatus.PREPARING || 
+                        t.getStatus() == TicketStatus.PRINTED)
+                .count();
+        if (preparingTickets > 0) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PREPARING;
+        }
+
+        // Au moins un ticket en impression
+        long printingTickets = tickets.stream()
+                .filter(t -> t.getStatus() == TicketStatus.PRINTING)
+                .count();
+        if (printingTickets > 0) {
+            return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PRINTING;
+        }
+
+        // Par défaut: en attente
+        return com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PENDING;
+    }
+
+    /**
+     * Construit un message clair pour le serveur
+     */
+    private String buildServerMessage(
+            com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus status,
+            int readyCount,
+            int totalTickets) {
+
+        return switch (status) {
+            case PENDING -> "En attente des tickets";
+            case PRINTING -> "Tickets en impression...";
+            case PREPARING -> "Les stations préparent...";
+            case PARTIALLY_READY -> String.format("%d/%d stations prêtes - %d station(s) en cours", 
+                    readyCount, totalTickets, totalTickets - readyCount);
+            case READY -> "✓ PRÊT À SERVIR! Tous les items sont prêts";
+            case SERVED -> "✓ Commande servie";
+        };
+    }
+
+    /**
+     * Construit une réponse vide quand aucun ticket
+     */
+    private com.follysitou.sellia_backend.dto.response.SessionTicketsResponse buildEmptySessionTicketsResponse(
+            CustomerSession session) {
+
+        com.follysitou.sellia_backend.dto.response.SessionTicketsResponse response = 
+                new com.follysitou.sellia_backend.dto.response.SessionTicketsResponse();
+
+        response.setSessionPublicId(session.getPublicId());
+        response.setTableNumber(session.getTable() != null ? 
+                session.getTable().getNumber() : "N/A");
+        response.setCustomerName(session.getCustomerName());
+        response.setTotalStations(0);
+        response.setReadyStations(0);
+        response.setPreparingStations(0);
+        response.setPendingStations(0);
+        response.setProgressPercentage(0);
+        response.setSessionStatus(
+                com.follysitou.sellia_backend.dto.response.SessionTicketsResponse.SessionStatus.PENDING);
+        response.setServerMessage("Aucun ticket généré pour cette session");
+        response.setCreatedAt(session.getSessionStart());
+
+        return response;
     }
 }
