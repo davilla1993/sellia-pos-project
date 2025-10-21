@@ -85,6 +85,26 @@ export const routes: Routes = [
         ]
       },
       { path: 'settings', component: SettingsComponent },
+      {
+        path: 'menus',
+        loadComponent: () => import('./features/admin/menus/menus.component').then(m => m.MenusComponent)
+      },
+      {
+        path: 'active-sessions',
+        loadComponent: () => import('./features/admin/active-sessions/active-sessions.component').then(m => m.ActiveSessionsComponent)
+      },
+      {
+        path: 'active-orders',
+        loadComponent: () => import('./features/admin/active-orders/active-orders.component').then(m => m.ActiveOrdersComponent)
+      },
+      {
+        path: 'stock-alerts',
+        loadComponent: () => import('./features/admin/stock-alerts/stock-alerts.component').then(m => m.StockAlertsComponent)
+      },
+      {
+        path: 'analytics',
+        loadComponent: () => import('./features/admin/analytics/analytics.component').then(m => m.AnalyticsComponent)
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

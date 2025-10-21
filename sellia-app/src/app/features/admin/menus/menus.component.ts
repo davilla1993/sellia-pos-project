@@ -1,0 +1,438 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ApiService } from '../../../core/services/api.service';
+import { ToastService } from '../../../shared/services/toast.service';
+
+@Component({
+  selector: 'app-menus',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  template: `
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold text-white mb-2">Gestion des Menus</h1>
+          <p class="text-neutral-400">Créez et gérez vos menus</p>
+        </div>
+        <button (click)="openCreateMenuModal()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+          + Nouveau Menu
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-4 border-b border-neutral-700">
+        <button 
+          (click)="activeTab.set('menus')"
+          [class.border-b-2]="activeTab() === 'menus'"
+          [class.border-orange-500]="activeTab() === 'menus'"
+          [class.text-white]="activeTab() === 'menus'"
+          [class.text-neutral-400]="activeTab() !== 'menus'"
+          class="pb-2 font-semibold transition-colors">
+          Menus ({{ menus().length }})
+        </button>
+        <button 
+          (click)="activeTab.set('items')"
+          [class.border-b-2]="activeTab() === 'items'"
+          [class.border-orange-500]="activeTab() === 'items'"
+          [class.text-white]="activeTab() === 'items'"
+          [class.text-neutral-400]="activeTab() !== 'items'"
+          class="pb-2 font-semibold transition-colors">
+          Articles ({{ menuItems().length }})
+        </button>
+      </div>
+
+      <!-- Menus Tab -->
+      <div *ngIf="activeTab() === 'menus'" class="space-y-4">
+        <div *ngIf="isLoading()" class="flex justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+
+        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-5 hover:border-neutral-600 transition">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h3 class="text-lg font-bold text-white">{{ menu.name }}</h3>
+                <p class="text-xs text-neutral-400">{{ menu.menuType }}</p>
+              </div>
+              <span [class]="menu.active ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'" class="px-2 py-1 rounded-full text-xs font-semibold">
+                {{ menu.active ? 'Actif' : 'Inactif' }}
+              </span>
+            </div>
+            <p class="text-sm text-neutral-400 mb-3">{{ menu.description }}</p>
+            <div class="text-xs text-neutral-500 mb-4">
+              <p>Articles: {{ menu.itemCount || 0 }}</p>
+            </div>
+            <div class="flex gap-2">
+              <button (click)="editMenu(menu)" class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+                ✏️ Éditer
+              </button>
+              <button 
+                (click)="toggleMenuStatus(menu)"
+                [class]="menu.active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
+                class="flex-1 px-2 py-2 text-white rounded text-xs font-semibold transition-colors">
+                {{ menu.active ? '🔒 Désactiver' : '🔓 Activer' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading() && menus().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
+          <p class="text-neutral-400">Aucun menu créé</p>
+        </div>
+      </div>
+
+      <!-- Items Tab -->
+      <div *ngIf="activeTab() === 'items'" class="space-y-4">
+        <div class="flex gap-2 mb-4">
+          <select [(ngModel)]="selectedMenuForItems" (change)="loadMenuItems()" class="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+            <option value="">-- Sélectionner un menu --</option>
+            <option *ngFor="let menu of menus()" [value]="menu.publicId">{{ menu.name }}</option>
+          </select>
+          <button 
+            (click)="openCreateItemModal()" 
+            [disabled]="!selectedMenuForItems"
+            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
+            + Ajouter Article
+          </button>
+        </div>
+
+        <div *ngIf="isLoading()" class="flex justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+
+        <div *ngIf="!isLoading() && menuItems().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-neutral-700 border-b border-neutral-600">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Nom</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Prix</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Ordre</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of menuItems()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+                <td class="px-6 py-4 text-white">{{ item.name }}</td>
+                <td class="px-6 py-4 text-orange-400 font-semibold">€{{ (item.price / 100).toFixed(2) }}</td>
+                <td class="px-6 py-4 text-neutral-400">{{ item.displayOrder }}</td>
+                <td class="px-6 py-4 space-x-2 flex">
+                  <button (click)="editMenuItem(item)" class="text-blue-400 hover:text-blue-300 text-sm font-medium">Éditer</button>
+                  <button (click)="deleteMenuItem(item.publicId)" class="text-red-400 hover:text-red-300 text-sm font-medium">Supprimer</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="!isLoading() && menuItems().length === 0 && selectedMenuForItems" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
+          <p class="text-neutral-400">Aucun article dans ce menu</p>
+        </div>
+      </div>
+
+      <!-- Menu Modal -->
+      <div *ngIf="showMenuModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-neutral-800 rounded-lg p-6 max-w-md w-full border border-neutral-700 max-h-screen overflow-y-auto">
+          <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenu ? 'Éditer Menu' : 'Nouveau Menu' }}</h2>
+          
+          <form [formGroup]="menuForm" (ngSubmit)="saveMenu()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Nom</label>
+              <input formControlName="name" type="text" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Menu du Jour">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Description</label>
+              <textarea formControlName="description" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Description..."></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Type</label>
+              <select formControlName="menuType" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+                <option value="">-- Sélectionner --</option>
+                <option value="DAILY">Quotidien</option>
+                <option value="SPECIAL">Spécial</option>
+                <option value="PROMOTION">Promotion</option>
+                <option value="REGULAR">Régulier</option>
+              </select>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="button" (click)="closeMenuModal()" class="flex-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded font-semibold transition-colors">
+                Annuler
+              </button>
+              <button type="submit" [disabled]="!menuForm.valid || isSaving()" class="flex-1 px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded font-semibold transition-colors">
+                {{ isSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MenuItem Modal -->
+      <div *ngIf="showItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-neutral-800 rounded-lg p-6 max-w-md w-full border border-neutral-700">
+          <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenuItem ? 'Éditer Article' : 'Nouvel Article' }}</h2>
+          
+          <form [formGroup]="itemForm" (ngSubmit)="saveMenuItem()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Nom</label>
+              <input formControlName="name" type="text" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix (€)</label>
+              <input formControlName="price" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" step="0.01">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Ordre d'affichage</label>
+              <input formControlName="displayOrder" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+            </div>
+
+            <div class="flex gap-2">
+              <button type="button" (click)="closeItemModal()" class="flex-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded font-semibold transition-colors">
+                Annuler
+              </button>
+              <button type="submit" [disabled]="!itemForm.valid || isSaving()" class="flex-1 px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded font-semibold transition-colors">
+                {{ isSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Error Toast -->
+      <div *ngIf="error()" class="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg">
+        {{ error() }}
+      </div>
+    </div>
+  `,
+  styles: []
+})
+export class MenusComponent implements OnInit {
+  private apiService = inject(ApiService);
+  private toast = inject(ToastService);
+  private fb = inject(FormBuilder);
+
+  menus = signal<any[]>([]);
+  menuItems = signal<any[]>([]);
+  isLoading = signal(false);
+  isSaving = signal(false);
+  error = signal<string | null>(null);
+  activeTab = signal<'menus' | 'items'>('menus');
+  
+  showMenuModal = false;
+  showItemModal = false;
+  editingMenu: any = null;
+  editingMenuItem: any = null;
+  selectedMenuForItems = '';
+
+  menuForm: FormGroup;
+  itemForm: FormGroup;
+
+  constructor() {
+    this.menuForm = this.fb.group({
+      name: ['', Validators.required],
+      description: [''],
+      menuType: ['', Validators.required]
+    });
+
+    this.itemForm = this.fb.group({
+      name: ['', Validators.required],
+      price: [0, Validators.required],
+      displayOrder: [0, Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadMenus();
+  }
+
+  loadMenus(): void {
+    this.isLoading.set(true);
+    this.apiService.getAllMenus(0, 100).subscribe({
+      next: (data) => {
+        this.menus.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Erreur lors du chargement des menus');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadMenuItems(): void {
+    if (!this.selectedMenuForItems) {
+      this.menuItems.set([]);
+      return;
+    }
+    
+    this.isLoading.set(true);
+    this.apiService.getMenuItemsOrdered(this.selectedMenuForItems).subscribe({
+      next: (data) => {
+        this.menuItems.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Erreur lors du chargement des articles');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  openCreateMenuModal(): void {
+    this.editingMenu = null;
+    this.menuForm.reset();
+    this.showMenuModal = true;
+  }
+
+  editMenu(menu: any): void {
+    this.editingMenu = menu;
+    this.menuForm.patchValue({
+      name: menu.name,
+      description: menu.description,
+      menuType: menu.menuType
+    });
+    this.showMenuModal = true;
+  }
+
+  closeMenuModal(): void {
+    this.showMenuModal = false;
+  }
+
+  saveMenu(): void {
+    if (!this.menuForm.valid) return;
+    
+    this.isSaving.set(true);
+    const request = this.menuForm.value;
+
+    if (this.editingMenu) {
+      this.apiService.updateMenu(this.editingMenu.publicId, request).subscribe({
+        next: () => {
+          this.toast.success('Menu mis à jour');
+          this.closeMenuModal();
+          this.loadMenus();
+          this.isSaving.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur lors de la mise à jour');
+          this.isSaving.set(false);
+        }
+      });
+    } else {
+      const formData = new FormData();
+      formData.append('name', request.name);
+      formData.append('description', request.description || '');
+      formData.append('menuType', request.menuType);
+      formData.append('active', 'true');
+
+      this.apiService.createMenu(formData).subscribe({
+        next: () => {
+          this.toast.success('Menu créé');
+          this.closeMenuModal();
+          this.loadMenus();
+          this.isSaving.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur lors de la création');
+          this.isSaving.set(false);
+        }
+      });
+    }
+  }
+
+  toggleMenuStatus(menu: any): void {
+    if (menu.active) {
+      this.apiService.deactivateMenu(menu.publicId).subscribe({
+        next: () => {
+          this.toast.success('Menu désactivé');
+          this.loadMenus();
+        },
+        error: () => this.error.set('Erreur')
+      });
+    } else {
+      this.apiService.activateMenu(menu.publicId).subscribe({
+        next: () => {
+          this.toast.success('Menu activé');
+          this.loadMenus();
+        },
+        error: () => this.error.set('Erreur')
+      });
+    }
+  }
+
+  openCreateItemModal(): void {
+    if (!this.selectedMenuForItems) return;
+    this.editingMenuItem = null;
+    this.itemForm.reset({ displayOrder: 0 });
+    this.showItemModal = true;
+  }
+
+  editMenuItem(item: any): void {
+    this.editingMenuItem = item;
+    this.itemForm.patchValue({
+      name: item.name,
+      price: item.price / 100,
+      displayOrder: item.displayOrder
+    });
+    this.showItemModal = true;
+  }
+
+  closeItemModal(): void {
+    this.showItemModal = false;
+  }
+
+  saveMenuItem(): void {
+    if (!this.itemForm.valid) return;
+
+    this.isSaving.set(true);
+    const request = {
+      ...this.itemForm.value,
+      menuId: this.selectedMenuForItems,
+      price: Math.round(this.itemForm.value.price * 100)
+    };
+
+    if (this.editingMenuItem) {
+      this.apiService.updateMenuItem(this.editingMenuItem.publicId, request).subscribe({
+        next: () => {
+          this.toast.success('Article mis à jour');
+          this.closeItemModal();
+          this.loadMenuItems();
+          this.isSaving.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur');
+          this.isSaving.set(false);
+        }
+      });
+    } else {
+      this.apiService.createMenuItem(request).subscribe({
+        next: () => {
+          this.toast.success('Article créé');
+          this.closeItemModal();
+          this.loadMenuItems();
+          this.isSaving.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur');
+          this.isSaving.set(false);
+        }
+      });
+    }
+  }
+
+  deleteMenuItem(publicId: string): void {
+    if (!confirm('Êtes-vous sûr?')) return;
+    
+    this.apiService.deleteMenuItem(publicId).subscribe({
+      next: () => {
+        this.toast.success('Article supprimé');
+        this.loadMenuItems();
+      },
+      error: () => this.error.set('Erreur')
+    });
+  }
+}

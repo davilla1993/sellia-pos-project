@@ -87,11 +87,13 @@ export interface Stock {
 }
 
 export interface DailySalesReport {
-  date: string;
-  revenue: number;
-  orderCount: number;
-  averageOrderValue: number;
-  topProducts: { name: string; quantity: number }[];
+  date?: string;
+  revenue?: number;
+  totalRevenue?: number;
+  orderCount?: number;
+  totalOrders?: number;
+  averageOrderValue?: number;
+  topProducts?: { name: string; quantity: number }[];
 }
 
 export interface Table {

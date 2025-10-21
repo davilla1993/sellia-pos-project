@@ -486,6 +486,99 @@ export class ApiService {
     return this.http.put<void>(`${this.apiUrl}/tickets/${ticketId}/print`, {});
   }
 
+  // Menus
+  getAllMenus(page: number = 0, size: number = 20): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/menus`, { params }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  getMenuById(publicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/menus/${publicId}`);
+  }
+
+  getActiveMenus(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/menus/active/list`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  createMenu(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/menus`, formData);
+  }
+
+  updateMenu(publicId: string, request: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/menus/${publicId}`, request);
+  }
+
+  deleteMenu(publicId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/menus/${publicId}`);
+  }
+
+  activateMenu(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/menus/${publicId}/activate`, {});
+  }
+
+  deactivateMenu(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/menus/${publicId}/deactivate`, {});
+  }
+
+  // Menu Items
+  getMenuItemsByMenu(menuId: string, page: number = 0, size: number = 20): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/menu-items/menu/${menuId}`, { params }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  getMenuItemsOrdered(menuId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/menu-items/menu/${menuId}/ordered`).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  createMenuItem(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/menu-items`, request);
+  }
+
+  updateMenuItem(publicId: string, request: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/menu-items/${publicId}`, request);
+  }
+
+  deleteMenuItem(publicId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/menu-items/${publicId}`);
+  }
+
+  // Active Sessions
+  getActiveCashierSessions(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/cashier-sessions`, {
+      params: { page: '0', size: '100' }
+    }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  getAllCashierSessions(page: number = 0, size: number = 20): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/cashier-sessions`, { params });
+  }
+
+  // Active Orders
+  getActiveOrders(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/orders/status/EN_ATTENTE`, {
+      params: { page: '0', size: '100' }
+    }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
   // Public/QR Code Endpoints (No authentication required)
   getPublicMenu(qrToken: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/public/menu/${qrToken}`);
@@ -497,5 +590,14 @@ export class ApiService {
 
   getPublicMenuHealth(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/public/health`);
+  }
+
+  // Restaurant Settings
+  getRestaurant(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/restaurant`);
+  }
+
+  updateRestaurant(data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/restaurant`, data);
   }
 }

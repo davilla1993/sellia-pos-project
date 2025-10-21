@@ -1,25 +1,32 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationService } from '../../core/services/navigation.service';
 import { ApiService } from '../../core/services/api.service';
+import { OrderNotificationService } from '../../core/services/order-notification.service';
+import { AudioNotificationControlComponent } from '../../shared/components/audio-notification-control.component';
 
 @Component({
   selector: 'app-pos-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, AudioNotificationControlComponent],
   template: `
     <div class="flex h-screen w-screen bg-neutral-900 overflow-hidden fixed top-0 left-0">
       <!-- LEFT: Navigation Sidebar -->
       <div class="w-64 bg-neutral-800 border-r border-neutral-700 flex flex-col overflow-y-auto">
         <!-- Header -->
-        <div class="p-6 border-b border-neutral-700">
-          <h1 class="text-2xl font-bold text-white">
-            <span *ngIf="!isInKitchenContext()">🛒 Caisse</span>
-            <span *ngIf="isInKitchenContext()">👨‍🍳 Cuisine</span>
-          </h1>
-          <p class="text-xs text-neutral-400 mt-2">{{ getCurrentUserInfo() }}</p>
+        <div class="p-6 border-b border-neutral-700 space-y-4">
+          <div>
+            <h1 class="text-2xl font-bold text-white">
+              <span *ngIf="!isInKitchenContext()">🛒 Caisse</span>
+              <span *ngIf="isInKitchenContext()">👨‍🍳 Cuisine</span>
+            </h1>
+            <p class="text-xs text-neutral-400 mt-2">{{ getCurrentUserInfo() }}</p>
+          </div>
+          
+          <!-- Audio Notification Control -->
+          <app-audio-notification-control></app-audio-notification-control>
         </div>
 
         <!-- Menu Buttons -->
@@ -115,9 +122,10 @@ import { ApiService } from '../../core/services/api.service';
   `,
   styles: []
 })
-export class PosLayoutComponent implements OnInit {
+export class PosLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private apiService = inject(ApiService);
+  private orderNotificationService = inject(OrderNotificationService);
   navigationService = inject(NavigationService);
 
   currentRoute = signal('');
@@ -135,6 +143,13 @@ export class PosLayoutComponent implements OnInit {
     this.currentRoute.set(this.router.url);
     this.loadPendingOrdersCount();
     setInterval(() => this.loadPendingOrdersCount(), 5000);
+    
+    // Start monitoring order changes for notifications
+    this.orderNotificationService.startMonitoring();
+  }
+
+  ngOnDestroy(): void {
+    this.orderNotificationService.stopMonitoring();
   }
 
   loadPendingOrdersCount(): void {

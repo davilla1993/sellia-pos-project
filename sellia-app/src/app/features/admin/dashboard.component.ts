@@ -58,28 +58,28 @@ import { RouterLink } from '@angular/router';
 export class DashboardComponent {
   modules = [
     {
-      title: 'Caisse',
-      description: 'Gestion des commandes et paiements',
-      icon: '💰',
+      title: 'Commandes en Temps Réel',
+      description: 'Suivi de toutes les commandes actives',
+      icon: '📋',
       color: '#3B82F6',
-      route: '/pos/cashier',
-      buttonText: 'Accéder à la caisse'
+      route: '/admin/active-orders',
+      buttonText: 'Voir les commandes'
     },
     {
-      title: 'Cuisine',
-      description: 'Suivi des commandes en cuisine',
-      icon: '👨‍🍳',
-      color: '#F97316',
-      route: '/pos/kitchen',
-      buttonText: 'Accéder à la cuisine'
-    },
-    {
-      title: 'Produits',
-      description: 'Menus et catalogue articles',
-      icon: '📦',
+      title: 'Sessions Actives',
+      description: 'Caissiers en ligne et leur activité',
+      icon: '👥',
       color: '#10B981',
-      route: '/admin/products',
-      buttonText: 'Gérer les produits'
+      route: '/admin/active-sessions',
+      buttonText: 'Voir les sessions'
+    },
+    {
+      title: 'Menus & Articles',
+      description: 'Gérer vos menus et articles',
+      icon: '🍽️',
+      color: '#F59E0B',
+      route: '/admin/menus',
+      buttonText: 'Gérer les menus'
     },
     {
       title: 'Inventaire',
@@ -90,20 +90,20 @@ export class DashboardComponent {
       buttonText: 'Voir l\'inventaire'
     },
     {
+      title: 'Produits',
+      description: 'Catalogue articles',
+      icon: '📦',
+      color: '#10B981',
+      route: '/admin/products',
+      buttonText: 'Gérer les produits'
+    },
+    {
       title: 'Utilisateurs',
       description: 'Créer et gérer les comptes',
-      icon: '👥',
+      icon: '👤',
       color: '#A855F7',
       route: '/admin/users',
       buttonText: 'Gérer l\'équipe'
-    },
-    {
-      title: 'Session Globale',
-      description: 'Ouverture/fermeture session journalière',
-      icon: '🔓',
-      color: '#F59E0B',
-      route: '/admin/global-session',
-      buttonText: 'Gérer session'
     },
     {
       title: 'Gestion Caisses',
@@ -114,12 +114,28 @@ export class DashboardComponent {
       buttonText: 'Gérer les caisses'
     },
     {
+      title: 'Session Globale',
+      description: 'Ouverture/fermeture journalière',
+      icon: '🔐',
+      color: '#DC2626',
+      route: '/admin/global-session',
+      buttonText: 'Gérer session'
+    },
+    {
       title: 'Rapports',
       description: 'Statistiques et analyses',
       icon: '📈',
       color: '#6366F1',
       route: '/admin/reports/sales',
       buttonText: 'Voir les rapports'
+    },
+    {
+      title: 'QR Codes Tables',
+      description: 'Génération et gestion des QR codes',
+      icon: '📱',
+      color: '#0891B2',
+      route: '/admin/tables',
+      buttonText: 'Gérer les tables'
     }
   ];
 }
