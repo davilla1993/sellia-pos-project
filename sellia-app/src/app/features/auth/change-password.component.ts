@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-change-password',
@@ -156,6 +157,8 @@ export class ChangePasswordComponent {
   showNewPassword = signal(false);
   showConfirmPassword = signal(false);
 
+  private apiService = inject(ApiService);
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -210,21 +213,37 @@ export class ChangePasswordComponent {
         
         const user = this.authService.getCurrentUser();
         if (user) {
-          user.firstLogin = false;
-          this.authService.saveUserToStorage(user);
-        }
+          // Mark first login complete on backend
+          this.apiService.markFirstLoginComplete(user.publicId).subscribe({
+            next: () => {
+              user.firstLogin = false;
+              this.authService.saveUserToStorage(user);
 
-        setTimeout(() => {
-          if (user) {
-            const roleRoutes: { [key: string]: string } = {
-              'ADMIN': '/dashboard',
-              'CAISSE': '/pos/cashier',
-              'CUISINE': '/pos/kitchen'
-            };
-            const route = roleRoutes[user.role] || '/dashboard';
-            this.router.navigate([route]);
-          }
-        }, 1500);
+              setTimeout(() => {
+                const roleRoutes: { [key: string]: string } = {
+                  'ADMIN': '/admin/dashboard',
+                  'CAISSE': '/pos/order-entry',
+                  'CUISINE': '/pos/kitchen'
+                };
+                const route = roleRoutes[user.role] || '/admin/dashboard';
+                this.router.navigate([route]);
+              }, 1500);
+            },
+            error: (err) => {
+              console.error('Error marking first login complete:', err);
+              // Still redirect even if marking fails
+              setTimeout(() => {
+                const roleRoutes: { [key: string]: string } = {
+                  'ADMIN': '/admin/dashboard',
+                  'CAISSE': '/pos/order-entry',
+                  'CUISINE': '/pos/kitchen'
+                };
+                const route = roleRoutes[user.role] || '/admin/dashboard';
+                this.router.navigate([route]);
+              }, 1500);
+            }
+          });
+        }
       },
       error: (err) => {
         this.isLoading.set(false);

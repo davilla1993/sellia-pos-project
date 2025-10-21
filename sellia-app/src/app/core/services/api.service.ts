@@ -633,4 +633,9 @@ export class ApiService {
   getRoles(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/roles`);
   }
+
+  // Mark first login complete
+  markFirstLoginComplete(publicId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/users/${publicId}/mark-first-login-complete`, {});
+  }
 }

@@ -143,4 +143,12 @@ public class UserService {
         user.setActive(true);
         userRepository.save(user);
     }
+
+    @Transactional
+    public void markFirstLoginComplete(String publicId) {
+        User user = userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", publicId));
+        user.setFirstLogin(false);
+        userRepository.save(user);
+    }
 }

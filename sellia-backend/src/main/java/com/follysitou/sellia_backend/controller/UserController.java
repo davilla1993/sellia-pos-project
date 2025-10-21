@@ -88,4 +88,11 @@ public class UserController {
         userService.activateUser(publicId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{publicId}/mark-first-login-complete")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markFirstLoginComplete(@PathVariable String publicId) {
+        userService.markFirstLoginComplete(publicId);
+        return ResponseEntity.noContent().build();
+    }
 }
