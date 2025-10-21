@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, input, effect } from '@angular/core';
+import { Component, OnInit, input, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
@@ -54,7 +54,12 @@ import { ChartConfiguration } from 'chart.js';
       </div>
     </div>
   `,
-  styles: []
+  styles: [`
+    canvas {
+      max-height: 300px;
+      min-height: 300px;
+    }
+  `]
 })
 export class AnalyticsChartsComponent implements OnInit {
   revenueData = input<any[]>([]);
@@ -142,11 +147,23 @@ export class AnalyticsChartsComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    // Initialize charts with data
+    this.updateRevenueChart();
+    this.updateProductsChart();
+    this.updateCashierChart();
+    this.updateHoursChart();
+
+    // Update charts when input data changes
     effect(() => {
-      this.updateRevenueChart();
-      this.updateProductsChart();
-      this.updateCashierChart();
-      this.updateHoursChart();
+      const rev = this.revenueData();
+      const prod = this.productsData();
+      const cash = this.cashierData();
+      const hours = this.peakHoursData();
+      
+      if (rev.length > 0) this.updateRevenueChart();
+      if (prod.length > 0) this.updateProductsChart();
+      if (cash.length > 0) this.updateCashierChart();
+      if (hours.length > 0) this.updateHoursChart();
     });
   }
 
