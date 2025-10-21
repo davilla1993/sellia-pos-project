@@ -132,8 +132,8 @@ export class LoginComponent {
         this.isLoading.set(false);
         const user = response.user;
 
-        // Check if first login - must change password
-        if (user.firstLogin) {
+        // Check if first login - must change password (ADMIN only)
+        if (user.firstLogin && user.role === 'ADMIN') {
           this.router.navigate(['/auth/change-password']);
         } else {
           // Navigate based on role
