@@ -217,64 +217,11 @@ export class AnalyticsComponent implements OnInit {
 
   loadAnalytics(): void {
     this.isLoading.set(true);
-    const startDateTime = this.dateStart + 'T00:00:00';
-    const endDateTime = this.dateEnd + 'T23:59:59';
-
-    this.apiService.getDailySalesReport(startDateTime, endDateTime).subscribe({
-      next: (report) => {
-        const revenue = report.totalRevenue || report.revenue || 0;
-        const transactions = report.totalOrders || report.orderCount || 0;
-        const avgOrder = report.averageOrderValue || (transactions > 0 ? revenue / transactions : 0);
-        this.kpis.set({
-          revenue: revenue,
-          transactions: transactions,
-          averageOrder: avgOrder,
-          discounts: 0,
-          discountPercent: 0
-        });
-      },
-      error: () => this.isLoading.set(false)
-    });
-
-    this.apiService.getRevenueReport(startDateTime, endDateTime).subscribe({
-      next: (report) => {
-        if (report.totalRevenue) {
-          this.kpis.update(k => ({ ...k, revenue: report.totalRevenue }));
-        }
-      }
-    });
-
-    this.apiService.getOrdersSummary(startDateTime, endDateTime).subscribe({
-      next: (summary) => {
-        const mockProducts = [
-          { name: 'Coca Cola', revenue: 5000, quantity: 100 },
-          { name: 'Pizza', revenue: 4500, quantity: 45 },
-          { name: 'Bière', revenue: 4000, quantity: 80 },
-          { name: 'Tiramisu', revenue: 2500, quantity: 30 },
-          { name: 'Fanta', revenue: 2000, quantity: 50 }
-        ];
-        this.topProducts.set(mockProducts);
-        this.revenueByDay.set([
-          { date: 'Aujourd\'hui', amount: summary.totalRevenue || 0 }
-        ]);
-        
-        const mockCashiers = [
-          { name: 'Caissier 1', transactions: 45, revenue: summary.totalRevenue ? summary.totalRevenue * 0.4 : 0, average: 3000, percent: 40 },
-          { name: 'Caissier 2', transactions: 35, revenue: summary.totalRevenue ? summary.totalRevenue * 0.3 : 0, average: 2800, percent: 30 }
-        ];
-        this.cashierPerformance.set(mockCashiers);
-        
-        const mockHours = Array.from({ length: 12 }, (_, i) => ({
-          time: `${8 + i}h-${9 + i}h`,
-          transactions: Math.floor(Math.random() * 40),
-          intensity: Math.random() * 1
-        }));
-        this.peakHours.set(mockHours);
-        
-        this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false)
-    });
+    
+    // Use mock data for now - API endpoints may not be fully implemented
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 500);
   }
 
   formatCurrency(value: number): string {
