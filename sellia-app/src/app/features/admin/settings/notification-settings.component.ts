@@ -8,11 +8,17 @@ import { WritableSignal } from '@angular/core';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
-      <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700" (click)="$event.stopPropagation()">
-        <h2 class="text-2xl font-bold text-white mb-4">🔔 Notifications et Alertes</h2>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" (click)="closeModal()">
+      <div class="bg-neutral-800 rounded-lg max-w-2xl w-full flex flex-col border border-neutral-700" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="px-6 pt-6 pb-4 border-b border-neutral-700">
+          <h2 class="text-2xl font-bold text-white">🔔 Notifications et Alertes</h2>
+          <p class="text-neutral-400 text-sm mt-1">Gérez vos préférences de notification</p>
+        </div>
         
-        <div class="space-y-4 mb-4">
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto px-6 py-4">
+          <div class="space-y-4">
           <div>
             <h3 class="text-white font-semibold mb-2">📧 Alertes par Email</h3>
             <div class="space-y-2 pl-4">
@@ -60,11 +66,12 @@ import { WritableSignal } from '@angular/core';
           </div>
         </div>
 
-        <div class="flex gap-2 justify-end">
-          <button (click)="closeModal()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
-            Fermer
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-neutral-700 flex gap-2 justify-end">
+          <button (click)="closeModal()" class="px-6 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+            ✕ Fermer
           </button>
-          <button (click)="save()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+          <button (click)="save()" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
             ✅ Enregistrer
           </button>
         </div>
