@@ -200,7 +200,8 @@ export class AnalyticsComponent implements OnInit {
   ngOnInit(): void {
     this.setPreset('today');
     this.loadAnalytics();
-    this.initializeWebSocket();
+    // WebSocket disabled temporarily - will re-enable once stable
+    // this.initializeWebSocket();
   }
 
   private initializeWebSocket(): void {
