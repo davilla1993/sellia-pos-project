@@ -51,7 +51,8 @@ import { WritableSignal } from '@angular/core';
             <div>
               <label class="block text-sm font-semibold text-neutral-300 mb-2">Devise</label>
               <select [(ngModel)]="form.currency" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
-                <option value="XAF">XAF - Franc CFA</option>
+                <option value="XOF">XOF - FCFA (Afrique Occidentale)</option>
+                <option value="XAF">XAF - FCFA (Afrique Centrale)</option>
                 <option value="EUR">EUR - Euro</option>
                 <option value="USD">USD - Dollar US</option>
               </select>
@@ -59,9 +60,11 @@ import { WritableSignal } from '@angular/core';
             <div>
               <label class="block text-sm font-semibold text-neutral-300 mb-2">Fuseau Horaire</label>
               <select [(ngModel)]="form.timezone" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+                <option value="UTC">UTC (GMT+00:00)</option>
                 <option value="Africa/Douala">Douala (GMT+1)</option>
                 <option value="Africa/Lagos">Lagos (GMT+1)</option>
                 <option value="Africa/Kinshasa">Kinshasa (GMT+1)</option>
+                <option value="Africa/Abidjan">Abidjan (GMT+0)</option>
               </select>
             </div>
           </div>
@@ -103,7 +106,7 @@ export class RestaurantSettingsComponent implements OnInit {
     address: '',
     phoneNumber: '',
     email: '',
-    currency: 'XAF',
+    currency: 'XOF',
     timezone: 'Africa/Douala',
     taxRate: 0,
     openingHours: ''

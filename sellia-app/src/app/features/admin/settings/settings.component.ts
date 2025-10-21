@@ -77,7 +77,8 @@ import { ToastService } from '../../../shared/services/toast.service';
                 <select 
                   formControlName="currency"
                   class="w-full px-4 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none focus:border-orange-500">
-                  <option value="XAF">XAF - Franc CFA</option>
+                  <option value="XOF">XOF - FCFA (Afrique Occidentale)</option>
+                  <option value="XAF">XAF - FCFA (Afrique Centrale)</option>
                   <option value="EUR">EUR - Euro</option>
                   <option value="USD">USD - Dollar</option>
                 </select>
@@ -303,7 +304,7 @@ export class SettingsComponent implements OnInit {
   constructor() {
     this.restaurantForm = this.fb.group({
       name: ['Sellia Restaurant', Validators.required],
-      currency: ['XAF', Validators.required],
+      currency: ['XOF', Validators.required],
       address: ['', Validators.required],
       phone: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -320,7 +321,7 @@ export class SettingsComponent implements OnInit {
       next: (restaurant) => {
         this.restaurantForm.patchValue({
           name: restaurant.name,
-          currency: restaurant.currency || 'XAF',
+          currency: restaurant.currency || 'XOF',
           address: restaurant.address,
           phone: restaurant.phoneNumber,
           email: restaurant.email,

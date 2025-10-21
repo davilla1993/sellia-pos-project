@@ -179,7 +179,7 @@ export class PublicMenuComponent implements OnInit {
   formatPrice(price: number): string {
     return (price / 100).toLocaleString('fr-CM', {
       style: 'currency',
-      currency: 'XAF'
+      currency: 'XOF'
     });
   }
 
