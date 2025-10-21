@@ -33,7 +33,7 @@ public class AuthService {
             throw new UnauthorizedException(ErrorMessages.CREDENTIALS_INVALID);
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), user.getPublicId());
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), user.getPublicId(), user.getRole().getName().name());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername(), user.getPublicId());
 
         return AuthResponse.builder()
@@ -59,7 +59,7 @@ public class AuthService {
             throw new UnauthorizedException(ErrorMessages.ACCOUNT_DISABLED);
         }
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(username, userId);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(username, userId, user.getRole().getName().name());
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)

@@ -25,21 +25,27 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(String username, String userId) {
-        return generateToken(username, userId, accessTokenExpiration);
+    public String generateAccessToken(String username, String userId, String role) {
+        return generateToken(username, userId, role, accessTokenExpiration);
     }
 
     public String generateRefreshToken(String username, String userId) {
-        return generateToken(username, userId, refreshTokenExpiration);
+        return generateToken(username, userId, null, refreshTokenExpiration);
     }
 
-    private String generateToken(String username, String userId, long expirationTime) {
+    private String generateToken(String username, String userId, String role, long expirationTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setSubject(username)
-                .claim("userId", userId)
+                .claim("userId", userId);
+        
+        if (role != null) {
+            builder.claim("role", role);
+        }
+        
+        return builder
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
@@ -62,6 +68,15 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("userId", String.class);
+    }
+
+    public String getRoleFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 
     public boolean validateToken(String token) {
