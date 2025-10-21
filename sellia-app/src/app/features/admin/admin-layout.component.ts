@@ -15,7 +15,7 @@ import { AdminSidebarService } from './admin-sidebar.service';
       <div class="ml-56 transition-all duration-300 flex flex-col h-screen" [class.ml-20]="sidebarService.collapsed()">
         <app-admin-navbar></app-admin-navbar>
         <main class="flex-1 overflow-auto bg-neutral-900">
-          <div class="p-8">
+          <div class="p-6">
             <router-outlet></router-outlet>
           </div>
         </main>
