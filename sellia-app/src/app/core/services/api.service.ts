@@ -617,4 +617,15 @@ export class ApiService {
   updateRestaurant(data: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/restaurant`, data);
   }
+
+  // Analytics
+  getAnalyticsSummary(dateStart: string, dateEnd: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/analytics/summary`, {
+      params: { dateStart, dateEnd }
+    });
+  }
+
+  getActiveSessions(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/analytics/active-sessions`);
+  }
 }

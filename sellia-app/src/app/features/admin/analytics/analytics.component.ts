@@ -156,46 +156,11 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   dateStart = this.getTodayString();
   dateEnd = this.getTodayString();
 
-  kpis = signal({ revenue: 45250, transactions: 128, averageOrder: 3535, discounts: 2150, discountPercent: 4.7 });
-
-  topProducts = signal<any[]>([
-    { name: 'Coca Cola', revenue: 5000, quantity: 100 },
-    { name: 'Pizza', revenue: 4500, quantity: 45 },
-    { name: 'Bière', revenue: 4000, quantity: 80 },
-    { name: 'Tiramisu', revenue: 2500, quantity: 30 },
-    { name: 'Fanta', revenue: 2000, quantity: 50 }
-  ]);
-  
-  revenueByDay = signal<any[]>([
-    { date: 'Lundi', amount: 8900 },
-    { date: 'Mardi', amount: 7200 },
-    { date: 'Mercredi', amount: 9100 },
-    { date: 'Jeudi', amount: 6500 },
-    { date: 'Vendredi', amount: 8750 },
-    { date: 'Samedi', amount: 12200 },
-    { date: 'Dimanche', amount: 10400 }
-  ]);
-  
-  cashierPerformance = signal<any[]>([
-    { name: 'Caissier 1', transactions: 45, revenue: 18000, average: 4000, percent: 40 },
-    { name: 'Caissier 2', transactions: 38, revenue: 14200, average: 3737, percent: 31.4 },
-    { name: 'Caissier 3', transactions: 28, revenue: 9650, average: 3446, percent: 21.4 }
-  ]);
-  
-  peakHours = signal<any[]>([
-    { time: '08h-09h', transactions: 12, intensity: 0.3 },
-    { time: '09h-10h', transactions: 18, intensity: 0.45 },
-    { time: '10h-11h', transactions: 25, intensity: 0.62 },
-    { time: '11h-12h', transactions: 38, intensity: 0.95 },
-    { time: '12h-13h', transactions: 42, intensity: 1.0 },
-    { time: '13h-14h', transactions: 35, intensity: 0.88 },
-    { time: '14h-15h', transactions: 22, intensity: 0.55 },
-    { time: '15h-16h', transactions: 14, intensity: 0.35 },
-    { time: '16h-17h', transactions: 8, intensity: 0.2 },
-    { time: '17h-18h', transactions: 20, intensity: 0.5 },
-    { time: '18h-19h', transactions: 32, intensity: 0.8 },
-    { time: '19h-20h', transactions: 28, intensity: 0.7 }
-  ]);
+  kpis = signal({ revenue: 0, transactions: 0, averageOrder: 0, discounts: 0, discountPercent: 0 });
+  topProducts = signal<any[]>([]);
+  revenueByDay = signal<any[]>([]);
+  cashierPerformance = signal<any[]>([]);
+  peakHours = signal<any[]>([]);
 
   ngOnInit(): void {
     this.setPreset('today');
@@ -226,9 +191,26 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   loadAnalytics(): void {
     this.isLoading.set(true);
     
-    // Use mock data for now - API endpoints may not be fully implemented
-    Promise.resolve().then(() => {
-      this.isLoading.set(false);
+    this.apiService.getAnalyticsSummary(this.dateStart, this.dateEnd).subscribe({
+      next: (data) => {
+        this.kpis.set({
+          revenue: data.totalRevenue,
+          transactions: data.totalTransactions,
+          averageOrder: data.averageOrderValue,
+          discounts: data.totalDiscounts,
+          discountPercent: data.discountPercentage
+        });
+        this.topProducts.set(data.topProducts || []);
+        this.revenueByDay.set(data.revenueByDay || []);
+        this.cashierPerformance.set(data.cashierPerformance || []);
+        this.peakHours.set(data.peakHours || []);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading analytics:', err);
+        this.toast.error('Erreur lors du chargement des analytics');
+        this.isLoading.set(false);
+      }
     });
   }
 

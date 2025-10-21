@@ -47,5 +47,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate")
     Long getTotalRevenue(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long sumRevenueByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long countByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT SUM(o.discountAmount) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long sumDiscountsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate AND HOUR(o.createdAt) = :hour")
+    Long countByHourRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("hour") int hour);
+
     boolean existsByOrderNumberAndDeletedFalse(String orderNumber);
 }
