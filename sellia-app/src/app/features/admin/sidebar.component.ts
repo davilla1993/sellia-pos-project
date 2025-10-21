@@ -70,16 +70,6 @@ interface MenuItem {
           </a>
         </div>
       </nav>
-
-      <!-- User Section (Bottom) -->
-      <div class="border-t border-neutral-800 p-4">
-        <button class="w-full flex items-center space-x-3 px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200">
-          <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-          </svg>
-          <span *ngIf="!collapsed()" class="text-sm font-medium truncate">Profil</span>
-        </button>
-      </div>
     </aside>
   `,
   styles: []
@@ -202,44 +192,6 @@ export class SidebarComponent {
       label: 'Session Globale',
       icon: this.getIcon('global'),
       route: '/admin/global-session',
-      expanded: false
-    },
-
-    // SECTION: RAPPORTS & ANALYTICS
-    {
-      label: '📊 RAPPORTS & ANALYTICS',
-      icon: '',
-      route: '',
-      expanded: false,
-      isSection: true
-    },
-    {
-      label: 'Analytics',
-      icon: this.getIcon('analytics'),
-      route: '/admin/analytics',
-      expanded: false
-    },
-    {
-      label: 'Rapports',
-      icon: this.getIcon('reports'),
-      children: [
-        { label: 'Ventes', route: '/admin/reports/sales' },
-        { label: 'Caisses', route: '/admin/reports/cashiers' },
-        { label: 'Produits', route: '/admin/reports/products' },
-        { label: 'Staff', route: '/admin/reports/staff' }
-      ],
-      expanded: false
-    },
-    {
-      label: 'Alertes Stock',
-      icon: this.getIcon('alerts'),
-      route: '/admin/stock-alerts',
-      expanded: false
-    },
-    {
-      label: 'Paramètres',
-      icon: this.getIcon('settings'),
-      route: '/admin/settings',
       expanded: false
     }
   ];

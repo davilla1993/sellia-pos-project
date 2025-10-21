@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { ThemeService } from '../../core/services/theme.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <nav class="bg-neutral-800 border-b border-neutral-700 px-8 py-4 flex items-center justify-between shadow-sm">
+    <nav class="bg-neutral-800 border-b border-neutral-700 px-8 py-4 flex items-center justify-between shadow-sm relative">
       <div class="flex items-center space-x-6">
         <button [routerLink]="['/admin/dashboard']" class="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-primary hover:text-primary-dark transition-all duration-200 font-medium text-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,6 +21,36 @@ import { ThemeService } from '../../core/services/theme.service';
       </div>
 
       <div class="flex items-center space-x-6">
+        <!-- Admin Dropdown -->
+        <div class="relative group">
+          <button class="text-neutral-400 hover:text-primary transition-colors font-medium text-sm">
+            ⚙️ Admin
+          </button>
+          <div class="absolute right-0 mt-0 w-48 bg-neutral-700 border border-neutral-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <a [routerLink]="['/admin/analytics']" class="block px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors first:rounded-t-lg">
+              📊 Analytics
+            </a>
+            <button (click)="toggleReportsMenu()" class="w-full text-left px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors flex items-center justify-between">
+              <span>📈 Rapports</span>
+              <svg class="w-4 h-4 transition-transform" [class.rotate-90]="showReports()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+            <div *ngIf="showReports()" class="bg-neutral-600/30 border-t border-neutral-600">
+              <a [routerLink]="['/admin/reports/sales']" class="block px-8 py-2 text-xs text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors">Ventes</a>
+              <a [routerLink]="['/admin/reports/cashiers']" class="block px-8 py-2 text-xs text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors">Caisses</a>
+              <a [routerLink]="['/admin/reports/products']" class="block px-8 py-2 text-xs text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors">Produits</a>
+              <a [routerLink]="['/admin/reports/staff']" class="block px-8 py-2 text-xs text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors">Staff</a>
+            </div>
+            <a [routerLink]="['/admin/stock-alerts']" class="block px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors">
+              🚨 Alertes Stock
+            </a>
+            <a [routerLink]="['/admin/settings']" class="block px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors rounded-b-lg">
+              ⚙️ Paramètres
+            </a>
+          </div>
+        </div>
+
         <!-- Theme Toggle -->
         <button 
           (click)="toggleTheme()"
@@ -50,17 +80,25 @@ import { ThemeService } from '../../core/services/theme.service';
           <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
-        <!-- User Menu -->
-        <div class="flex items-center space-x-3 pl-6 border-l border-neutral-700">
-          <div class="text-right">
-            <p class="text-sm font-medium text-white">{{ currentUserName() }}</p>
-            <p class="text-xs text-neutral-400">{{ currentUserRole() }}</p>
-          </div>
-          <button class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-            <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
+        <!-- Profile Dropdown -->
+        <div class="relative group pl-6 border-l border-neutral-700">
+          <button class="flex items-center space-x-3 hover:text-primary transition-colors group">
+            <div class="text-right">
+              <p class="text-sm font-medium text-white">{{ currentUserName() }}</p>
+              <p class="text-xs text-neutral-400">{{ currentUserRole() }}</p>
+            </div>
+            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
             </svg>
           </button>
+          <div class="absolute right-0 mt-0 w-40 bg-neutral-700 border border-neutral-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <a [routerLink]="['/admin/profile']" class="block px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors rounded-t-lg">
+              👤 Mon Profil
+            </a>
+            <button (click)="logout()" class="w-full text-left px-4 py-3 text-sm text-neutral-400 hover:text-red-500 hover:bg-neutral-600/50 transition-colors rounded-b-lg">
+              🚪 Déconnexion
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -72,6 +110,7 @@ export class AdminNavbarComponent {
   private themeService = inject(ThemeService);
 
   isDarkMode = this.themeService.isDark;
+  showReports = signal(false);
 
   currentUserName(): string {
     const user = this.authService.getCurrentUser();
@@ -90,5 +129,13 @@ export class AdminNavbarComponent {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  toggleReportsMenu(): void {
+    this.showReports.update(v => !v);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }
