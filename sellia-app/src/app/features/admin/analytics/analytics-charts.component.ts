@@ -1,4 +1,4 @@
-import { Component, OnInit, input, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, input, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -37,7 +37,7 @@ Chart.register(...registerables);
   `,
   styles: []
 })
-export class AnalyticsChartsComponent implements OnInit {
+export class AnalyticsChartsComponent implements AfterViewInit {
   @ViewChild('revenueCanvas') revenueCanvas!: ElementRef;
   @ViewChild('productsCanvas') productsCanvas!: ElementRef;
   @ViewChild('cashierCanvas') cashierCanvas!: ElementRef;
@@ -53,21 +53,19 @@ export class AnalyticsChartsComponent implements OnInit {
   private cashierChart: Chart | null = null;
   private hoursChart: Chart | null = null;
 
-  ngOnInit(): void {
-    setTimeout(() => {
-      this.renderCharts();
+  ngAfterViewInit(): void {
+    this.renderCharts();
+    
+    effect(() => {
+      const rev = this.revenueData();
+      const prod = this.productsData();
+      const cash = this.cashierData();
+      const hours = this.peakHoursData();
       
-      effect(() => {
-        const rev = this.revenueData();
-        const prod = this.productsData();
-        const cash = this.cashierData();
-        const hours = this.peakHoursData();
-        
-        if (rev.length > 0 || prod.length > 0 || cash.length > 0 || hours.length > 0) {
-          this.renderCharts();
-        }
-      });
-    }, 0);
+      if (rev.length > 0 || prod.length > 0 || cash.length > 0 || hours.length > 0) {
+        this.renderCharts();
+      }
+    });
   }
 
   private renderCharts(): void {
