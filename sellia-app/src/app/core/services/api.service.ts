@@ -628,4 +628,9 @@ export class ApiService {
   getActiveSessions(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/analytics/active-sessions`);
   }
+
+  // Roles
+  getRoles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/roles`);
+  }
 }

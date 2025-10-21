@@ -1,7 +1,9 @@
 package com.follysitou.sellia_backend.service;
 
+import com.follysitou.sellia_backend.dto.response.RoleResponse;
 import com.follysitou.sellia_backend.enums.RoleName;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
+import com.follysitou.sellia_backend.mapper.RoleMapper;
 import com.follysitou.sellia_backend.model.Role;
 import com.follysitou.sellia_backend.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +11,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RoleService {
 
     private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
 
     public Role getRoleByName(RoleName roleName) {
         return roleRepository.findByName(roleName)
@@ -33,6 +37,12 @@ public class RoleService {
 
     public List<Role> getAllActiveRoles() {
         return roleRepository.findByDeletedFalse();
+    }
+
+    public List<RoleResponse> getAllActiveRolesAsResponse() {
+        return roleRepository.findByDeletedFalse().stream()
+                .map(roleMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public Optional<Role> findByName(RoleName roleName) {

@@ -76,9 +76,7 @@ import { TextTransform } from '../../../core/utils/text-transform';
           <label class="block text-sm font-semibold text-white mb-2">Rôle *</label>
           <select formControlName="roleId" class="input-field bg-neutral-700 border-neutral-600 text-white">
             <option value="">Sélectionner un rôle</option>
-            <option value="ADMIN">Administrateur</option>
-            <option value="CAISSE">Caissier</option>
-            <option value="CUISINE">Cuisinier</option>
+            <option *ngFor="let role of roles()" [value]="role.id">{{ role.description || role.name }}</option>
           </select>
           <p *ngIf="hasError('roleId')" class="text-red-400 text-sm mt-1">Requis</p>
         </div>
@@ -138,6 +136,7 @@ export class UserFormComponent implements OnInit {
   showPassword = signal(false);
   globalError = signal<string | null>(null);
   fieldErrors = signal<Map<string, string>>(new Map());
+  roles = signal<any[]>([]);
   userId: string | null = null;
 
   constructor() {
@@ -153,6 +152,8 @@ export class UserFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadRoles();
+    
     this.userId = this.route.snapshot.paramMap.get('id');
     
     if (this.userId) {
@@ -162,6 +163,23 @@ export class UserFormComponent implements OnInit {
       this.form.get('password')?.updateValueAndValidity();
       this.loadUser();
     }
+  }
+
+  private loadRoles(): void {
+    this.apiService.getRoles().subscribe({
+      next: (roles) => {
+        this.roles.set(roles);
+      },
+      error: (err) => {
+        console.error('Error loading roles:', err);
+        // Fallback to default roles if API fails
+        this.roles.set([
+          { id: 1, name: 'ADMIN', description: 'Administrateur' },
+          { id: 2, name: 'CAISSE', description: 'Caissier' },
+          { id: 3, name: 'CUISINE', description: 'Cuisinier' }
+        ]);
+      }
+    });
   }
 
   loadUser(): void {
