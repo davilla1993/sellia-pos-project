@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
@@ -141,7 +141,7 @@ import { AnalyticsChartsComponent } from './analytics-charts.component';
   `,
   styles: []
 })
-export class AnalyticsComponent implements OnInit {
+export class AnalyticsComponent implements OnInit, AfterViewInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
   private wsService = inject(WebSocketService);
@@ -200,29 +200,39 @@ export class AnalyticsComponent implements OnInit {
   ngOnInit(): void {
     this.setPreset('today');
     this.loadAnalytics();
-    // WebSocket disabled temporarily - will re-enable once stable
+    // WebSocket temporarily disabled - will re-enable when backend endpoint is ready
     // this.initializeWebSocket();
   }
 
+  ngAfterViewInit(): void {
+    // Template rendered successfully
+  }
+
   private initializeWebSocket(): void {
-    this.wsConnected.set(this.wsService.isConnected());
-    
-    // Listen for real-time updates
-    this.wsService.message$.subscribe((message) => {
-      if (message?.type === 'ORDER_PLACED' || message?.type === 'PAYMENT_RECEIVED') {
-        // Reload analytics when significant events occur
-        this.loadAnalytics();
-      }
-    });
+    try {
+      this.wsConnected.set(this.wsService.isConnected());
+      
+      // Listen for real-time updates
+      this.wsService.message$.subscribe((message) => {
+        if (message?.type === 'ORDER_PLACED' || message?.type === 'PAYMENT_RECEIVED') {
+          // Reload analytics when significant events occur
+          this.loadAnalytics();
+        }
+      });
+    } catch (e) {
+      console.error('Error in initializeWebSocket:', e);
+    }
   }
 
   loadAnalytics(): void {
+    console.log('loadAnalytics called, setting isLoading to true');
     this.isLoading.set(true);
     
     // Use mock data for now - API endpoints may not be fully implemented
-    setTimeout(() => {
+    Promise.resolve().then(() => {
+      console.log('loadAnalytics: Promise resolved, setting isLoading to false');
       this.isLoading.set(false);
-    }, 500);
+    });
   }
 
   formatCurrency(value: number): string {
@@ -252,18 +262,20 @@ export class AnalyticsComponent implements OnInit {
 
   updateDateRange(): void {
     this.loadAnalytics();
-    setTimeout(() => {
+    Promise.resolve().then(() => {
       this.success.set('Données mises à jour');
       setTimeout(() => this.success.set(null), 2000);
-    }, 500);
+    });
   }
 
   refreshAnalytics(): void {
     this.isLoading.set(true);
-    setTimeout(() => {
-      this.isLoading.set(false);
-      this.toast.success('Analytics rafraîchis');
-    }, 1000);
+    Promise.resolve().then(() => {
+      setTimeout(() => {
+        this.isLoading.set(false);
+        this.toast.success('Analytics rafraîchis');
+      }, 1000);
+    });
   }
 
   private getTodayString(): string {

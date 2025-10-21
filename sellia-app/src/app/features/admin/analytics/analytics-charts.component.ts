@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, input, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, input, ViewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -52,9 +52,19 @@ export class AnalyticsChartsComponent implements AfterViewInit {
   private productsChart: Chart | null = null;
   private cashierChart: Chart | null = null;
   private hoursChart: Chart | null = null;
+  private initialized = false;
+
+  constructor() {
+    effect(() => {
+      if (this.initialized) {
+        Promise.resolve().then(() => this.renderCharts());
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
-    this.renderCharts();
+    this.initialized = true;
+    Promise.resolve().then(() => this.renderCharts());
   }
 
   private renderCharts(): void {
