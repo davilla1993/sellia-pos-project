@@ -76,7 +76,7 @@ import { TextTransform } from '../../../core/utils/text-transform';
           <label class="block text-sm font-semibold text-white mb-2">Rôle *</label>
           <select formControlName="roleId" class="input-field bg-neutral-700 border-neutral-600 text-white">
             <option value="">Sélectionner un rôle</option>
-            <option *ngFor="let role of roles()" [value]="role.id">{{ role.description || role.name }}</option>
+            <option *ngFor="let role of roles()" [value]="role.id">{{ role.name }}</option>
           </select>
           <p *ngIf="hasError('roleId')" class="text-red-400 text-sm mt-1">Requis</p>
         </div>
