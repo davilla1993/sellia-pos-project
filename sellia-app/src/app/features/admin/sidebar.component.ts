@@ -37,17 +37,6 @@ interface MenuItem {
 
       <!-- Navigation Menu -->
       <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-2">
-        <!-- Dashboard Link -->
-        <a routerLink="/admin/dashboard" routerLinkActive="text-primary bg-primary/20" [routerLinkActiveOptions]="{ exact: true }" class="flex items-center space-x-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-700/50 rounded-lg transition-all duration-200 font-semibold mb-2">
-          <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-          </svg>
-          <span *ngIf="!collapsed()" class="text-sm font-medium truncate">🏠 Accueil</span>
-        </a>
-
-        <!-- Divider -->
-        <div class="border-t border-neutral-700 my-3"></div>
-
         <div *ngFor="let item of menuItems" class="group">
           <!-- Section Header -->
           <div *ngIf="item.isSection && !collapsed()" class="px-4 py-3 mt-4 mb-2">
