@@ -297,10 +297,11 @@ export class ApiService {
   }
 
   // Tables
-  getTables(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/tables/active/list`).pipe(
-      map(response => this.extractArray(response))
-    );
+  getTables(page: number = 0, size: number = 100): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/tables`, { params });
   }
 
   getAvailableTables(): Observable<any[]> {
@@ -309,8 +310,24 @@ export class ApiService {
     );
   }
 
+  createTable(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/tables`, data);
+  }
+
+  updateTable(publicId: string, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/tables/${publicId}`, data);
+  }
+
+  deleteTable(publicId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/tables/${publicId}`);
+  }
+
   generateTableQrCode(tablePublicId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/tables/${tablePublicId}/qrcode/generate`, {});
+  }
+
+  generateBulkTableQrCodes(tablePublicIds: string[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/tables/qrcode/generate-bulk`, { tablePublicIds });
   }
 
   downloadFile(filePath: string): Observable<Blob> {

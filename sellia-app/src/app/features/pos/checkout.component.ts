@@ -291,7 +291,7 @@ export class CheckoutComponent implements OnInit {
         const sessionsSet = new Set<string>();
         let completedChecks = 0;
         
-        tables.forEach(table => {
+        tables.forEach((table: any) => {
           this.apiService.getActiveSessionByTable(table.publicId).subscribe({
             next: () => {
               sessionsSet.add(table.publicId);

@@ -19,7 +19,7 @@ import { MyOrdersComponent } from './features/pos/my-orders.component';
 import { CheckoutComponent } from './features/pos/checkout.component';
 import { PosLayoutComponent } from './features/pos/pos-layout.component';
 import { InventoryComponent } from './features/admin/inventory.component';
-import { TablesComponent } from './features/admin/tables.component';
+
 import { ReportsComponent } from './features/admin/reports.component';
 import { SettingsComponent } from './features/admin/settings.component';
 import { GlobalSessionComponent } from './features/admin/global-session.component';
@@ -71,7 +71,10 @@ export const routes: Routes = [
         ]
       },
       { path: 'inventory', component: InventoryComponent },
-      { path: 'tables', component: TablesComponent },
+      {
+        path: 'tables',
+        loadComponent: () => import('./features/admin/tables/tables.component').then(m => m.TablesComponent)
+      },
       { path: 'global-session', component: GlobalSessionComponent },
       { path: 'cashiers', component: CashiersComponent },
       {

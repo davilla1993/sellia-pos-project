@@ -127,6 +127,30 @@ public class RestaurantTableController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/qrcode/generate-bulk")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> generateBulkQrCodes(@RequestBody Map<String, List<String>> request) {
+        List<String> tablePublicIds = request.get("tablePublicIds");
+        if (tablePublicIds == null || tablePublicIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No table IDs provided"));
+        }
+
+        int generated = 0;
+        for (String tablePublicId : tablePublicIds) {
+            try {
+                qrCodeService.generateTableQrCode(tablePublicId);
+                generated++;
+            } catch (Exception e) {
+                // Continue with next table if one fails
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("generated", generated);
+        response.put("total", tablePublicIds.size());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{publicId}/qrcode")
     public ResponseEntity<Map<String, String>> getQrCode(@PathVariable String publicId) {
         String qrCodeUrl = qrCodeService.generateTableQrCode(publicId);

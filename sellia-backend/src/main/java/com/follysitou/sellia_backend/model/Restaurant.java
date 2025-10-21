@@ -4,17 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Entity
-@Table(name = "restaurants")
 @Data
 @Builder
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "restaurants")
+@EqualsAndHashCode(callSuper = true)
 public class Restaurant extends BaseEntity {
 
     @NotBlank(message = "Restaurant name is required")
