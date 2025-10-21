@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -20,6 +21,27 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
 
       <div class="flex items-center space-x-6">
+        <!-- Theme Toggle -->
+        <button 
+          (click)="toggleTheme()"
+          class="relative text-neutral-400 hover:text-orange-500 transition-colors"
+          [title]="isDarkMode() ? 'Mode clair' : 'Mode sombre'">
+          <svg *ngIf="isDarkMode()" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg *ngIf="!isDarkMode()" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
         <!-- Notifications -->
         <button class="relative text-neutral-400 hover:text-primary transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,6 +69,9 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class AdminNavbarComponent {
   private authService = inject(AuthService);
+  private themeService = inject(ThemeService);
+
+  isDarkMode = this.themeService.isDark;
 
   currentUserName(): string {
     const user = this.authService.getCurrentUser();
@@ -61,5 +86,9 @@ export class AdminNavbarComponent {
       'CUISINE': 'Cuisinier'
     };
     return user ? roleMap[user.role] || user.role : 'Utilisateur';
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 }

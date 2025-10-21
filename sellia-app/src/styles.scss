@@ -14,18 +14,22 @@
 
   body {
     @apply bg-primary-light text-dark font-sans m-0 p-0;
+    @apply dark:bg-neutral-900 dark:text-neutral-100;
   }
 
   h1 {
     @apply text-4xl font-bold text-dark;
+    @apply dark:text-white;
   }
 
   h2 {
     @apply text-3xl font-bold text-dark;
+    @apply dark:text-white;
   }
 
   h3 {
     @apply text-2xl font-semibold text-dark;
+    @apply dark:text-neutral-200;
   }
 
   button {
@@ -57,6 +61,7 @@
 
   .card {
     @apply bg-white rounded-xl shadow-elegant p-6 hover:shadow-elevation transition-all duration-300;
+    @apply dark:bg-neutral-800 dark:border dark:border-neutral-700;
   }
 
   .card-hover {
@@ -65,6 +70,7 @@
 
   .input-field {
     @apply w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200;
+    @apply dark:bg-neutral-700 dark:border-neutral-600 dark:text-white dark:focus:border-orange-500;
   }
 
   .section-header {
@@ -73,10 +79,12 @@
 
   .section-title {
     @apply text-3xl font-bold text-dark mb-3;
+    @apply dark:text-white;
   }
 
   .section-subtitle {
     @apply text-lg text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 }
 
