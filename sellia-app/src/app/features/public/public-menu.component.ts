@@ -177,10 +177,8 @@ export class PublicMenuComponent implements OnInit {
   }
 
   formatPrice(price: number): string {
-    return (price / 100).toLocaleString('fr-CM', {
-      style: 'currency',
-      currency: 'XOF'
-    });
+    const formatted = Math.round(price / 100).toLocaleString('fr-FR');
+    return `${formatted} FCFA`;
   }
 
   get isTableVip(): string {

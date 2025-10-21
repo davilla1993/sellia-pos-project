@@ -302,7 +302,8 @@ export class GlobalSessionComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    if (!value) return '0.00 FCFA';
-    return (value / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' });
+    if (!value) return '0 FCFA';
+    const formatted = Math.round(value / 100).toLocaleString('fr-FR');
+    return `${formatted} FCFA`;
   }
 }
