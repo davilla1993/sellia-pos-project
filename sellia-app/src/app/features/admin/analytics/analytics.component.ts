@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { WebSocketService } from '../../../core/services/websocket.service';
+import { AnalyticsChartsComponent } from './analytics-charts.component';
 
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AnalyticsChartsComponent],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -94,50 +96,19 @@ import { ToastService } from '../../../shared/services/toast.service';
         </div>
       </div>
 
-      <!-- Charts Row -->
-      <div *ngIf="!isLoading()" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Top Products -->
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <h3 class="text-xl font-bold text-white mb-4">🏆 Top 10 Produits</h3>
-          <div class="space-y-3">
-            <div *ngFor="let product of topProducts(); let i = index" class="space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-neutral-300">{{ i + 1 }}. {{ product.name }}</span>
-                <span class="text-sm font-bold text-orange-400">{{ formatCurrency(product.revenue) }}</span>
-              </div>
-              <div class="w-full bg-neutral-700 rounded-full h-2">
-                <div 
-                  class="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full"
-                  [style.width.%]="(product.revenue / topProducts()[0].revenue) * 100">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Revenue by Day -->
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <h3 class="text-xl font-bold text-white mb-4">📈 CA par Jour</h3>
-          <div class="space-y-3">
-            <div *ngFor="let day of revenueByDay()" class="space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-neutral-300">{{ day.date }}</span>
-                <span class="text-sm font-bold text-green-400">{{ formatCurrency(day.amount) }}</span>
-              </div>
-              <div class="w-full bg-neutral-700 rounded-full h-2">
-                <div 
-                  class="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full"
-                  [style.width.%]="(day.amount / revenueByDay()[0].amount) * 100">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Interactive Charts -->
+      <div *ngIf="!isLoading()">
+        <app-analytics-charts 
+          [revenueData]="revenueByDay()"
+          [productsData]="topProducts()"
+          [cashierData]="cashierPerformance()"
+          [peakHoursData]="peakHours()">
+        </app-analytics-charts>
       </div>
 
-      <!-- Performance by Cashier -->
-      <div *ngIf="!isLoading()" class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-        <h3 class="text-xl font-bold text-white mb-4">👥 Performance par Caissier</h3>
+      <!-- Backup: Performance Table (visible on mobile or if needed) -->
+      <div *ngIf="!isLoading()" class="hidden lg:block bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+        <h3 class="text-xl font-bold text-white mb-4">👥 Performance par Caissier (Tableau)</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead class="border-b border-neutral-700">
@@ -162,26 +133,6 @@ import { ToastService } from '../../../shared/services/toast.service';
         </div>
       </div>
 
-      <!-- Peak Hours -->
-      <div *ngIf="!isLoading()" class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-        <h3 class="text-xl font-bold text-white mb-4">🕐 Heures de Pointe</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <div *ngFor="let hour of peakHours()" [ngClass]="hour.intensity >= 0.7 ? 'bg-red-900/30 border-red-600' : hour.intensity >= 0.4 ? 'bg-yellow-900/30 border-yellow-600' : 'bg-neutral-700/30 border-neutral-600'" class="border rounded-lg p-3">
-            <p class="text-xs text-neutral-400">{{ hour.time }}</p>
-            <p class="text-lg font-bold" [ngClass]="hour.intensity >= 0.7 ? 'text-red-400' : hour.intensity >= 0.4 ? 'text-yellow-400' : 'text-green-400'">
-              {{ hour.transactions }}
-            </p>
-            <div class="w-full bg-neutral-600 rounded-full h-1 mt-2">
-              <div 
-                [ngClass]="hour.intensity >= 0.7 ? 'bg-red-500' : hour.intensity >= 0.4 ? 'bg-yellow-500' : 'bg-green-500'"
-                class="h-1 rounded-full"
-                [style.width.%]="hour.intensity * 100">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Success Message -->
       <div *ngIf="success()" class="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg font-semibold">
         ✅ {{ success() }}
@@ -193,10 +144,12 @@ import { ToastService } from '../../../shared/services/toast.service';
 export class AnalyticsComponent implements OnInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
+  private wsService = inject(WebSocketService);
 
   isLoading = signal(false);
   success = signal<string | null>(null);
   preset = signal<'today' | 'week' | 'month'>('today');
+  wsConnected = signal(false);
 
   dateStart = this.getTodayString();
   dateEnd = this.getTodayString();
@@ -213,6 +166,19 @@ export class AnalyticsComponent implements OnInit {
   ngOnInit(): void {
     this.setPreset('today');
     this.loadAnalytics();
+    this.initializeWebSocket();
+  }
+
+  private initializeWebSocket(): void {
+    this.wsConnected.set(this.wsService.isConnected());
+    
+    // Listen for real-time updates
+    this.wsService.message$.subscribe((message) => {
+      if (message?.type === 'ORDER_PLACED' || message?.type === 'PAYMENT_RECEIVED') {
+        // Reload analytics when significant events occur
+        this.loadAnalytics();
+      }
+    });
   }
 
   loadAnalytics(): void {

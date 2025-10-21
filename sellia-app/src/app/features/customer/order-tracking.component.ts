@@ -169,13 +169,16 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   subscribeToUpdates(orderId: string): void {
-    this.wsService.orderUpdates$.subscribe((update) => {
-      if (update.orderId === orderId) {
-        const currentOrder = this.order();
-        if (currentOrder) {
-          currentOrder.status = update.status;
-          this.order.set({ ...currentOrder });
-          this.showNotification(`Order status updated: ${update.status}`);
+    this.wsService.message$.subscribe((message: any) => {
+      if (message?.type === 'ORDER_PLACED' || message?.type === 'ORDER_COMPLETED') {
+        const update = message.data;
+        if (update?.orderId === orderId) {
+          const currentOrder = this.order();
+          if (currentOrder) {
+            currentOrder.status = update.status;
+            this.order.set({ ...currentOrder });
+            this.showNotification(`Order status updated: ${update.status}`);
+          }
         }
       }
     });

@@ -1,110 +1,114 @@
-import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { Injectable, signal, inject } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { AuthService } from './auth.service';
+
+export interface WebSocketMessage {
+  type: 'ORDER_PLACED' | 'ORDER_COMPLETED' | 'PAYMENT_RECEIVED' | 'STOCK_ALERT' | 'TABLE_STATUS' | 'NOTIFICATION';
+  data: any;
+  timestamp: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  private wsUrl = environment.wsUrl;
-  private socket: WebSocket | null = null;
-  
-  private kitchenNotificationsSubject = new Subject<any>();
-  public kitchenNotifications$ = this.kitchenNotificationsSubject.asObservable();
+  private authService = inject(AuthService);
+  private ws: WebSocket | null = null;
+  private messageSubject = new BehaviorSubject<WebSocketMessage | null>(null);
+  private connectionStatus = signal<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  private messageQueue: WebSocketMessage[] = [];
 
-  private cashierNotificationsSubject = new Subject<any>();
-  public cashierNotifications$ = this.cashierNotificationsSubject.asObservable();
-
-  private tableNotificationsSubject = new Subject<any>();
-  public tableNotifications$ = this.tableNotificationsSubject.asObservable();
-
-  private orderUpdatesSubject = new Subject<any>();
-  public orderUpdates$ = this.orderUpdatesSubject.asObservable();
+  public message$ = this.messageSubject.asObservable();
+  public status = this.connectionStatus;
 
   constructor() {
-    this.connect();
+    this.initializeConnection();
   }
 
-  private connect(): void {
+  private initializeConnection(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.hostname;
+    const port = window.location.port || (protocol === 'wss:' ? '443' : '80');
+    const wsUrl = `${protocol}//${host}:${port}/ws/notifications`;
+
+    this.connect(wsUrl);
+  }
+
+  connect(url: string): void {
+    if (this.ws) return;
+
+    this.connectionStatus.set('connecting');
+    
     try {
-      this.socket = new WebSocket(this.wsUrl);
+      this.ws = new WebSocket(url);
 
-      this.socket.onopen = () => {
+      this.ws.onopen = () => {
+        this.connectionStatus.set('connected');
         console.log('WebSocket connected');
+        this.flushQueue();
       };
 
-      this.socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        this.handleMessage(data);
+      this.ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          this.messageSubject.next(message);
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err);
+        }
       };
 
-      this.socket.onerror = (error) => {
+      this.ws.onerror = (error) => {
         console.error('WebSocket error:', error);
+        this.connectionStatus.set('disconnected');
       };
 
-      this.socket.onclose = () => {
-        console.log('WebSocket disconnected');
-        setTimeout(() => this.connect(), 5000);
+      this.ws.onclose = () => {
+        this.connectionStatus.set('disconnected');
+        this.ws = null;
+        this.reconnect();
       };
-    } catch (error) {
-      console.error('Failed to connect to WebSocket:', error);
+    } catch (err) {
+      console.error('Failed to connect WebSocket:', err);
+      this.connectionStatus.set('disconnected');
     }
   }
 
-  private handleMessage(data: any): void {
-    const { type, payload } = data;
+  private reconnect(): void {
+    setTimeout(() => {
+      console.log('Attempting to reconnect WebSocket...');
+      this.initializeConnection();
+    }, 3000);
+  }
 
-    switch (type) {
-      case 'KITCHEN_NOTIFICATION':
-        this.kitchenNotificationsSubject.next(payload);
-        break;
-      case 'CASHIER_NOTIFICATION':
-        this.cashierNotificationsSubject.next(payload);
-        break;
-      case 'TABLE_NOTIFICATION':
-        this.tableNotificationsSubject.next(payload);
-        break;
-      case 'ORDER_UPDATE':
-        this.orderUpdatesSubject.next(payload);
-        break;
+  send(message: WebSocketMessage): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      this.messageQueue.push(message);
     }
   }
 
-  subscribe(destination: string): void {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: 'SUBSCRIBE',
-        destination
-      }));
-    }
-  }
-
-  subscribeToKitchen(): void {
-    this.subscribe('/topic/kitchen');
-  }
-
-  subscribeToCashier(): void {
-    this.subscribe('/topic/cashier');
-  }
-
-  subscribeToTable(tableId: string): void {
-    this.subscribe(`/topic/table/${tableId}`);
-  }
-
-  sendMessage(destination: string, message: any): void {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: 'SEND',
-        destination,
-        payload: message
-      }));
+  private flushQueue(): void {
+    while (this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      if (message && this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(message));
+      }
     }
   }
 
   disconnect(): void {
-    if (this.socket) {
-      this.socket.close();
-      this.socket = null;
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
     }
+    this.connectionStatus.set('disconnected');
+  }
+
+  isConnected(): boolean {
+    return this.connectionStatus() === 'connected';
   }
 }
