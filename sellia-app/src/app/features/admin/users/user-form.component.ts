@@ -227,12 +227,12 @@ export class UserFormComponent implements OnInit {
     
     if (this.isEditMode() && this.userId) {
       this.apiService.updateUser(this.userId, transformedData).subscribe({
-        next: () => this.router.navigate(['..'], { relativeTo: this.route }),
+        next: () => this.router.navigate(['/admin/users']),
         error: (err) => this.handleError(err)
       });
     } else {
       this.apiService.createUser(transformedData).subscribe({
-        next: () => this.router.navigate(['..'], { relativeTo: this.route }),
+        next: () => this.router.navigate(['/admin/users']),
         error: (err) => this.handleError(err)
       });
     }
