@@ -29,7 +29,7 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     // Pour les autres routes, ajouter le token JWT
-    const authToken = localStorage.getItem('auth_token');
+    const authToken = localStorage.getItem('accessToken');
     
     if (authToken && !this.isTokenExpired(authToken)) {
       request = request.clone({
