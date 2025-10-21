@@ -12,7 +12,7 @@ import { AdminSidebarService } from './admin-sidebar.service';
   template: `
     <div class="h-screen bg-neutral-900">
       <app-sidebar></app-sidebar>
-      <div class="ml-64 transition-all duration-300 flex flex-col h-screen" [class.ml-20]="sidebarService.collapsed()">
+      <div class="ml-56 transition-all duration-300 flex flex-col h-screen" [class.ml-20]="sidebarService.collapsed()">
         <app-admin-navbar></app-admin-navbar>
         <main class="flex-1 overflow-auto bg-neutral-900">
           <div class="p-8">

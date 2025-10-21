@@ -18,7 +18,7 @@ interface MenuItem {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <aside class="fixed left-0 top-0 h-screen bg-dark border-r border-neutral-800 transition-all duration-300" [class.w-64]="!collapsed()" [class.w-20]="collapsed()">
+    <aside class="fixed left-0 top-0 h-screen bg-dark border-r border-neutral-800 transition-all duration-300" [class.w-56]="!collapsed()" [class.w-20]="collapsed()">
       <!-- Logo Section -->
       <div class="flex items-center justify-between h-20 px-4 border-b border-neutral-800">
         <div *ngIf="!collapsed()" class="flex items-center space-x-2">
