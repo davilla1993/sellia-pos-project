@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { PasswordValidator } from '../../../core/validators/password.validator';
 
 @Component({
   selector: 'app-user-form',
@@ -24,9 +25,20 @@ import { ApiService } from '../../../core/services/api.service';
       <!-- Form -->
       <form *ngIf="!isLoading()" [formGroup]="form" (ngSubmit)="onSubmit()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-6 max-w-2xl space-y-6">
         
-        <!-- Error -->
-        <div *ngIf="error()" class="p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-200">
-          {{ error() }}
+        <!-- Global Error -->
+        <div *ngIf="globalError()" class="p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-200">
+          {{ globalError() }}
+        </div>
+
+        <!-- Field Validation Errors -->
+        <div *ngIf="fieldErrors().size > 0" class="p-4 bg-red-900/20 border border-red-500 rounded-lg">
+          <p class="text-red-200 font-semibold mb-2">Erreurs de validation:</p>
+          <ul class="text-red-200 text-sm space-y-1">
+            <li *ngFor="let error of getFieldErrorsList()" class="flex items-start gap-2">
+              <span class="text-red-400 mt-0.5">•</span>
+              <span>{{ error }}</span>
+            </li>
+          </ul>
         </div>
 
         <!-- Username -->
@@ -79,7 +91,9 @@ import { ApiService } from '../../../core/services/api.service';
         <div *ngIf="!isEditMode()">
           <label class="block text-sm font-semibold text-white mb-2">Mot de passe *</label>
           <input formControlName="password" type="password" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="••••••••">
-          <p *ngIf="hasError('password')" class="text-red-400 text-sm mt-1">Requis, 6+ caractères</p>
+          <p *ngIf="hasError('password')" class="text-red-400 text-sm mt-1">
+            {{ getPasswordErrorMessage() }}
+          </p>
           <p class="text-neutral-400 text-xs mt-2">Minimum 6 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial</p>
         </div>
 
@@ -105,7 +119,8 @@ export class UserFormComponent implements OnInit {
   isEditMode = signal(false);
   isLoading = signal(false);
   isSubmitting = signal(false);
-  error = signal<string | null>(null);
+  globalError = signal<string | null>(null);
+  fieldErrors = signal<Map<string, string>>(new Map());
   userId: string | null = null;
 
   constructor() {
@@ -116,7 +131,7 @@ export class UserFormComponent implements OnInit {
       lastName: ['', Validators.required],
       roleId: ['', Validators.required],
       phoneNumber: [''],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, PasswordValidator.strong()]]
     });
   }
 
@@ -149,7 +164,7 @@ export class UserFormComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => {
-        this.error.set('Erreur lors du chargement de l\'utilisateur');
+        this.globalError.set('Erreur lors du chargement de l\'utilisateur');
         this.isLoading.set(false);
       }
     });
@@ -159,27 +174,52 @@ export class UserFormComponent implements OnInit {
     if (this.form.invalid) return;
 
     this.isSubmitting.set(true);
-    this.error.set(null);
+    this.globalError.set(null);
+    this.fieldErrors.set(new Map());
 
     const formValue = this.form.getRawValue();
     
     if (this.isEditMode() && this.userId) {
       this.apiService.updateUser(this.userId, formValue).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
-        error: (err) => {
-          this.error.set(err.error?.message || 'Erreur lors de la mise à jour');
-          this.isSubmitting.set(false);
-        }
+        error: (err) => this.handleError(err)
       });
     } else {
       this.apiService.createUser(formValue).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
-        error: (err) => {
-          this.error.set(err.error?.message || 'Erreur lors de la création');
-          this.isSubmitting.set(false);
-        }
+        error: (err) => this.handleError(err)
       });
     }
+  }
+
+  private handleError(err: any): void {
+    this.isSubmitting.set(false);
+
+    if (err.error?.validationErrors) {
+      const errorMap = new Map<string, string>();
+      for (const [field, message] of Object.entries(err.error.validationErrors)) {
+        errorMap.set(field, message as string);
+      }
+      this.fieldErrors.set(errorMap);
+    } else if (err.error?.message) {
+      this.globalError.set(err.error.message);
+    } else {
+      this.globalError.set('Une erreur est survenue lors du traitement');
+    }
+  }
+
+  getFieldErrorsList(): string[] {
+    const errors: string[] = [];
+    this.fieldErrors().forEach((message, field) => {
+      errors.push(`${field}: ${message}`);
+    });
+    return errors;
+  }
+
+  getPasswordErrorMessage(): string {
+    const control = this.form.get('password');
+    if (!control || !control.errors) return 'Requis';
+    return PasswordValidator.getErrorMessage(control.errors);
   }
 
   hasError(fieldName: string): boolean {
