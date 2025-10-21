@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, input, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, input, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -55,17 +55,6 @@ export class AnalyticsChartsComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.renderCharts();
-    
-    effect(() => {
-      const rev = this.revenueData();
-      const prod = this.productsData();
-      const cash = this.cashierData();
-      const hours = this.peakHoursData();
-      
-      if (rev.length > 0 || prod.length > 0 || cash.length > 0 || hours.length > 0) {
-        this.renderCharts();
-      }
-    });
   }
 
   private renderCharts(): void {
