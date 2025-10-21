@@ -64,15 +64,45 @@ public class AnalyticsService {
     }
 
     private List<TopProductResponse> getTopProducts(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        // TODO: Implement query to get top products from order_items joined with products
-        // For now, return empty list - implement when order_items table is available
+        // Query top products by revenue - join order_items with orders to filter by date range
+        // This will be implemented when we have the proper repository method
+        // For now, return empty list - to be implemented with custom @Query in OrderItemRepository
         return new ArrayList<>();
     }
 
     private List<CashierPerformanceResponse> getCashierPerformance(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        // TODO: Implement query to get cashier performance from cashier_sessions and orders
-        // For now, return empty list
-        return new ArrayList<>();
+        // Query cashier performance from orders grouped by cashier_session
+        List<Object[]> results = orderRepository.getCashierPerformanceStats(startDateTime, endDateTime);
+        List<CashierPerformanceResponse> performances = new ArrayList<>();
+        
+        if (results.isEmpty()) {
+            return performances;
+        }
+        
+        long totalRevenue = results.stream()
+                .mapToLong(r -> ((Number) r[1]).longValue())
+                .sum();
+        
+        for (Object[] row : results) {
+            String cashierName = (String) row[0];
+            long revenue = ((Number) row[1]).longValue();
+            long transactions = ((Number) row[2]).longValue();
+            long average = transactions > 0 ? revenue / transactions : 0;
+            double percent = totalRevenue > 0 ? (revenue * 100.0 / totalRevenue) : 0;
+            
+            performances.add(CashierPerformanceResponse.builder()
+                    .name(cashierName != null ? cashierName : "Anonyme")
+                    .transactions(transactions)
+                    .revenue(revenue)
+                    .average(average)
+                    .percent(percent)
+                    .build());
+        }
+        
+        // Sort by revenue descending
+        performances.sort((a, b) -> Long.compare(b.getRevenue(), a.getRevenue()));
+        
+        return performances;
     }
 
     private List<RevenueByDayResponse> getRevenueByDay(LocalDate dateStart, LocalDate dateEnd) {

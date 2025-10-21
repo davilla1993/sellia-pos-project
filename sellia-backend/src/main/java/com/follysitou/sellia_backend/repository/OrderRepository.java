@@ -59,5 +59,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate AND HOUR(o.createdAt) = :hour")
     Long countByHourRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("hour") int hour);
 
+    @Query(value = "SELECT CONCAT(u.firstName, ' ', u.lastName) as cashierName, SUM(o.totalAmount) as revenue, COUNT(o) as transactions " +
+            "FROM orders o " +
+            "LEFT JOIN cashier_sessions cs ON o.cashier_session_id = cs.id " +
+            "LEFT JOIN users u ON cs.user_id = u.id " +
+            "WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY cs.id, u.id " +
+            "ORDER BY revenue DESC", nativeQuery = true)
+    List<Object[]> getCashierPerformanceStats(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
     boolean existsByOrderNumberAndDeletedFalse(String orderNumber);
 }
