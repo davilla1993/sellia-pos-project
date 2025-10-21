@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { PasswordValidator } from '../../../core/validators/password.validator';
+import { PhoneValidator } from '../../../core/validators/phone.validator';
+import { TextTransform } from '../../../core/utils/text-transform';
 
 @Component({
   selector: 'app-user-form',
@@ -43,7 +45,7 @@ import { PasswordValidator } from '../../../core/validators/password.validator';
 
         <!-- Username -->
         <div>
-          <label class="block text-sm font-semibold text-white mb-2">Username *</label>
+          <label class="block text-sm font-semibold text-white mb-2">Nom d'utilisateur *</label>
           <input formControlName="username" type="text" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="john_doe" [readonly]="isEditMode()">
           <p *ngIf="hasError('username')" class="text-red-400 text-sm mt-1">Requis, 3+ caractères</p>
         </div>
@@ -85,6 +87,7 @@ import { PasswordValidator } from '../../../core/validators/password.validator';
         <div>
           <label class="block text-sm font-semibold text-white mb-2">Téléphone</label>
           <input formControlName="phoneNumber" type="tel" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500" placeholder="+33612345678">
+          <p *ngIf="hasError('phoneNumber')" class="text-red-400 text-sm mt-1">{{ getPhoneErrorMessage() }}</p>
         </div>
 
         <!-- Password (New User Only) -->
@@ -130,7 +133,7 @@ export class UserFormComponent implements OnInit {
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       roleId: ['', Validators.required],
-      phoneNumber: [''],
+      phoneNumber: ['', PhoneValidator.validFormat()],
       password: ['', [Validators.required, PasswordValidator.strong()]]
     });
   }
@@ -179,13 +182,21 @@ export class UserFormComponent implements OnInit {
 
     const formValue = this.form.getRawValue();
     
+    // Transform data before sending
+    const transformedData = {
+      ...formValue,
+      firstName: TextTransform.capitalize(formValue.firstName),
+      lastName: TextTransform.toUpperCase(formValue.lastName),
+      phoneNumber: TextTransform.onlyNumbers(formValue.phoneNumber)
+    };
+    
     if (this.isEditMode() && this.userId) {
-      this.apiService.updateUser(this.userId, formValue).subscribe({
+      this.apiService.updateUser(this.userId, transformedData).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
         error: (err) => this.handleError(err)
       });
     } else {
-      this.apiService.createUser(formValue).subscribe({
+      this.apiService.createUser(transformedData).subscribe({
         next: () => this.router.navigate(['..'], { relativeTo: this.route }),
         error: (err) => this.handleError(err)
       });
@@ -220,6 +231,19 @@ export class UserFormComponent implements OnInit {
     const control = this.form.get('password');
     if (!control || !control.errors) return 'Requis';
     return PasswordValidator.getErrorMessage(control.errors);
+  }
+
+  getPhoneErrorMessage(): string {
+    const control = this.form.get('phoneNumber');
+    if (!control || !control.errors) return '';
+    
+    if (control.errors['phoneInvalid']) {
+      return 'Le téléphone ne doit contenir que des chiffres';
+    }
+    if (control.errors['phoneLength']) {
+      return 'Le téléphone doit contenir entre 7 et 20 chiffres';
+    }
+    return 'Téléphone invalide';
   }
 
   hasError(fieldName: string): boolean {
