@@ -152,23 +152,25 @@ export class UserFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadRoles();
-    
     this.userId = this.route.snapshot.paramMap.get('id');
     
-    if (this.userId) {
-      this.isEditMode.set(true);
-      this.form.get('username')?.disable();
-      this.form.get('password')?.clearValidators();
-      this.form.get('password')?.updateValueAndValidity();
-      this.loadUser();
-    }
+    // Load roles first, then load user if in edit mode
+    this.loadRoles(() => {
+      if (this.userId) {
+        this.isEditMode.set(true);
+        this.form.get('username')?.disable();
+        this.form.get('password')?.clearValidators();
+        this.form.get('password')?.updateValueAndValidity();
+        this.loadUser();
+      }
+    });
   }
 
-  private loadRoles(): void {
+  private loadRoles(callback?: () => void): void {
     this.apiService.getRoles().subscribe({
       next: (roles) => {
         this.roles.set(roles);
+        if (callback) callback();
       },
       error: (err) => {
         console.error('Error loading roles:', err);
@@ -178,6 +180,7 @@ export class UserFormComponent implements OnInit {
           { id: 2, name: 'CAISSE', description: 'Caissier' },
           { id: 3, name: 'CUISINE', description: 'Cuisinier' }
         ]);
+        if (callback) callback();
       }
     });
   }
