@@ -33,11 +33,11 @@ export class ThemeService {
 
     // Check system preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
+      return false; // Ignore system preference
     }
 
-    // Default to dark
-    return true;
+    // Default to light mode
+    return false;
   }
 
   private applyTheme(isDark: boolean): void {
