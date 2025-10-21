@@ -34,6 +34,7 @@ public class UserMapper {
         response.setEmail(user.getEmail());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setProfileImage(user.getProfileImage());
+        response.setRoleId(user.getRole().getId());
         response.setRole(user.getRole().getName().name());
         response.setActive(user.getActive());
         response.setFirstLogin(user.getFirstLogin());

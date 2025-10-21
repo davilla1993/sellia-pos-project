@@ -193,7 +193,7 @@ export class UserFormComponent implements OnInit {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          roleId: user.role,
+          roleId: user.roleId,
           phoneNumber: user.phoneNumber
         });
         this.isLoading.set(false);

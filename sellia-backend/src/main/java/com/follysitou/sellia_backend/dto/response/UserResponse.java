@@ -13,6 +13,7 @@ public class UserResponse {
     private String email;
     private String phoneNumber;
     private String profileImage;
+    private Long roleId;
     private String role;
     private Boolean active;
     private Boolean firstLogin;
