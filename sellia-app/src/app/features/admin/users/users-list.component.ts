@@ -33,23 +33,29 @@ import { ApiService } from '../../../core/services/api.service';
         <table class="w-full">
           <thead class="bg-neutral-700 border-b border-neutral-600">
             <tr>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-white">N°</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Nom</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Email</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-white">Téléphone</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Rôle</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-white">Dernière connexion</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Statut</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of paginatedUsers()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+            <tr *ngFor="let user of paginatedUsers(); let i = index" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+              <td class="px-6 py-4 text-neutral-400 text-sm">{{ (currentPage() - 1) * itemsPerPage + i + 1 }}</td>
               <td class="px-6 py-4 text-white">{{ user.firstName }} {{ user.lastName }}</td>
               <td class="px-6 py-4 text-neutral-300">{{ user.email }}</td>
+              <td class="px-6 py-4 text-neutral-300">{{ user.phoneNumber || '-' }}</td>
               <td class="px-6 py-4">
                 <span class="inline-block px-3 py-1 rounded-full text-sm font-medium" 
                   [class]="getRoleClass(user.role)">
                   {{ getRoleLabel(user.role) }}
                 </span>
               </td>
+              <td class="px-6 py-4 text-neutral-300 text-sm">{{ user.lastLogin ? (user.lastLogin | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
               <td class="px-6 py-4">
                 <span class="inline-block px-3 py-1 rounded-full text-sm font-medium"
                   [class]="user.active ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'">
