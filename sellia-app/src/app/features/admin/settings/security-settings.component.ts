@@ -1,0 +1,112 @@
+import { Component, signal, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { WritableSignal } from '@angular/core';
+
+@Component({
+  selector: 'app-security-settings',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
+      <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700" (click)="$event.stopPropagation()">
+        <h2 class="text-2xl font-bold text-white mb-4">🔐 Sécurité et Authentification</h2>
+        
+        <div class="space-y-4 mb-4">
+          <div>
+            <h3 class="text-white font-semibold mb-3">Paramètres de Session</h3>
+            <div class="space-y-3 pl-4">
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Durée d'inactivité avant déconnexion (minutes)</label>
+                <input [(ngModel)]="security.inactivityTimeout" type="number" min="5" max="300" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Tentatives de connexion avant blocage</label>
+                <input [(ngModel)]="security.maxLoginAttempts" type="number" min="1" max="10" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Durée du blocage (minutes)</label>
+                <input [(ngModel)]="security.lockoutDuration" type="number" min="5" max="120" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-neutral-700">
+
+          <div>
+            <h3 class="text-white font-semibold mb-3">Options de Sécurité Avancée</h3>
+            <div class="space-y-2 pl-4">
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="security.twoFactorAuth" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Authentification à deux facteurs (2FA)</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="security.ipWhitelist" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Liste blanche d'adresses IP</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="security.requireStrongPasswords" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Exiger des mots de passe forts</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="security.enableAuditLog" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Enregistrer toutes les actions (audit)</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-neutral-700">
+
+          <div>
+            <h3 class="text-white font-semibold mb-2">Sessions Actives</h3>
+            <p class="text-neutral-400 text-sm mb-3">Nombre de sessions actives: <span class="text-orange-400 font-bold">{{ activeSessions() }}</span></p>
+            <button (click)="forceLogoutAll()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold transition-colors">
+              🚪 Déconnecter tous les utilisateurs
+            </button>
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end">
+          <button (click)="closeModal()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+            Fermer
+          </button>
+          <button (click)="save()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+            ✅ Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class SecuritySettingsComponent {
+  closeSignal = input<WritableSignal<boolean>>();
+  activeSessions = signal(3);
+
+  security = {
+    inactivityTimeout: 15,
+    maxLoginAttempts: 3,
+    lockoutDuration: 15,
+    twoFactorAuth: false,
+    ipWhitelist: false,
+    requireStrongPasswords: true,
+    enableAuditLog: true
+  };
+
+  closeModal(): void {
+    this.closeSignal()?.set(false);
+  }
+
+  save(): void {
+    console.log('Security settings saved:', this.security);
+    this.closeModal();
+  }
+
+  forceLogoutAll(): void {
+    console.log('Force logout all users');
+  }
+}

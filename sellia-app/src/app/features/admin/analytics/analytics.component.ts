@@ -145,6 +145,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
   private wsService = inject(WebSocketService);
+  
+  constructor() {}
 
   isLoading = signal(false);
   success = signal<string | null>(null);
@@ -195,17 +197,14 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     { time: '19h-20h', transactions: 28, intensity: 0.7 }
   ]);
 
-  constructor() {}
-
   ngOnInit(): void {
     this.setPreset('today');
-    this.loadAnalytics();
     // WebSocket temporarily disabled - will re-enable when backend endpoint is ready
     // this.initializeWebSocket();
   }
 
   ngAfterViewInit(): void {
-    // Template rendered successfully
+    // Template rendered
   }
 
   private initializeWebSocket(): void {
@@ -225,12 +224,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   }
 
   loadAnalytics(): void {
-    console.log('loadAnalytics called, setting isLoading to true');
     this.isLoading.set(true);
     
     // Use mock data for now - API endpoints may not be fully implemented
     Promise.resolve().then(() => {
-      console.log('loadAnalytics: Promise resolved, setting isLoading to false');
       this.isLoading.set(false);
     });
   }

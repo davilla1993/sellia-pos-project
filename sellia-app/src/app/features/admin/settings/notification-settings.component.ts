@@ -1,0 +1,96 @@
+import { Component, signal, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { WritableSignal } from '@angular/core';
+
+@Component({
+  selector: 'app-notification-settings',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
+      <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700" (click)="$event.stopPropagation()">
+        <h2 class="text-2xl font-bold text-white mb-4">🔔 Notifications et Alertes</h2>
+        
+        <div class="space-y-4 mb-4">
+          <div>
+            <h3 class="text-white font-semibold mb-2">📧 Alertes par Email</h3>
+            <div class="space-y-2 pl-4">
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="notifications.lowStock" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Stock faible</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="notifications.unpaidOrders" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Commandes impayées</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="notifications.newOrders" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Nouvelles commandes</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-neutral-700">
+
+          <div>
+            <h3 class="text-white font-semibold mb-2">💬 Alertes par SMS</h3>
+            <div class="space-y-2 pl-4">
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="notifications.smsCriticalStock" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Stock critique (SMS)</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="notifications.smsLargeOrders" type="checkbox" class="w-4 h-4">
+                <label class="text-neutral-300">Grandes commandes (SMS)</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-neutral-700">
+
+          <div>
+            <label class="block text-sm font-semibold text-neutral-300 mb-2">Email de Notification</label>
+            <input [(ngModel)]="notifications.email" type="email" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-neutral-300 mb-2">Numéro de Téléphone</label>
+            <input [(ngModel)]="notifications.phone" type="tel" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end">
+          <button (click)="closeModal()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+            Fermer
+          </button>
+          <button (click)="save()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+            ✅ Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class NotificationSettingsComponent {
+  closeSignal = input<WritableSignal<boolean>>();
+
+  notifications = {
+    lowStock: true,
+    unpaidOrders: true,
+    newOrders: true,
+    smsCriticalStock: false,
+    smsLargeOrders: false,
+    email: '',
+    phone: ''
+  };
+
+  closeModal(): void {
+    this.closeSignal()?.set(false);
+  }
+
+  save(): void {
+    console.log('Notification settings saved:', this.notifications);
+    this.closeModal();
+  }
+}
