@@ -114,8 +114,8 @@ import { ToastService } from '../../../shared/services/toast.service';
             </thead>
             <tbody>
               <tr *ngFor="let item of menuItems()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
-                <td class="px-6 py-4 text-white">{{ item.name }}</td>
-                <td class="px-6 py-4 text-orange-400 font-semibold">€{{ (item.price / 100).toFixed(2) }}</td>
+                <td class="px-6 py-4 text-white">{{ item.productName || item.name }}</td>
+                <td class="px-6 py-4 text-orange-400 font-semibold">FCFA {{ (item.productPrice / 100).toFixed(0) }}</td>
                 <td class="px-6 py-4 text-neutral-400">{{ item.displayOrder }}</td>
                 <td class="px-6 py-4 space-x-2 flex">
                   <button (click)="editMenuItem(item)" class="text-blue-400 hover:text-blue-300 text-sm font-medium">Éditer</button>
@@ -170,17 +170,17 @@ import { ToastService } from '../../../shared/services/toast.service';
       <!-- MenuItem Modal -->
       <div *ngIf="showItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700">
-          <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenuItem ? 'Éditer Article' : 'Nouvel Article' }}</h2>
+          <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenuItem ? 'Éditer Article' : 'Ajouter Article' }}</h2>
           
           <form [formGroup]="itemForm" (ngSubmit)="saveMenuItem()" class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Nom</label>
-              <input formControlName="name" type="text" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix (€)</label>
-              <input formControlName="price" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" step="0.01">
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Produit *</label>
+              <select formControlName="productId" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+                <option value="">-- Sélectionner un produit --</option>
+                <option *ngFor="let product of availableProducts()" [value]="product.publicId">
+                  {{ product.name }} - FCFA {{ (product.price / 100).toFixed(0) }}
+                </option>
+              </select>
             </div>
 
             <div>
@@ -216,6 +216,7 @@ export class MenusComponent implements OnInit {
   menus = signal<any[]>([]);
   menuItems = signal<any[]>([]);
   menuTypes = signal<string[]>([]);
+  availableProducts = signal<any[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
   error = signal<string | null>(null);
@@ -238,8 +239,7 @@ export class MenusComponent implements OnInit {
     });
 
     this.itemForm = this.fb.group({
-      name: ['', Validators.required],
-      price: [0, Validators.required],
+      productId: ['', Validators.required],
       displayOrder: [0, Validators.required]
     });
   }
@@ -247,6 +247,7 @@ export class MenusComponent implements OnInit {
   ngOnInit(): void {
     this.loadMenuTypes();
     this.loadMenus();
+    this.loadProducts();
   }
 
   loadMenuTypes(): void {
@@ -270,6 +271,17 @@ export class MenusComponent implements OnInit {
       error: (err) => {
         this.error.set('Erreur lors du chargement des menus');
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadProducts(): void {
+    this.apiService.getProducts().subscribe({
+      next: (products) => {
+        this.availableProducts.set(products);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des produits:', err);
       }
     });
   }
@@ -384,8 +396,7 @@ export class MenusComponent implements OnInit {
   editMenuItem(item: any): void {
     this.editingMenuItem = item;
     this.itemForm.patchValue({
-      name: item.name,
-      price: item.price / 100,
+      productId: item.productPublicId || item.productId,
       displayOrder: item.displayOrder
     });
     this.showItemModal = true;
@@ -393,6 +404,8 @@ export class MenusComponent implements OnInit {
 
   closeItemModal(): void {
     this.showItemModal = false;
+    this.editingMenuItem = null;
+    this.itemForm.reset({ displayOrder: 0 });
   }
 
   saveMenuItem(): void {
@@ -400,9 +413,8 @@ export class MenusComponent implements OnInit {
 
     this.isSaving.set(true);
     const request = {
-      ...this.itemForm.value,
-      menuId: this.selectedMenuForItems,
-      price: Math.round(this.itemForm.value.price * 100)
+      productPublicId: this.itemForm.value.productId,
+      displayOrder: this.itemForm.value.displayOrder
     };
 
     if (this.editingMenuItem) {
@@ -413,21 +425,27 @@ export class MenusComponent implements OnInit {
           this.loadMenuItems();
           this.isSaving.set(false);
         },
-        error: () => {
-          this.error.set('Erreur');
+        error: (err) => {
+          const errorMsg = err.error?.message || 'Erreur lors de la mise à jour';
+          this.error.set(errorMsg);
           this.isSaving.set(false);
         }
       });
     } else {
-      this.apiService.createMenuItem(request).subscribe({
+      const createRequest = {
+        ...request,
+        menuId: this.selectedMenuForItems
+      };
+      this.apiService.createMenuItem(createRequest).subscribe({
         next: () => {
-          this.toast.success('Article créé');
+          this.toast.success('Article ajouté au menu');
           this.closeItemModal();
           this.loadMenuItems();
           this.isSaving.set(false);
         },
-        error: () => {
-          this.error.set('Erreur');
+        error: (err) => {
+          const errorMsg = err.error?.message || 'Erreur lors de l\'ajout';
+          this.error.set(errorMsg);
           this.isSaving.set(false);
         }
       });
