@@ -246,9 +246,14 @@ export class OrderEntryComponent implements OnInit {
   }
 
   loadTables(): void {
-    this.apiService.getTables().subscribe({
+    this.apiService.getAvailableTables().subscribe({
       next: (tables) => {
-        this.availableTables.set(tables);
+        console.log('Tables chargées:', tables);
+        const tableList = Array.isArray(tables) ? tables : [];
+        this.availableTables.set(tableList);
+        if (tableList.length === 0) {
+          this.toast.warning('Aucune table disponible');
+        }
       },
       error: (err) => {
         console.error('Erreur lors du chargement des tables:', err);
