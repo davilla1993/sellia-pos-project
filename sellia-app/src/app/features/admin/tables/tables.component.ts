@@ -71,8 +71,8 @@ import { ToastService } from '../../../shared/services/toast.service';
           <!-- Header -->
           <div class="flex justify-between items-start mb-3">
             <div>
-              <h3 class="text-lg font-bold text-white">{{ table.name }}</h3>
-              <p class="text-xs text-neutral-400">{{ table.location || 'Lieu non défini' }}</p>
+              <h3 class="text-lg font-bold text-white">{{ table.number }}</h3>
+              <p class="text-xs text-neutral-400">{{ table.room || 'Salle non définie' }} {{ table.name ? '- ' + table.name : '' }}</p>
             </div>
             <span [ngClass]="getStatusBadgeClass(table.status)" class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
               {{ getStatusLabel(table.status) }}
@@ -123,21 +123,30 @@ import { ToastService } from '../../../shared/services/toast.service';
           
           <form [formGroup]="tableForm" (ngSubmit)="saveTable()" class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Nom *</label>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Numéro de Table *</label>
+              <input 
+                formControlName="number"
+                type="text" 
+                class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500"
+                placeholder="Ex: T01">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Nom</label>
               <input 
                 formControlName="name"
                 type="text" 
                 class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500"
-                placeholder="Ex: Table 1">
+                placeholder="Ex: Table Terrasse">
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Localisation</label>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Salle *</label>
               <input 
-                formControlName="location"
+                formControlName="room"
                 type="text" 
                 class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500"
-                placeholder="Ex: Salle A">
+                placeholder="Ex: Salle A, Terrasse">
             </div>
 
             <div>
@@ -200,10 +209,12 @@ export class TablesComponent implements OnInit {
 
   constructor() {
     this.tableForm = this.fb.group({
-      name: ['', Validators.required],
-      location: [''],
+      number: ['', Validators.required],
+      name: [''],
+      room: ['', Validators.required],
       capacity: [4, [Validators.required, Validators.min(1)]],
-      isVip: [false]
+      isVip: [false],
+      available: [true]
     });
   }
 
@@ -235,10 +246,12 @@ export class TablesComponent implements OnInit {
   editTable(table: any): void {
     this.editingTable = table;
     this.tableForm.patchValue({
+      number: table.number,
       name: table.name,
-      location: table.location,
+      room: table.room,
       capacity: table.capacity,
-      isVip: table.isVip || false
+      isVip: table.isVip || false,
+      available: table.available !== false
     });
     this.showModal = true;
   }
@@ -266,7 +279,9 @@ export class TablesComponent implements OnInit {
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.error.set('Erreur lors de la modification');
+          const errorMsg = err.error?.message || err.error?.error || 'Erreur lors de la modification';
+          this.error.set(errorMsg);
+          console.error('Update error:', err);
           setTimeout(() => this.error.set(null), 3000);
         }
       });
@@ -281,7 +296,9 @@ export class TablesComponent implements OnInit {
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.error.set('Erreur lors de la création');
+          const errorMsg = err.error?.message || err.error?.error || 'Erreur lors de la création';
+          this.error.set(errorMsg);
+          console.error('Create error:', err);
           setTimeout(() => this.error.set(null), 3000);
         }
       });
