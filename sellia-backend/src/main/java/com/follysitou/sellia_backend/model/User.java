@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "assignedCashiers")
 public class User extends BaseEntity implements UserDetails {
 
     @NotBlank(message = "Username is required")
@@ -68,6 +69,7 @@ public class User extends BaseEntity implements UserDetails {
 
     private String profileImage;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "assignedUsers")
     private Set<Cashier> assignedCashiers = new HashSet<>();
 

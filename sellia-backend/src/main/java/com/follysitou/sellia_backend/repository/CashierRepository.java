@@ -35,4 +35,8 @@ public interface CashierRepository extends JpaRepository<Cashier, Long> {
     @EntityGraph(attributePaths = "assignedUsers")
     @Query("SELECT c FROM Cashier c JOIN c.assignedUsers u WHERE u.publicId = :userId AND c.deleted = false")
     Page<Cashier> findByAssignedUserId(@Param("userId") String userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = "assignedUsers")
+    @Query("SELECT c FROM Cashier c WHERE c.deleted = false AND c.id = :id")
+    Optional<Cashier> findByIdWithUsers(@Param("id") Long id);
 }

@@ -19,7 +19,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "assignedUsers")
 public class Cashier extends BaseEntity {
 
     @NotBlank(message = "Cashier name is required")

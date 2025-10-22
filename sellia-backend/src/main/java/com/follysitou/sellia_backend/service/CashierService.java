@@ -148,8 +148,11 @@ public class CashierService {
     }
 
     public Cashier getCashierEntityById(String publicId) {
-        return cashierRepository.findByPublicId(publicId)
+        Cashier cashier = cashierRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cashier", "publicId", publicId));
+        // Force initialization of assigned users collection
+        cashier.getAssignedUsers().size();
+        return cashier;
     }
 
     @Transactional
@@ -178,6 +181,15 @@ public class CashierService {
         if (cashier.getAssignedUsers().contains(user)) {
             throw new ConflictException("user", userPublicId, 
                 "Ce caissier est déjà assigné à cette caisse");
+        }
+        
+        // Vérifier si l'utilisateur est déjà assigné à une autre caisse
+        if (!user.getAssignedCashiers().isEmpty()) {
+            String otherCashierNames = user.getAssignedCashiers().stream()
+                    .map(Cashier::getName)
+                    .collect(Collectors.joining(", "));
+            throw new ConflictException("user", userPublicId, 
+                "Ce caissier est déjà assigné à une autre caisse: " + otherCashierNames);
         }
         
         cashier.getAssignedUsers().add(user);
