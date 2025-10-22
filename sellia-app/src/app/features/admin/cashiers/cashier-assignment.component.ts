@@ -200,7 +200,7 @@ export class CashierAssignmentComponent implements OnInit {
       this.apiService.removeUserFromCashier(cashierId, userId).subscribe({
         next: () => {
           this.success.set('Caissier retiré avec succès');
-          this.loadAssignedUsers();
+          this.loadData();
           setTimeout(() => this.success.set(null), 3000);
         },
         error: (err) => {
