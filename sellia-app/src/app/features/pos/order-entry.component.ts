@@ -227,13 +227,15 @@ export class OrderEntryComponent implements OnInit {
   customerName = signal<string>('');
   customerPhone = signal<string>('');
 
-  // Products
+  // Products and Menus
   isLoadingProducts = signal(false);
   allProducts = signal<any[]>([]);
+  allMenus = signal<any[]>([]);
   filteredProducts = signal<any[]>([]);
   categories = signal<any[]>([]);
   selectedCategory = signal<any>('');
   searchTerm = signal<string>('');
+  showMenusTab = signal(false);
 
   // Cart
   cartItems = signal<any[]>([]);
@@ -241,7 +243,7 @@ export class OrderEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTables();
-    this.loadProducts();
+    this.loadMenusAndProducts();
     this.loadCategories();
   }
 
@@ -258,6 +260,45 @@ export class OrderEntryComponent implements OnInit {
       error: (err) => {
         console.error('Erreur lors du chargement des tables:', err);
         this.toast.error('Impossible de charger les tables');
+      }
+    });
+  }
+
+  /**
+   * Charge MENUS ET PRODUITS pour l'affichage POS
+   * Utilise une nouvelle fonction dédiée pour ne pas impacter loadProducts() existant
+   */
+  loadMenusAndProducts(): void {
+    this.isLoadingProducts.set(true);
+
+    // Charger les menus
+    this.apiService.getAllMenus(0, 100).subscribe({
+      next: (menus) => {
+        console.log('Menus chargés:', menus);
+        const menuList = Array.isArray(menus) ? menus : [];
+        this.allMenus.set(menuList);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des menus:', err);
+      }
+    });
+
+    // Charger les produits
+    this.apiService.getProducts().subscribe({
+      next: (products) => {
+        console.log('Produits chargés:', products);
+        const productList = Array.isArray(products) ? products : [];
+        this.allProducts.set(productList);
+        this.filteredProducts.set(productList);
+        this.isLoadingProducts.set(false);
+        if (productList.length === 0 && this.allMenus().length === 0) {
+          this.toast.warning('Aucun produit ou menu disponible');
+        }
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des produits:', err);
+        this.toast.error('Impossible de charger les produits');
+        this.isLoadingProducts.set(false);
       }
     });
   }
