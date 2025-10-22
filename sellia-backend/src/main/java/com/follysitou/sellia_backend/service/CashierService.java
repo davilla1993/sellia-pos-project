@@ -168,6 +168,41 @@ public class CashierService {
         cashierRepository.save(cashier);
     }
 
+    @Transactional
+    public void assignUserToCashier(String cashierPublicId, String userPublicId) {
+        Cashier cashier = getCashierEntityById(cashierPublicId);
+        User user = userRepository.findByPublicId(userPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userPublicId));
+        
+        // Vérifier si l'utilisateur est déjà assigné à cette caisse
+        if (cashier.getAssignedUsers().contains(user)) {
+            throw new ConflictException("user", userPublicId, 
+                "Ce caissier est déjà assigné à cette caisse");
+        }
+        
+        cashier.getAssignedUsers().add(user);
+        cashierRepository.save(cashier);
+    }
+
+    @Transactional
+    public void removeUserFromCashier(String cashierPublicId, String userPublicId) {
+        Cashier cashier = getCashierEntityById(cashierPublicId);
+        User user = userRepository.findByPublicId(userPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userPublicId));
+        
+        cashier.getAssignedUsers().remove(user);
+        cashierRepository.save(cashier);
+    }
+
+    public Set<CashierResponse> getAssignedUserCashiers(String userPublicId) {
+        User user = userRepository.findByPublicId(userPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userPublicId));
+        
+        return user.getAssignedCashiers().stream()
+                .map(cashierMapper::toResponse)
+                .collect(Collectors.toSet());
+    }
+
     private void validatePin(String pin) {
         if (!pin.matches("^[0-9]{4}$")) {
             throw new IllegalArgumentException("PIN must be exactly 4 digits");

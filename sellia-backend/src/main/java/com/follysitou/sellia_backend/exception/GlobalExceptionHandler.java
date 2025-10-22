@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -33,7 +35,7 @@ public class GlobalExceptionHandler {
             WebRequest request) {
         ApiError error = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .error("Validation Error")
+                .error("Erreur de validation")
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .validationErrors(ex.getFieldErrors())
@@ -51,8 +53,8 @@ public class GlobalExceptionHandler {
         );
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .error("Validation Error")
-                .message("Invalid input")
+                .error("Erreur de validation")
+                .message("Entrée invalide")
                 .path(request.getDescription(false).replace("uri=", ""))
                 .validationErrors(errors)
                 .build();
@@ -128,10 +130,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleGlobalException(
             Exception ex,
             WebRequest request) {
+        log.error("Unexpected error occurred: ", ex);
         ApiError error = ApiError.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")
-                .message("An unexpected error occurred")
+                .message(ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred")
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

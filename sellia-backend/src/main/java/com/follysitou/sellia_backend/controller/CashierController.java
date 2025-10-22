@@ -92,4 +92,29 @@ public class CashierController {
         cashierService.deactivateCashier(publicId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{cashierId}/assign-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> assignUserToCashier(
+            @PathVariable String cashierId,
+            @PathVariable String userId) {
+        cashierService.assignUserToCashier(cashierId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{cashierId}/remove-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> removeUserFromCashier(
+            @PathVariable String cashierId,
+            @PathVariable String userId) {
+        cashierService.removeUserFromCashier(cashierId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{userId}/assigned-cashiers")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<java.util.Set<CashierResponse>> getAssignedUserCashiers(@PathVariable String userId) {
+        java.util.Set<CashierResponse> cashiers = cashierService.getAssignedUserCashiers(userId);
+        return ResponseEntity.ok(cashiers);
+    }
 }

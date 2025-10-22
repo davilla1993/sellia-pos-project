@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.service;
 
 import com.follysitou.sellia_backend.model.Ticket;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import com.follysitou.sellia_backend.model.CustomerSession;
 import com.follysitou.sellia_backend.model.OrderItem;
 import com.follysitou.sellia_backend.enums.WorkStation;
@@ -215,6 +216,8 @@ public class TicketService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         ticket.setDeleted(true);
+        ticket.setDeletedAt(java.time.LocalDateTime.now());
+        ticket.setDeletedBy(SecurityUtil.getCurrentUsername());
         ticketRepository.save(ticket);
         log.info("Ticket supprimé: {}", ticketPublicId);
     }

@@ -4,12 +4,15 @@ import com.follysitou.sellia_backend.dto.request.ProductCreateRequest;
 import com.follysitou.sellia_backend.dto.request.ProductUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.ProductResponse;
 import com.follysitou.sellia_backend.model.Product;
+import com.follysitou.sellia_backend.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class ProductMapper {
+
+    private final StockRepository stockRepository;
 
     public Product toEntity(ProductCreateRequest request) {
         Product product = Product.builder()
@@ -21,6 +24,7 @@ public class ProductMapper {
                 .preparationTime(request.getPreparationTime() != null ? Integer.valueOf(request.getPreparationTime()) : null)
                 .isVip(request.getIsVip())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
+                .workStation(request.getWorkStation())
                 .build();
         
         // Note: imageUrl will be set in service layer after file upload
@@ -40,6 +44,13 @@ public class ProductMapper {
         response.setPreparationTime(product.getPreparationTime());
         response.setIsVip(product.getIsVip());
         response.setDisplayOrder(product.getDisplayOrder());
+        response.setWorkStation(product.getWorkStation());
+        
+        // Récupérer le stock (null si pas de gestion de stock pour ce produit)
+        stockRepository.findByProductId(product.getId()).ifPresent(stock -> {
+            response.setStock(stock.getCurrentQuantity());
+        });
+        
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
         return response;
@@ -66,6 +77,9 @@ public class ProductMapper {
         }
         if (request.getDisplayOrder() != null) {
             product.setDisplayOrder(request.getDisplayOrder());
+        }
+        if (request.getWorkStation() != null) {
+            product.setWorkStation(request.getWorkStation());
         }
         // Note: Image file handling is done in service layer
         // Category will be handled in service layer

@@ -6,6 +6,7 @@ import com.follysitou.sellia_backend.dto.response.MenuItemResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.MenuItemMapper;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import com.follysitou.sellia_backend.model.Menu;
 import com.follysitou.sellia_backend.model.MenuItem;
 import com.follysitou.sellia_backend.model.Product;
@@ -117,6 +118,9 @@ public class MenuItemService {
     public void deleteMenuItem(String publicId) {
         MenuItem menuItem = menuItemRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("MenuItem not found"));
-        menuItemRepository.delete(menuItem);
+        menuItem.setDeleted(true);
+        menuItem.setDeletedAt(java.time.LocalDateTime.now());
+        menuItem.setDeletedBy(SecurityUtil.getCurrentUsername());
+        menuItemRepository.save(menuItem);
     }
 }

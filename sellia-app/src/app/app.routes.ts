@@ -65,9 +65,19 @@ export const routes: Routes = [
       {
         path: 'products',
         children: [
-          { path: '', component: ProductsListComponent },
-          { path: 'add', component: ProductFormComponent },
-          { path: ':id/edit', component: ProductFormComponent }
+          {
+            path: 'catalog',
+            children: [
+              { path: '', component: ProductsListComponent },
+              { path: 'add', component: ProductFormComponent },
+              { path: ':id/edit', component: ProductFormComponent }
+            ]
+          },
+          {
+            path: 'categories',
+            loadComponent: () => import('./features/admin/products/categories-list.component').then(m => m.CategoriesListComponent)
+          },
+          { path: '', redirectTo: 'catalog', pathMatch: 'full' }
         ]
       },
       { path: 'inventory', component: InventoryComponent },
@@ -76,7 +86,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/tables/tables.component').then(m => m.TablesComponent)
       },
       { path: 'global-session', component: GlobalSessionComponent },
-      { path: 'cashiers', component: CashiersComponent },
+      { 
+        path: 'cashiers',
+        children: [
+          { path: '', component: CashiersComponent },
+          { 
+            path: 'assignment', 
+            loadComponent: () => import('./features/admin/cashiers/cashier-assignment.component').then(m => m.CashierAssignmentComponent)
+          }
+        ]
+      },
       {
         path: 'reports',
         children: [

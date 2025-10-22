@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.dto.response;
 
+import com.follysitou.sellia_backend.enums.WorkStation;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,8 @@ public class ProductResponse {
     private Integer preparationTime;
     private Boolean isVip;
     private Integer displayOrder;
+    private WorkStation workStation;
+    private Long stock;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

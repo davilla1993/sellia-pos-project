@@ -8,6 +8,8 @@ import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.CategoryMapper;
 import com.follysitou.sellia_backend.model.Category;
 import com.follysitou.sellia_backend.repository.CategoryRepository;
+import com.follysitou.sellia_backend.repository.ProductRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +25,12 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
 
     @Transactional
     public CategoryResponse createCategory(CategoryCreateRequest request) {
         if (categoryRepository.existsByNameAndDeletedFalse(request.getName())) {
-            throw new ConflictException("name", request.getName(), "Category already exists");
+            throw new ConflictException("name", request.getName(), "Cette catégorie existe déjà");
         }
 
         Category category = categoryMapper.toEntity(request);
@@ -42,7 +45,7 @@ public class CategoryService {
     }
 
     public Page<CategoryResponse> getAllCategories(Pageable pageable) {
-        Page<Category> categories = categoryRepository.findAll(pageable);
+        Page<Category> categories = categoryRepository.findAllNotDeletedPaged(pageable);
         return categories.map(categoryMapper::toResponse);
     }
 
@@ -67,7 +70,7 @@ public class CategoryService {
 
         if (request.getName() != null && !request.getName().equals(category.getName())) {
             if (categoryRepository.existsByNameAndDeletedFalse(request.getName())) {
-                throw new ConflictException("name", request.getName(), "Category already exists");
+                throw new ConflictException("name", request.getName(), "Cette catégorie existe déjà");
             }
         }
 
@@ -80,7 +83,33 @@ public class CategoryService {
     public void deleteCategory(String publicId) {
         Category category = categoryRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "publicId", publicId));
+        
+        // Vérifier si la catégorie contient des produits
+        long productCount = productRepository.countProductsByCategory(category.getId());
+        if (productCount > 0) {
+            throw new ConflictException("category", publicId, 
+                "Impossible de supprimer cette catégorie car elle contient " + productCount + " produit(s). Veuillez d'abord supprimer ou réassigner les produits.");
+        }
+        
         category.setDeleted(true);
+        category.setDeletedAt(java.time.LocalDateTime.now());
+        category.setDeletedBy(SecurityUtil.getCurrentUsername());
+        categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void activateCategory(String publicId) {
+        Category category = categoryRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "publicId", publicId));
+        category.setAvailable(true);
+        categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void deactivateCategory(String publicId) {
+        Category category = categoryRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "publicId", publicId));
+        category.setAvailable(false);
         categoryRepository.save(category);
     }
 }

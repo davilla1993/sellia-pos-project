@@ -133,7 +133,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 
       <!-- Menu Modal -->
       <div *ngIf="showMenuModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-neutral-800 rounded-lg p-6 max-w-md w-full border border-neutral-700 max-h-screen overflow-y-auto">
+        <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700 max-h-screen overflow-y-auto">
           <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenu ? 'Éditer Menu' : 'Nouveau Menu' }}</h2>
           
           <form [formGroup]="menuForm" (ngSubmit)="saveMenu()" class="space-y-4">
@@ -151,10 +151,7 @@ import { ToastService } from '../../../shared/services/toast.service';
               <label class="block text-sm font-semibold text-neutral-300 mb-2">Type</label>
               <select formControlName="menuType" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
                 <option value="">-- Sélectionner --</option>
-                <option value="DAILY">Quotidien</option>
-                <option value="SPECIAL">Spécial</option>
-                <option value="PROMOTION">Promotion</option>
-                <option value="REGULAR">Régulier</option>
+                <option *ngFor="let type of menuTypes()" [value]="type">{{ type }}</option>
               </select>
             </div>
 
@@ -172,7 +169,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 
       <!-- MenuItem Modal -->
       <div *ngIf="showItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-neutral-800 rounded-lg p-6 max-w-md w-full border border-neutral-700">
+        <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700">
           <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenuItem ? 'Éditer Article' : 'Nouvel Article' }}</h2>
           
           <form [formGroup]="itemForm" (ngSubmit)="saveMenuItem()" class="space-y-4">
@@ -218,6 +215,7 @@ export class MenusComponent implements OnInit {
 
   menus = signal<any[]>([]);
   menuItems = signal<any[]>([]);
+  menuTypes = signal<string[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
   error = signal<string | null>(null);
@@ -247,7 +245,19 @@ export class MenusComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadMenuTypes();
     this.loadMenus();
+  }
+
+  loadMenuTypes(): void {
+    this.apiService.getMenuTypes().subscribe({
+      next: (types) => {
+        this.menuTypes.set(types);
+      },
+      error: (err) => {
+        this.error.set('Erreur lors du chargement des types de menu');
+      }
+    });
   }
 
   loadMenus(): void {

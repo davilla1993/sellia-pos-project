@@ -10,6 +10,7 @@ import com.follysitou.sellia_backend.model.Product;
 import com.follysitou.sellia_backend.model.Stock;
 import com.follysitou.sellia_backend.repository.ProductRepository;
 import com.follysitou.sellia_backend.repository.StockRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -97,6 +98,8 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException("Stock not found"));
 
         stock.setDeleted(true);
+        stock.setDeletedAt(java.time.LocalDateTime.now());
+        stock.setDeletedBy(SecurityUtil.getCurrentUsername());
         stockRepository.save(stock);
 
         log.info("Stock soft deleted: {}", publicId);

@@ -1,5 +1,8 @@
 package com.follysitou.sellia_backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum WorkStation {
     KITCHEN("Cuisine"),
     BAR("Bar"),
@@ -12,7 +15,4 @@ public enum WorkStation {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

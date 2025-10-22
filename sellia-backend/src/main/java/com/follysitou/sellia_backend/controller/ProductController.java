@@ -4,6 +4,7 @@ import com.follysitou.sellia_backend.dto.request.ProductCreateRequest;
 import com.follysitou.sellia_backend.dto.request.ProductUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.dto.response.ProductResponse;
+import com.follysitou.sellia_backend.enums.WorkStation;
 import com.follysitou.sellia_backend.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -148,5 +150,23 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable String publicId) {
         productService.deleteProduct(publicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/work-stations/all")
+    public ResponseEntity<List<WorkStationDto>> getWorkStations() {
+        List<WorkStationDto> stations = List.of(WorkStation.values()).stream()
+                .map(ws -> new WorkStationDto(ws.name(), ws.getDisplayName()))
+                .toList();
+        return ResponseEntity.ok(stations);
+    }
+
+    public static class WorkStationDto {
+        public final String value;
+        public final String label;
+
+        public WorkStationDto(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
     }
 }

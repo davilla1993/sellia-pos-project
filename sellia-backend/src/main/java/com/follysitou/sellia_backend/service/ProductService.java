@@ -8,7 +8,10 @@ import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.ProductMapper;
 import com.follysitou.sellia_backend.model.Category;
 import com.follysitou.sellia_backend.model.Product;
+import com.follysitou.sellia_backend.model.Stock;
 import com.follysitou.sellia_backend.repository.ProductRepository;
+import com.follysitou.sellia_backend.repository.StockRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,11 +28,12 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final CategoryService categoryService;
     private final FileService fileService;
+    private final StockRepository stockRepository;
 
     @Transactional
     public ProductResponse createProduct(ProductCreateRequest request) {
         if (productRepository.existsByNameAndDeletedFalse(request.getName())) {
-            throw new ConflictException("name", request.getName(), "Product already exists");
+            throw new ConflictException("name", request.getName(), "Ce produit existe déjà");
         }
 
         Product product = productMapper.toEntity(request);
@@ -47,6 +51,22 @@ public class ProductService {
         product.setCategory(category);
 
         Product saved = productRepository.save(product);
+        
+        // Create stock entry if stockQuantity is provided
+        if (request.getStockQuantity() != null && request.getStockQuantity() > 0) {
+            Stock stock = Stock.builder()
+                    .product(saved)
+                    .currentQuantity(request.getStockQuantity().longValue())
+                    .initialQuantity(request.getStockQuantity().longValue())
+                    .alertThreshold(request.getMinStockThreshold() != null ? request.getMinStockThreshold().longValue() : 10L)
+                    .minimumQuantity(request.getMinStockThreshold() != null ? request.getMinStockThreshold().longValue() : 0L)
+                    .active(true)
+                    .lastRestocked(java.time.LocalDateTime.now())
+                    .build();
+            stockRepository.save(stock);
+            log.info("Stock created for product: {} with quantity: {}", saved.getName(), request.getStockQuantity());
+        }
+        
         return productMapper.toResponse(saved);
     }
 
@@ -93,7 +113,7 @@ public class ProductService {
 
         if (request.getName() != null && !request.getName().equals(product.getName())) {
             if (productRepository.existsByNameAndDeletedFalse(request.getName())) {
-                throw new ConflictException("name", request.getName(), "Product already exists");
+                throw new ConflictException("name", request.getName(), "Ce produit existe déjà");
             }
         }
 
@@ -118,6 +138,36 @@ public class ProductService {
 
         productMapper.updateEntityFromRequest(request, product);
         Product updated = productRepository.save(product);
+        
+        // Update stock if stockQuantity is provided
+        if (request.getStockQuantity() != null) {
+            stockRepository.findByProductId(updated.getId()).ifPresentOrElse(
+                stock -> {
+                    stock.setCurrentQuantity(request.getStockQuantity().longValue());
+                    if (request.getMinStockThreshold() != null) {
+                        stock.setAlertThreshold(request.getMinStockThreshold().longValue());
+                        stock.setMinimumQuantity(request.getMinStockThreshold().longValue());
+                    }
+                    stockRepository.save(stock);
+                    log.info("Stock updated for product: {} to quantity: {}", updated.getName(), request.getStockQuantity());
+                },
+                () -> {
+                    // Create stock if it doesn't exist
+                    Stock stock = Stock.builder()
+                            .product(updated)
+                            .currentQuantity(request.getStockQuantity().longValue())
+                            .initialQuantity(request.getStockQuantity().longValue())
+                            .alertThreshold(request.getMinStockThreshold() != null ? request.getMinStockThreshold().longValue() : 10L)
+                            .minimumQuantity(request.getMinStockThreshold() != null ? request.getMinStockThreshold().longValue() : 0L)
+                            .active(true)
+                            .lastRestocked(java.time.LocalDateTime.now())
+                            .build();
+                    stockRepository.save(stock);
+                    log.info("Stock created for product: {} with quantity: {}", updated.getName(), request.getStockQuantity());
+                }
+            );
+        }
+        
         return productMapper.toResponse(updated);
     }
 
@@ -132,7 +182,11 @@ public class ProductService {
             log.info("Product image deleted during product deletion: {}", product.getImageUrl());
         }
         
+        // Soft delete avec audit complet
         product.setDeleted(true);
+        product.setDeletedAt(java.time.LocalDateTime.now());
+        product.setDeletedBy(SecurityUtil.getCurrentUsername());
         productRepository.save(product);
+        log.info("Product deleted (soft delete): {}", publicId);
     }
 }

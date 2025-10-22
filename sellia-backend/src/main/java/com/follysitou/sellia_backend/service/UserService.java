@@ -3,6 +3,7 @@ package com.follysitou.sellia_backend.service;
 import com.follysitou.sellia_backend.dto.request.UserRegistrationRequest;
 import com.follysitou.sellia_backend.dto.request.UserUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.UserResponse;
+import com.follysitou.sellia_backend.enums.RoleName;
 import com.follysitou.sellia_backend.exception.ConflictException;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.UserMapper;
@@ -69,6 +70,17 @@ public class UserService {
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findByDeletedFalse(pageable);
         return users.map(userMapper::toResponse);
+    }
+
+    public Page<UserResponse> getUsersByRole(String roleName, Pageable pageable) {
+        try {
+            RoleName roleEnum = RoleName.valueOf(roleName);
+            Role role = roleService.getRoleByName(roleEnum);
+            Page<User> users = userRepository.findByRoleAndDeletedFalse(role, pageable);
+            return users.map(userMapper::toResponse);
+        } catch (IllegalArgumentException e) {
+            throw new ResourceNotFoundException("Role", "name", roleName);
+        }
     }
 
     @Transactional

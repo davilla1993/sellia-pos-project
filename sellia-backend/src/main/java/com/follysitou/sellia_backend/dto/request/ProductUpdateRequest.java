@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.dto.request;
 
+import com.follysitou.sellia_backend.enums.WorkStation;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -34,4 +35,6 @@ public class ProductUpdateRequest {
     private Boolean isVip;
 
     private Integer displayOrder;
+
+    private WorkStation workStation;
 }

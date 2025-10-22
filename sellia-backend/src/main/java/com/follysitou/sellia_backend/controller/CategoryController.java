@@ -74,4 +74,18 @@ public class CategoryController {
         categoryService.deleteCategory(publicId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{publicId}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> activateCategory(@PathVariable String publicId) {
+        categoryService.activateCategory(publicId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{publicId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deactivateCategory(@PathVariable String publicId) {
+        categoryService.deactivateCategory(publicId);
+        return ResponseEntity.noContent().build();
+    }
 }

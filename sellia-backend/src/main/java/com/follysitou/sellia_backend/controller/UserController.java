@@ -42,9 +42,17 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String role) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<UserResponse> users = userService.getAllUsers(pageable);
+        Page<UserResponse> users;
+        
+        if (role != null && !role.isEmpty()) {
+            users = userService.getUsersByRole(role, pageable);
+        } else {
+            users = userService.getAllUsers(pageable);
+        }
+        
         PagedResponse<UserResponse> response = PagedResponse.of(users);
         return ResponseEntity.ok(response);
     }

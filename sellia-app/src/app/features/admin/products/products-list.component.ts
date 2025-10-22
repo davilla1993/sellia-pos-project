@@ -26,7 +26,7 @@ import { ApiService } from '../../../core/services/api.service';
           <h1 class="text-3xl font-bold text-white">Catalogue de Produits</h1>
           <p class="text-neutral-400 text-sm mt-1">Gérez votre catalogue de produits</p>
         </div>
-        <a routerLink="add" class="btn-primary">+ Nouveau Produit</a>
+        <a routerLink="./add" class="btn-primary">+ Nouveau Produit</a>
       </div>
 
       <!-- Loading State -->
@@ -77,14 +77,17 @@ import { ApiService } from '../../../core/services/api.service';
 
               <!-- Prix -->
               <td class="px-6 py-4">
-                <span class="text-lg font-bold text-primary">€{{ (product.price / 100).toFixed(0) }}</span>
+                <span class="text-lg font-bold text-primary">{{ product.price }} FCFA</span>
               </td>
 
               <!-- Stock -->
               <td class="px-6 py-4">
-                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium"
+                <span *ngIf="product.stock !== null && product.stock !== undefined" class="inline-block px-3 py-1 rounded-full text-sm font-medium"
                   [class]="product.stock > 0 ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'">
                   {{ product.stock }} unités
+                </span>
+                <span *ngIf="product.stock === null || product.stock === undefined" class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-neutral-700 text-neutral-400">
+                  Non géré
                 </span>
               </td>
 
@@ -123,7 +126,7 @@ import { ApiService } from '../../../core/services/api.service';
       <!-- Empty State -->
       <div *ngIf="!isLoading() && products().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
         <p class="text-neutral-400 mb-4">Aucun produit trouvé</p>
-        <a routerLink="add" class="text-primary hover:text-primary-dark font-medium">Ajouter le premier produit</a>
+        <a routerLink="./add" class="text-primary hover:text-primary-dark font-medium">Ajouter le premier produit</a>
       </div>
     </div>
   `,

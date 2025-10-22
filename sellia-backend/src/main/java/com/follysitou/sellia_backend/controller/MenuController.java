@@ -30,8 +30,8 @@ public class MenuController {
     public ResponseEntity<MenuResponse> createMenu(
             @RequestParam String name,
             @RequestParam(required = false) String description,
-            @RequestParam MenuType menuType,
-            @RequestParam(required = false) Boolean active,
+            @RequestParam String menuType,
+            @RequestParam(required = false, defaultValue = "true") String active,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) org.springframework.web.multipart.MultipartFile image) {
@@ -39,8 +39,12 @@ public class MenuController {
         MenuCreateRequest request = new MenuCreateRequest();
         request.setName(name);
         request.setDescription(description);
-        request.setMenuType(menuType);
-        request.setActive(active != null ? active : true);
+        try {
+            request.setMenuType(MenuType.valueOf(menuType));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid menu type: " + menuType);
+        }
+        request.setActive(Boolean.parseBoolean(active));
         
         if (startDate != null && !startDate.isEmpty()) {
             request.setStartDate(java.time.LocalDateTime.parse(startDate));
@@ -131,5 +135,13 @@ public class MenuController {
     public ResponseEntity<Void> deleteMenu(@PathVariable String publicId) {
         menuService.deleteMenu(publicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/types/all")
+    public ResponseEntity<List<String>> getMenuTypes() {
+        List<String> types = List.of(MenuType.values()).stream()
+                .map(Enum::name)
+                .toList();
+        return ResponseEntity.ok(types);
     }
 }

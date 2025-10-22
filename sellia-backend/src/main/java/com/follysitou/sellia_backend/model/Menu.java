@@ -29,7 +29,7 @@ public class Menu extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Size(max = 500, message = "Description must not exceed 500 characters")
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
 
     @Enumerated(EnumType.STRING)

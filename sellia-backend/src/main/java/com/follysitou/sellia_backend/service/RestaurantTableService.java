@@ -8,6 +8,7 @@ import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.RestaurantTableMapper;
 import com.follysitou.sellia_backend.model.RestaurantTable;
 import com.follysitou.sellia_backend.repository.RestaurantTableRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -134,6 +135,8 @@ public class RestaurantTableService {
         RestaurantTable table = tableRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("RestaurantTable", "publicId", publicId));
         table.setDeleted(true);
+        table.setDeletedAt(java.time.LocalDateTime.now());
+        table.setDeletedBy(SecurityUtil.getCurrentUsername());
         tableRepository.save(table);
     }
 

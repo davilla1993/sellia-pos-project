@@ -179,6 +179,21 @@ export class ApiService {
     );
   }
 
+  getAllUsers(page: number = 0, size: number = 100): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/users`, { params });
+  }
+
+  getUsersByRole(role: string, page: number = 0, size: number = 100): Observable<any> {
+    const params = new HttpParams()
+      .set('role', role)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/users`, { params });
+  }
+
   getUserById(publicId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/users/${publicId}`);
   }
@@ -235,9 +250,42 @@ export class ApiService {
     return this.http.delete<any>(`${this.apiUrl}/products/${publicId}`);
   }
 
+  getWorkStations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/products/work-stations/all`);
+  }
+
   // Categories
   getCategories(): Observable<any[]> {
     return this.http.get<any>(`${this.apiUrl}/categories/active/list`);
+  }
+
+  getAllCategories(page: number = 0, size: number = 20): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/categories`, { params }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
+  createCategory(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/categories`, request);
+  }
+
+  updateCategory(publicId: string, request: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/categories/${publicId}`, request);
+  }
+
+  deleteCategory(publicId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/categories/${publicId}`);
+  }
+
+  activateCategory(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/categories/${publicId}/activate`, {});
+  }
+
+  deactivateCategory(publicId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/categories/${publicId}/deactivate`, {});
   }
 
   // Orders
@@ -351,7 +399,10 @@ export class ApiService {
   }
 
   getAllCashiers(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/cashiers`).pipe(
+    const params = new HttpParams()
+      .set('page', '0')
+      .set('size', '100');
+    return this.http.get<any>(`${this.apiUrl}/cashiers`, { params }).pipe(
       map(response => {
         if (response?.content && Array.isArray(response.content)) {
           return response.content;
@@ -370,6 +421,18 @@ export class ApiService {
 
   changeCashierPin(cashierId: string, newPin: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/cashiers/${cashierId}/change-pin`, { pin: newPin });
+  }
+
+  assignUserToCashier(cashierId: string, userId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/cashiers/${cashierId}/assign-user/${userId}`, {});
+  }
+
+  removeUserFromCashier(cashierId: string, userId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/cashiers/${cashierId}/remove-user/${userId}`);
+  }
+
+  getAssignedUserCashiers(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/cashiers/user/${userId}/assigned-cashiers`);
   }
 
   // Global Sessions
@@ -541,6 +604,10 @@ export class ApiService {
 
   deactivateMenu(publicId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/menus/${publicId}/deactivate`, {});
+  }
+
+  getMenuTypes(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/menus/types/all`);
   }
 
   // Menu Items

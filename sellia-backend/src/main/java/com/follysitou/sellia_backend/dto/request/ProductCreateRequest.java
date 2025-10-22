@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.dto.request;
 
+import com.follysitou.sellia_backend.enums.WorkStation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -23,7 +24,6 @@ public class ProductCreateRequest {
 
     private Long discountPrice;
 
-    @NotNull(message = "Stock quantity is required")
     private Integer stockQuantity;
 
     private Integer minStockThreshold;
@@ -40,4 +40,6 @@ public class ProductCreateRequest {
     private Boolean isVip = false;
 
     private Integer displayOrder = 0;
+
+    private WorkStation workStation = WorkStation.KITCHEN;
 }

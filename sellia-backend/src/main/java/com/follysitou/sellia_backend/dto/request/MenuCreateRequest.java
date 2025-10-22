@@ -16,7 +16,7 @@ public class MenuCreateRequest {
     @Size(max = 100, message = "Menu name must not exceed 100 characters")
     private String name;
 
-    @Size(max = 500, message = "Description must not exceed 500 characters")
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
 
     @NotNull(message = "Menu type is required")

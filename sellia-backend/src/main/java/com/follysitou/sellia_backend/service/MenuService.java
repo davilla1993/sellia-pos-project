@@ -9,6 +9,7 @@ import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.MenuMapper;
 import com.follysitou.sellia_backend.model.Menu;
 import com.follysitou.sellia_backend.repository.MenuRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -103,6 +104,8 @@ public class MenuService {
         Menu menu = menuRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu", "publicId", publicId));
         menu.setDeleted(true);
+        menu.setDeletedAt(java.time.LocalDateTime.now());
+        menu.setDeletedBy(SecurityUtil.getCurrentUsername());
         menuRepository.save(menu);
     }
 

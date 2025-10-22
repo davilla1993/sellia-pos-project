@@ -25,6 +25,7 @@ import com.follysitou.sellia_backend.repository.ProductRepository;
 import com.follysitou.sellia_backend.repository.RestaurantTableRepository;
 import com.follysitou.sellia_backend.repository.StockRepository;
 import com.follysitou.sellia_backend.repository.MenuItemRepository;
+import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -353,8 +354,10 @@ public class OrderService {
         Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Soft delete
+        // Soft delete avec audit
         order.setDeleted(true);
+        order.setDeletedAt(java.time.LocalDateTime.now());
+        order.setDeletedBy(SecurityUtil.getCurrentUsername());
         orderRepository.save(order);
 
         log.info("Order soft deleted: {}", publicId);

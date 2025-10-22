@@ -38,4 +38,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.deleted = false AND p.price BETWEEN :minPrice AND :maxPrice")
     Page<Product> findByPriceRange(@Param("minPrice") Long minPrice, @Param("maxPrice") Long maxPrice, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.deleted = false AND p.category.id = :categoryId")
+    long countProductsByCategory(@Param("categoryId") Long categoryId);
 }

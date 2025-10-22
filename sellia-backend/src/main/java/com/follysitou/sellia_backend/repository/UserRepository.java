@@ -1,5 +1,6 @@
 package com.follysitou.sellia_backend.repository;
 
+import com.follysitou.sellia_backend.model.Role;
 import com.follysitou.sellia_backend.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.deleted = false AND u.role.id = :roleId")
     Page<User> findByRoleId(@Param("roleId") Long roleId, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.deleted = false AND u.role = :role")
+    Page<User> findByRoleAndDeletedFalse(@Param("role") Role role, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.deleted = false AND u.firstName LIKE %:firstName% OR u.lastName LIKE %:lastName%")
     Page<User> findByNameContaining(@Param("firstName") String firstName, @Param("lastName") String lastName, Pageable pageable);

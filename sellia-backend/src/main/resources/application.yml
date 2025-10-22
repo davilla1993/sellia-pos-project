@@ -40,7 +40,7 @@ server:
 app:
   jwt:
     secret: SevvwQ3vogESlsvgFTgBoXqfnbVeSsJiC917Mi7ZprAloOegCz5NNEuWwktK4qqoT0DDAPzsvtEBm0XLmUBNIQ==
-    access-token-expiration: 900000  # 15 minutes in milliseconds
+    access-token-expiration: 3600000  # 1 hour in milliseconds
     refresh-token-expiration: 432000000  # 5 days in milliseconds
   
   upload-dir: ./uploads

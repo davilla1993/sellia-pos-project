@@ -177,16 +177,25 @@ export class SidebarComponent {
       label: 'Produits',
       icon: this.getIcon('products'),
       children: [
-        { label: 'Catalogue', route: '/admin/products' },
-        { label: 'Catégories', route: '/admin/products' }
+        { label: 'Catalogue', route: '/admin/products/catalog' },
+        { label: 'Catégories', route: '/admin/products/categories' }
       ],
       expanded: false
     },
     {
       label: 'Gestion Caisses',
       icon: this.getIcon('cashiers'),
-      route: '/admin/cashiers',
-      expanded: false
+      expanded: false,
+      children: [
+        {
+          label: 'Liste des Caisses',
+          route: '/admin/cashiers'
+        },
+        {
+          label: 'Attribution aux Caissiers',
+          route: '/admin/cashiers/assignment'
+        }
+      ]
     },
     {
       label: 'Session Globale',

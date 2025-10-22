@@ -28,7 +28,6 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final CustomUserDetailsService userDetailsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
