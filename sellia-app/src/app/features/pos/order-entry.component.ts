@@ -261,9 +261,14 @@ export class OrderEntryComponent implements OnInit {
     this.isLoadingProducts.set(true);
     this.apiService.getProducts().subscribe({
       next: (products) => {
-        this.allProducts.set(products);
-        this.filteredProducts.set(products);
+        console.log('Produits chargés:', products);
+        const productList = Array.isArray(products) ? products : [];
+        this.allProducts.set(productList);
+        this.filteredProducts.set(productList);
         this.isLoadingProducts.set(false);
+        if (productList.length === 0) {
+          this.toast.warning('Aucun produit disponible');
+        }
       },
       error: (err) => {
         console.error('Erreur lors du chargement des produits:', err);
@@ -276,10 +281,13 @@ export class OrderEntryComponent implements OnInit {
   loadCategories(): void {
     this.apiService.getCategories().subscribe({
       next: (categories) => {
-        this.categories.set(categories);
+        console.log('Catégories chargées:', categories);
+        const categoryList = Array.isArray(categories) ? categories : [];
+        this.categories.set(categoryList);
       },
       error: (err) => {
         console.error('Erreur lors du chargement des catégories:', err);
+        this.toast.error('Impossible de charger les catégories');
       }
     });
   }
@@ -313,13 +321,16 @@ export class OrderEntryComponent implements OnInit {
 
   getGroupedProducts(): any[] {
     const products = this.filteredProducts();
-    const groupedMap = new Map<string, any>();
+    if (products.length === 0) return [];
+
+    const groupedMap = new Map<string | number, any>();
+    const categories = this.categories();
 
     // Group products by category
     products.forEach(product => {
-      const categoryId = product.categoryId;
+      const categoryId = product.categoryId || 'other';
       if (!groupedMap.has(categoryId)) {
-        const category = this.categories().find(c => c.id === categoryId);
+        const category = categories.find(c => c.id === categoryId || c.publicId === categoryId);
         groupedMap.set(categoryId, {
           id: categoryId,
           name: category?.name || 'Autres',
@@ -330,10 +341,18 @@ export class OrderEntryComponent implements OnInit {
     });
 
     // Convert map to array and sort by category order
-    return Array.from(groupedMap.values()).sort((a, b) => 
-      this.categories().findIndex(c => c.id === a.id) - 
-      this.categories().findIndex(c => c.id === b.id)
-    );
+    let result = Array.from(groupedMap.values());
+    
+    if (categories.length > 0) {
+      result = result.sort((a, b) => {
+        const indexA = categories.findIndex(c => c.id === a.id || c.publicId === a.id);
+        const indexB = categories.findIndex(c => c.id === b.id || c.publicId === b.id);
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+      });
+    }
+    
+    console.log('Produits groupés:', result);
+    return result;
   }
 
   addProductToCart(product: any): void {
