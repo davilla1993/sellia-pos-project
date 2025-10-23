@@ -124,6 +124,7 @@ import { ToastService } from '../../../shared/services/toast.service';
             <thead class="bg-neutral-700 border-b border-neutral-600">
               <tr>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Produit(s)</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Override</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Calculé</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Bundle</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Ordre</th>
@@ -138,6 +139,9 @@ import { ToastService } from '../../../shared/services/toast.service';
                     <span class="font-semibold">{{ item.products[0].name }}</span>
                     <span *ngIf="item.products.length > 1" class="text-xs text-neutral-400 ml-2">+{{ item.products.length - 1 }} autre(s)</span>
                   </div>
+                </td>
+                <td class="px-4 py-3 text-yellow-400 font-semibold">
+                  {{ item.priceOverride ? item.priceOverride : '-' }} {{ item.priceOverride ? 'FCFA' : '' }}
                 </td>
                 <td class="px-4 py-3 text-orange-400 font-semibold">
                   {{ item.calculatedPrice ? item.calculatedPrice : '-' }} FCFA
