@@ -58,35 +58,38 @@ import { ToastService } from '../../../shared/services/toast.service';
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         </div>
 
-        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-5 hover:border-neutral-600 transition">
-            <div class="flex justify-between items-start mb-3">
-              <div>
-                <h3 class="text-lg font-bold text-white">{{ menu.name }}</h3>
-                <p class="text-xs text-neutral-400">{{ menu.menuType }}</p>
+        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-3 hover:border-neutral-600 transition">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-bold text-white truncate">{{ menu.name }}</h3>
+                <p class="text-xs text-neutral-500">{{ menu.menuType }}</p>
               </div>
-              <span [class]="menu.active ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'" class="px-2 py-1 rounded-full text-xs font-semibold">
-                {{ menu.active ? 'Actif' : 'Inactif' }}
+              <span [class]="menu.active ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'" class="px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0 ml-1">
+                {{ menu.active ? '●' : '○' }}
               </span>
             </div>
-            <p class="text-sm text-neutral-400 mb-3">{{ menu.description }}</p>
-            <div class="text-xs text-neutral-500 mb-4">
-              <p>Articles: {{ menu.itemCount || 0 }}</p>
-            </div>
-            <div class="flex gap-2">
-              <button (click)="editMenu(menu)" class="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
-                ✏️ Éditer
+            <p class="text-xs text-neutral-400 mb-2 line-clamp-2">{{ menu.description }}</p>
+            <div class="text-xs text-neutral-500 mb-2">{{ menu.itemCount || 0 }} articles</div>
+            <div class="flex gap-1">
+              <button 
+                (click)="editMenu(menu)"
+                title="Éditer"
+                class="flex-1 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+                ✏️
               </button>
               <button 
                 (click)="toggleMenuStatus(menu)"
+                title="{{ menu.active ? 'Désactiver' : 'Activer' }}"
                 [class]="menu.active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
-                class="flex-1 px-2 py-2 text-white rounded text-xs font-semibold transition-colors">
-                {{ menu.active ? '🔒 Désactiver' : '🔓 Activer' }}
+                class="flex-1 px-2 py-1.5 text-white rounded text-xs font-semibold transition-colors">
+                {{ menu.active ? '🔒' : '🔓' }}
               </button>
               <button 
                 (click)="deleteMenu(menu)"
-                class="flex-1 px-2 py-2 bg-red-900 hover:bg-red-800 text-white rounded text-xs font-semibold transition-colors">
-                🗑️ Supprimer
+                title="Supprimer"
+                class="flex-1 px-2 py-1.5 bg-red-900 hover:bg-red-800 text-white rounded text-xs font-semibold transition-colors">
+                🗑️
               </button>
             </div>
           </div>
@@ -183,15 +186,33 @@ import { ToastService } from '../../../shared/services/toast.service';
 
       <!-- MenuItem Modal -->
       <div *ngIf="showItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700">
+        <div class="bg-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-neutral-700 max-h-screen overflow-y-auto">
           <h2 class="text-2xl font-bold text-white mb-4">{{ editingMenuItem ? 'Éditer Article' : 'Ajouter Article' }}</h2>
           
           <form [formGroup]="itemForm" (ngSubmit)="saveMenuItem()" class="space-y-4">
+            <!-- Search Bar -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Rechercher un produit</label>
+              <div class="flex items-center gap-2 bg-neutral-700/50 rounded-lg px-3 py-2 border border-neutral-600 mb-2">
+                <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input 
+                  [(ngModel)]="searchTerm" 
+                  (input)="filterProducts()"
+                  type="text" 
+                  placeholder="Rechercher par nom..." 
+                  class="flex-1 bg-transparent text-white placeholder-neutral-500 focus:outline-none text-sm"
+                  [ngModelOptions]="{ standalone: true }">
+              </div>
+              <p class="text-xs text-neutral-400">{{ filteredProducts().length }} / {{ availableProducts().length }} produits</p>
+            </div>
+
             <div>
               <label class="block text-sm font-semibold text-neutral-300 mb-2">Produit *</label>
-              <select formControlName="productId" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+              <select formControlName="productId" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white max-h-40">
                 <option value="">-- Sélectionner un produit --</option>
-                <option *ngFor="let product of availableProducts()" [value]="product.publicId">
+                <option *ngFor="let product of filteredProducts()" [value]="product.publicId">
                   {{ product.name }} - FCFA {{ (product.price / 100).toFixed(0) }}
                 </option>
               </select>
@@ -231,6 +252,8 @@ export class MenusComponent implements OnInit {
   menuItems = signal<any[]>([]);
   menuTypes = signal<string[]>([]);
   availableProducts = signal<any[]>([]);
+  filteredProducts = signal<any[]>([]);
+  searchTerm = signal<string>('');
   isLoading = signal(false);
   isSaving = signal(false);
   isGenerating = signal(false);
@@ -294,11 +317,25 @@ export class MenusComponent implements OnInit {
     this.apiService.getProducts().subscribe({
       next: (products) => {
         this.availableProducts.set(products);
+        this.filteredProducts.set(products);
       },
       error: (err) => {
         console.error('Erreur lors du chargement des produits:', err);
       }
     });
+  }
+
+  filterProducts(): void {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) {
+      this.filteredProducts.set(this.availableProducts());
+    } else {
+      const filtered = this.availableProducts().filter(product =>
+        product.name.toLowerCase().includes(term) ||
+        product.description?.toLowerCase().includes(term)
+      );
+      this.filteredProducts.set(filtered);
+    }
   }
 
   loadMenuItems(): void {
@@ -455,6 +492,8 @@ export class MenusComponent implements OnInit {
     this.showItemModal = false;
     this.editingMenuItem = null;
     this.itemForm.reset({ displayOrder: 0 });
+    this.searchTerm.set('');
+    this.filteredProducts.set(this.availableProducts());
   }
 
   saveMenuItem(): void {
