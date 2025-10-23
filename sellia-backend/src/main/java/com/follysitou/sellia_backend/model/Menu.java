@@ -36,6 +36,9 @@ public class Menu extends BaseEntity {
     @Column(nullable = false)
     private MenuType menuType;
 
+    @Column(name = "bundle_price")
+    private Long bundlePrice;
+
     @Column(nullable = false)
     private Boolean active = true;
 

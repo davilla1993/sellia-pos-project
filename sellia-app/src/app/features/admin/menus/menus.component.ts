@@ -70,7 +70,10 @@ import { ToastService } from '../../../shared/services/toast.service';
               </span>
             </div>
             <p class="text-xs text-neutral-400 mb-1 line-clamp-1 flex-shrink">{{ menu.description }}</p>
-            <div class="text-xs text-neutral-500 mb-1.5 flex-shrink">{{ menu.itemCount || 0 }} art.</div>
+            <div class="text-xs text-neutral-500 mb-1 flex-shrink">{{ menu.itemCount || 0 }} art.</div>
+            <div class="text-sm font-bold text-orange-400 mb-1.5 flex-shrink">
+              {{ getMenuPrice(menu) }} FCFA
+            </div>
             <div class="flex gap-0.5 mt-auto">
               <button 
                 (click)="editMenu(menu)"
@@ -623,5 +626,31 @@ export class MenusComponent implements OnInit {
       },
       error: () => this.error.set('Erreur')
     });
+  }
+
+  getMenuPrice(menu: any): string {
+    if (!menu) return '-';
+    
+    // Si plusieurs articles: afficher bundlePrice ou calcul
+    if ((menu.itemCount || 0) > 1) {
+      if (menu.bundlePrice) {
+        return menu.bundlePrice.toString();
+      }
+      // Calculer la somme des articles
+      if (menu.menuItems && menu.menuItems.length > 0) {
+        const total = menu.menuItems.reduce((sum: number, item: any) => {
+          return sum + (item.price || 0);
+        }, 0);
+        return total.toString();
+      }
+      return '-';
+    }
+    
+    // Si un seul article: afficher son prix
+    if ((menu.itemCount || 0) === 1 && menu.menuItems && menu.menuItems.length > 0) {
+      return (menu.menuItems[0].price || '-').toString();
+    }
+    
+    return '-';
   }
 }

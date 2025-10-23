@@ -13,6 +13,7 @@ public class MenuResponse {
     private String name;
     private String description;
     private MenuType menuType;
+    private Long bundlePrice;
     private Boolean active;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

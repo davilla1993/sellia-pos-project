@@ -18,6 +18,7 @@ public class MenuMapper {
                 .name(request.getName())
                 .description(request.getDescription())
                 .menuType(request.getMenuType())
+                .bundlePrice(request.getBundlePrice())
                 .active(request.getActive() != null ? request.getActive() : true)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
@@ -31,6 +32,7 @@ public class MenuMapper {
         response.setName(menu.getName());
         response.setDescription(menu.getDescription());
         response.setMenuType(menu.getMenuType());
+        response.setBundlePrice(menu.getBundlePrice());
         response.setActive(menu.getActive());
         response.setStartDate(menu.getStartDate());
         response.setEndDate(menu.getEndDate());
@@ -57,6 +59,9 @@ public class MenuMapper {
         if (request.getMenuType() != null) {
             menu.setMenuType(request.getMenuType());
         }
+        if (request.getBundlePrice() != null) {
+            menu.setBundlePrice(request.getBundlePrice());
+        }
         if (request.getActive() != null) {
             menu.setActive(request.getActive());
         }
@@ -82,9 +87,9 @@ public class MenuMapper {
                     .collect(Collectors.joining(", "));
             response.setProductName(productNames);
             
-            // Use bundle price if set, otherwise sum all product prices
-            if (menuItem.getBundlePrice() != null) {
-                response.setPrice(menuItem.getBundlePrice());
+            // Use override price if set, otherwise sum all product prices
+            if (menuItem.getPriceOverride() != null) {
+                response.setPrice(menuItem.getPriceOverride());
             } else {
                 Long totalPrice = menuItem.getProducts().stream()
                         .mapToLong(p -> p.getPrice() != null ? p.getPrice() : 0)

@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.dto.request;
 
 import com.follysitou.sellia_backend.enums.MenuType;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -16,6 +17,9 @@ public class MenuUpdateRequest {
     private String description;
 
     private MenuType menuType;
+
+    @Min(value = 0L, message = "Bundle price cannot be negative")
+    private Long bundlePrice;
 
     private Boolean active;
 
