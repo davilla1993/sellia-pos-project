@@ -153,7 +153,7 @@ import { ToastService } from '../../shared/services/toast.service';
                 <p class="text-primary font-bold">FCFA {{ (item.price * item.quantity).toLocaleString('fr-FR') }}</p>
               </div>
               <button 
-                (click)="removeFromCart(item.productId)"
+                (click)="removeFromCart(item.itemId)"
                 type="button"
                 class="text-red-400 hover:text-red-300 font-bold flex-shrink-0">
                 ✕
