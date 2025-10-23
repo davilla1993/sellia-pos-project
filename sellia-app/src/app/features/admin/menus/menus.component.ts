@@ -516,9 +516,18 @@ export class MenusComponent implements OnInit {
     
     this.isSaving.set(true);
     const request = this.menuForm.value;
+    const formData = new FormData();
+    formData.append('name', request.name);
+    formData.append('description', request.description || '');
+    formData.append('menuType', request.menuType);
+    formData.append('bundlePrice', request.bundlePrice ? request.bundlePrice.toString() : '');
+    if (this.imageFile()) {
+      formData.append('image', this.imageFile()!);
+    }
 
     if (this.editingMenu) {
-      this.apiService.updateMenu(this.editingMenu.publicId, request).subscribe({
+      formData.append('active', this.editingMenu.active.toString());
+      this.apiService.updateMenu(this.editingMenu.publicId, formData).subscribe({
         next: () => {
           this.toast.success('Menu mis à jour');
           this.closeMenuModal();
@@ -531,16 +540,7 @@ export class MenusComponent implements OnInit {
         }
       });
     } else {
-      const formData = new FormData();
-      formData.append('name', request.name);
-      formData.append('description', request.description || '');
-      formData.append('menuType', request.menuType);
-      formData.append('bundlePrice', request.bundlePrice ? request.bundlePrice.toString() : '');
       formData.append('active', 'true');
-      if (this.imageFile()) {
-        formData.append('image', this.imageFile()!);
-      }
-
       this.apiService.createMenu(formData).subscribe({
         next: () => {
           this.toast.success('Menu créé');

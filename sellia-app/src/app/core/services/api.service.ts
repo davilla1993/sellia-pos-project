@@ -601,8 +601,8 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/menus`, formData);
   }
 
-  updateMenu(publicId: string, request: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/menus/${publicId}`, request);
+  updateMenu(publicId: string, formData: FormData): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/menus/${publicId}`, formData);
   }
 
   deleteMenu(publicId: string): Observable<any> {

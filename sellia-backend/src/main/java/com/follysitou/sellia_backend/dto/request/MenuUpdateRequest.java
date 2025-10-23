@@ -4,6 +4,7 @@ import com.follysitou.sellia_backend.enums.MenuType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -28,4 +29,6 @@ public class MenuUpdateRequest {
     private LocalDateTime endDate;
 
     private String imageUrl;
+
+    private MultipartFile image;
 }

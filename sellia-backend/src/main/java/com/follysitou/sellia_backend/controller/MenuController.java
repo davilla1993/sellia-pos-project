@@ -146,11 +146,47 @@ public class MenuController {
         return ResponseEntity.ok(menus);
     }
 
-    @PutMapping("/{publicId}")
+    @PutMapping(value = "/{publicId}", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MenuResponse> updateMenu(
             @PathVariable String publicId,
-            @Valid @RequestBody MenuUpdateRequest request) {
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String menuType,
+            @RequestParam(required = false) String bundlePrice,
+            @RequestParam(required = false) String active,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) org.springframework.web.multipart.MultipartFile image) {
+        
+        MenuUpdateRequest request = new MenuUpdateRequest();
+        if (name != null && !name.isEmpty()) {
+            request.setName(name);
+        }
+        if (description != null && !description.isEmpty()) {
+            request.setDescription(description);
+        }
+        if (menuType != null && !menuType.isEmpty()) {
+            try {
+                request.setMenuType(MenuType.valueOf(menuType));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        if (bundlePrice != null && !bundlePrice.isEmpty()) {
+            request.setBundlePrice(Long.parseLong(bundlePrice));
+        }
+        if (active != null && !active.isEmpty()) {
+            request.setActive(Boolean.parseBoolean(active));
+        }
+        if (startDate != null && !startDate.isEmpty()) {
+            request.setStartDate(java.time.LocalDateTime.parse(startDate));
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            request.setEndDate(java.time.LocalDateTime.parse(endDate));
+        }
+        request.setImage(image);
+        
         MenuResponse response = menuService.updateMenu(publicId, request);
         return ResponseEntity.ok(response);
     }

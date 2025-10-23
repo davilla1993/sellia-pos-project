@@ -100,6 +100,24 @@ public class MenuService {
             }
         }
 
+        // Handle image upload
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            // Delete old image if it exists
+            if (menu.getImageUrl() != null) {
+                try {
+                    String oldFileName = menu.getImageUrl().substring(menu.getImageUrl().lastIndexOf('/') + 1);
+                    fileService.deleteFile("/uploads/products/" + oldFileName);
+                    log.info("Old menu image deleted: {}", oldFileName);
+                } catch (Exception e) {
+                    log.warn("Failed to delete old menu image: {}", e.getMessage());
+                }
+            }
+            // Upload new image
+            String newFileName = fileService.uploadProductImage(request.getImage());
+            menu.setImageUrl("/api/menus/images/" + newFileName);
+            log.info("New menu image uploaded: /api/menus/images/{}", newFileName);
+        }
+
         menuMapper.updateEntityFromRequest(request, menu);
         Menu updated = menuRepository.save(menu);
         return menuMapper.toResponse(updated);
