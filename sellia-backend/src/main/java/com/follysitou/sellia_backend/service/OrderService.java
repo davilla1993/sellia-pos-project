@@ -126,15 +126,24 @@ public class OrderService {
         for (OrderCreateRequest.OrderItemRequest itemRequest : request.getItems()) {
             // Get MenuItem or Menu
             com.follysitou.sellia_backend.model.MenuItem menuItem = null;
+            Product product = null;
             long unitPrice = 0;
             if (itemRequest.getMenuPublicId() != null && !itemRequest.getMenuPublicId().isBlank()) {
-                // Load complete Menu (new POS flow)
-                com.follysitou.sellia_backend.model.Menu menu = menuRepository.findByPublicId(itemRequest.getMenuPublicId())
+                // Load complete Menu with MenuItems and Products (new POS flow)
+                com.follysitou.sellia_backend.model.Menu menu = menuRepository.findByPublicIdWithProducts(itemRequest.getMenuPublicId())
                         .orElseThrow(() -> new ResourceNotFoundException("Menu not found: " + itemRequest.getMenuPublicId()));
                 unitPrice = menu.getBundlePrice() != null ? menu.getBundlePrice() : 0L;
-                menuItem = menu.getMenuItems() != null && !menu.getMenuItems().isEmpty() 
-                        ? menu.getMenuItems().stream().findFirst().orElse(null) 
-                        : null;
+                
+                // Find first MenuItem with products
+                if (menu.getMenuItems() != null && !menu.getMenuItems().isEmpty()) {
+                    for (com.follysitou.sellia_backend.model.MenuItem mi : menu.getMenuItems()) {
+                        if (mi.getProducts() != null && !mi.getProducts().isEmpty()) {
+                            menuItem = mi;
+                            product = mi.getProducts().stream().findFirst().orElse(null);
+                            break;
+                        }
+                    }
+                }
             } else {
                 // Load MenuItem (legacy flow)
                 menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
@@ -148,13 +157,19 @@ public class OrderService {
 
             long itemTotal = unitPrice * itemRequest.getQuantity();
 
-            // Get specific Product if provided, otherwise use first from MenuItem
-            Product product = null;
-            if (itemRequest.getProductPublicId() != null && !itemRequest.getProductPublicId().isBlank()) {
-                product = productRepository.findByPublicId(itemRequest.getProductPublicId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
-            } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
-                product = menuItem.getProducts().stream().findFirst().orElse(null);
+            // Get specific Product if provided, or if not already loaded from Menu
+            if (product == null) {
+                if (itemRequest.getProductPublicId() != null && !itemRequest.getProductPublicId().isBlank()) {
+                    product = productRepository.findByPublicId(itemRequest.getProductPublicId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
+                } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
+                    product = menuItem.getProducts().stream().findFirst().orElse(null);
+                }
+            }
+            
+            // Product is required by database constraint
+            if (product == null) {
+                throw new BusinessException("No product found for order item. Menu must contain at least one product.");
             }
 
             OrderItem orderItem = orderMapper.toItemEntity(itemRequest);

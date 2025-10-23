@@ -40,4 +40,10 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m FROM Menu m WHERE m.name = :name AND m.deleted = false")
     Optional<Menu> findByNameAndDeletedFalse(@Param("name") String name);
+
+    @Query("SELECT DISTINCT m FROM Menu m " +
+           "LEFT JOIN FETCH m.menuItems mi " +
+           "LEFT JOIN FETCH mi.products " +
+           "WHERE m.publicId = :publicId AND m.deleted = false")
+    Optional<Menu> findByPublicIdWithProducts(@Param("publicId") String publicId);
 }
