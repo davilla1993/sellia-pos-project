@@ -17,9 +17,11 @@ export class ApiService {
 
   // Products
   getProducts(): Observable<Product[]> {
-    return this.http.get<any>(`${this.apiUrl}/products/available/list`).pipe(
-      map(response => this.extractArray(response)),
-      map(products => this.fixProductImages(products as Product[]))
+    return this.getAllProductsAdmin(0, 500).pipe(
+      map(data => {
+        const products = Array.isArray(data) ? data : (data && data.content) ? data.content : [];
+        return this.fixProductImages(products as Product[]);
+      })
     );
   }
 
