@@ -87,9 +87,9 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
           </div>
 
-          <!-- Products Section -->
+          <!-- Menus Section -->
           <div class="flex-1 flex flex-col gap-3 overflow-hidden bg-neutral-800 rounded-lg p-4 border border-neutral-700">
-            <h3 class="text-base lg:text-lg font-bold text-white">🍽️ Produits</h3>
+            <h3 class="text-base lg:text-lg font-bold text-white">🍽️ Menus</h3>
             
             <!-- Filters -->
             <div class="space-y-2">
@@ -263,42 +263,40 @@ export class OrderEntryComponent implements OnInit {
   }
 
   /**
-   * Charge MENUS ET PRODUITS via les MenuItems disponibles
-   * Les MenuItems contiennent les produits et ont un prix calculé
+   * Charge les MENUS à vendre (combos complets)
    */
   loadMenusAndProducts(): void {
     this.isLoadingProducts.set(true);
 
-    // Charger les MenuItems disponibles (qui contiennent les produits vendables)
-    this.apiService.getAvailableMenuItems(0, 100).subscribe({
-      next: (menuItems) => {
-        console.log('MenuItems chargés:', menuItems);
-        const itemList = Array.isArray(menuItems) ? menuItems : [];
+    this.apiService.getAllMenus(0, 100).subscribe({
+      next: (menus) => {
+        const menuList = Array.isArray(menus) ? menus : [];
         
-        // Convertir les MenuItems en format compatible avec la liste de produits
-        const itemsAsProducts = itemList.map((item: any) => ({
-          publicId: item.publicId,
-          name: item.products?.[0]?.name || 'Menu Item',
-          description: item.specialDescription || 'Article du menu',
-          price: item.calculatedPrice || 0,
-          imageUrl: item.products?.[0]?.imageUrl,
-          categoryId: item.products?.[0]?.categoryId || 'MENU_ITEMS',
-          isMenuItem: true,
-          menuItemPublicId: item.publicId,
-          products: item.products || []
-        }));
+        const menusAsProducts = menuList
+          .filter((menu: any) => menu.active !== false && menu.bundlePrice)
+          .map((menu: any) => ({
+            publicId: menu.publicId,
+            name: menu.name,
+            description: menu.description,
+            price: menu.bundlePrice,
+            imageUrl: menu.imageUrl,
+            categoryId: 'MENUS',
+            isMenu: true,
+            menuPublicId: menu.publicId,
+            menuItems: menu.menuItems || []
+          }));
         
-        this.allProducts.set(itemsAsProducts);
-        this.filteredProducts.set(itemsAsProducts);
+        this.allProducts.set(menusAsProducts);
+        this.filteredProducts.set(menusAsProducts);
         this.isLoadingProducts.set(false);
         
-        if (itemList.length === 0) {
-          this.toast.warning('Aucun article disponible');
+        if (menuList.length === 0) {
+          this.toast.warning('Aucun menu disponible');
         }
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des articles:', err);
-        this.toast.error('Impossible de charger les articles');
+        console.error('Erreur chargement menus:', err);
+        this.toast.error('Impossible de charger les menus');
         this.isLoadingProducts.set(false);
       }
     });
@@ -410,13 +408,12 @@ export class OrderEntryComponent implements OnInit {
     } else {
       cart.push({
         itemId: product.publicId,
-        menuItemPublicId: product.isMenu ? undefined : product.publicId,
+        menuPublicId: product.isMenu ? product.publicId : undefined,
         name: product.name,
-        price: product.isMenu ? (product.menuItems?.[0]?.price || 0) : product.price,
+        price: product.price,
         quantity: 1,
         isMenu: product.isMenu || false,
-        menuItems: product.menuItems || [],
-        isProduct: !product.isMenu
+        menuItems: product.menuItems || []
       });
     }
 
@@ -472,7 +469,7 @@ export class OrderEntryComponent implements OnInit {
           customerSessionPublicId: session.publicId,
           orderType: this.orderType,
           items: this.cartItems().map(item => ({
-            menuItemPublicId: item.menuItemPublicId || item.itemId,
+            menuItemPublicId: item.menuPublicId || item.itemId,
             quantity: item.quantity
           }))
         };
