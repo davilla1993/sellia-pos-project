@@ -26,7 +26,6 @@ public class FileController {
     private String productsImagesDir;
 
     @GetMapping("/products/{fileName}")
-    @CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {org.springframework.web.bind.annotation.RequestMethod.GET})
     public ResponseEntity<Resource> getProductImage(@PathVariable String fileName) {
         try {
             Path filePath = Paths.get(productsImagesDir).resolve(fileName).normalize();
@@ -46,9 +45,6 @@ public class FileController {
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                    .header("Access-Control-Allow-Origin", "http://localhost:4200")
-                    .header("Access-Control-Allow-Methods", "GET, OPTIONS")
-                    .header("Access-Control-Allow-Headers", "*")
                     .body(resource);
 
         } catch (MalformedURLException e) {
