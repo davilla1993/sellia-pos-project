@@ -70,9 +70,10 @@ import { ToastService } from '../../../shared/services/toast.service';
               </span>
             </div>
             <p class="text-xs text-neutral-400 mb-1 line-clamp-1 flex-shrink">{{ menu.description }}</p>
-            <div class="text-xs text-neutral-500 mb-1 flex-shrink">{{ menu.itemCount || 0 }} art.</div>
+            <div class="text-xs text-neutral-500 mb-1 flex-shrink">{{ (menu.menuItems?.length || 0) }} art.</div>
             <div class="text-sm font-bold text-orange-400 mb-1.5 flex-shrink">
-              {{ menu.bundlePrice || '-' }} FCFA
+              <span *ngIf="menu.bundlePrice">{{ menu.bundlePrice }} FCFA</span>
+              <span *ngIf="!menu.bundlePrice" class="text-gray-400">-</span>
             </div>
             <div class="flex gap-0.5 mt-auto">
               <button 
@@ -143,10 +144,12 @@ import { ToastService } from '../../../shared/services/toast.service';
                   </div>
                 </td>
                 <td class="px-4 py-3 text-green-400 font-semibold">
-                  {{ item.products && item.products[0] ? item.products[0].price : '-' }} FCFA
+                  <span *ngIf="item.products?.length > 0">{{ item.products[0].price }} FCFA</span>
+                  <span *ngIf="!item.products?.length" class="text-gray-400">-</span>
                 </td>
                 <td class="px-4 py-3 text-yellow-400 font-semibold">
-                  {{ item.priceOverride ? item.priceOverride : '-' }} {{ item.priceOverride ? 'FCFA' : '' }}
+                  <span *ngIf="item.priceOverride">{{ item.priceOverride }} FCFA</span>
+                  <span *ngIf="!item.priceOverride" class="text-gray-400">-</span>
                 </td>
                 <td class="px-4 py-3 text-neutral-400">{{ item.displayOrder }}</td>
                 <td class="px-4 py-3">
