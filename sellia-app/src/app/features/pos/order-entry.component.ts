@@ -119,11 +119,11 @@ import { ToastService } from '../../shared/services/toast.service';
                   class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
                   <div class="w-full h-16 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
                     <img 
-                      *ngIf="product.imageUrl" 
-                      [src]="product.imageUrl" 
+                      *ngIf="getImageUrl(product)" 
+                      [src]="getImageUrl(product)" 
                       alt="{{ product.name }}"
                       class="w-full h-full object-cover">
-                    <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
+                    <span *ngIf="!getImageUrl(product)" class="text-neutral-400">📷</span>
                   </div>
                   <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
                   <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
@@ -218,6 +218,7 @@ export class OrderEntryComponent implements OnInit {
   categories = signal<any[]>([]);
   selectedCategory = signal<any>('');
   searchTerm = signal<string>('');
+  imageUrls = signal<{ [key: string]: string }>({});
 
   // Cart
   cartItems = signal<any[]>([]);
@@ -272,6 +273,7 @@ export class OrderEntryComponent implements OnInit {
         
         this.allProducts.set(menusAsProducts);
         this.filteredProducts.set(menusAsProducts);
+        this.loadMenuImages(menuList);
         this.isLoadingProducts.set(false);
         
         if (menuList.length === 0) {
@@ -305,6 +307,27 @@ export class OrderEntryComponent implements OnInit {
         this.isLoadingProducts.set(false);
       }
     });
+  }
+
+  loadMenuImages(menus: any[]): void {
+    const urls: { [key: string]: string } = {};
+    menus.forEach(menu => {
+      if (menu.imageUrl) {
+        this.apiService.getImageAsDataUrl(menu.imageUrl).subscribe({
+          next: (url) => {
+            urls[menu.publicId] = url;
+            this.imageUrls.set({ ...this.imageUrls(), ...urls });
+          },
+          error: () => {
+            // Image loading error - will show placeholder
+          }
+        });
+      }
+    });
+  }
+
+  getImageUrl(product: any): string {
+    return this.imageUrls()[product.publicId] || '';
   }
 
   loadCategories(): void {
