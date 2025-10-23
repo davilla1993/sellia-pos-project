@@ -91,59 +91,43 @@ import { ToastService } from '../../shared/services/toast.service';
           <div class="flex-1 flex flex-col gap-3 overflow-hidden bg-neutral-800 rounded-lg p-4 border border-neutral-700">
             <h3 class="text-base lg:text-lg font-bold text-white">🍽️ Menus</h3>
             
-            <!-- Filters -->
-            <div class="space-y-2">
+            <!-- Search -->
+            <div>
               <input 
                 [(ngModel)]="searchTerm" 
                 (input)="filterProducts()"
                 type="text"
-                placeholder="Rechercher..."
+                placeholder="Rechercher un menu..."
                 class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm">
-              
-              <select 
-                [(ngModel)]="selectedCategory" 
-                (change)="filterProducts()"
-                class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary text-sm">
-                <option value="">Toutes les catégories</option>
-                <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name }}</option>
-              </select>
             </div>
 
-            <!-- Products by Category -->
+            <!-- Menus Grid -->
             <div class="flex-1 overflow-y-auto pr-2">
               <div *ngIf="isLoadingProducts()" class="flex justify-center items-center h-full">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
 
               <div *ngIf="!isLoadingProducts() && filteredProducts().length === 0" class="flex justify-center items-center h-full">
-                <p class="text-neutral-400 text-center">Aucun produit trouvé</p>
+                <p class="text-neutral-400 text-center">Aucun menu trouvé</p>
               </div>
 
-              <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="space-y-4">
-                <!-- By Category -->
-                <div *ngFor="let category of getGroupedProducts()" class="space-y-2">
-                  <h4 class="text-sm font-bold text-primary border-b border-neutral-700 pb-1">
-                    {{ category.name }}
-                  </h4>
-                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
-                    <button 
-                      *ngFor="let product of category.products"
-                      (click)="addProductToCart(product)"
-                      type="button"
-                      class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
-                      <div class="w-full h-16 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
-                        <img 
-                          *ngIf="product.imageUrl" 
-                          [src]="product.imageUrl" 
-                          alt="{{ product.name }}"
-                          class="w-full h-full object-cover">
-                        <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
-                      </div>
-                      <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
-                      <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
-                    </button>
+              <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
+                <button 
+                  *ngFor="let product of filteredProducts()"
+                  (click)="addProductToCart(product)"
+                  type="button"
+                  class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
+                  <div class="w-full h-16 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
+                    <img 
+                      *ngIf="product.imageUrl" 
+                      [src]="product.imageUrl" 
+                      alt="{{ product.name }}"
+                      class="w-full h-full object-cover">
+                    <span *ngIf="!product.imageUrl" class="text-neutral-400">📷</span>
                   </div>
-                </div>
+                  <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
+                  <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
+                </button>
               </div>
             </div>
           </div>
@@ -349,10 +333,6 @@ export class OrderEntryComponent implements OnInit {
   filterProducts(): void {
     let filtered = this.allProducts();
 
-    if (this.selectedCategory()) {
-      filtered = filtered.filter(p => p.categoryId === this.selectedCategory());
-    }
-
     if (this.searchTerm()) {
       const term = this.searchTerm().toLowerCase();
       filtered = filtered.filter(p =>
@@ -362,41 +342,6 @@ export class OrderEntryComponent implements OnInit {
     }
 
     this.filteredProducts.set(filtered);
-  }
-
-  getGroupedProducts(): any[] {
-    const products = this.filteredProducts();
-    if (products.length === 0) return [];
-
-    const groupedMap = new Map<string | number, any>();
-    const categories = this.categories();
-
-    // Group products by category
-    products.forEach(product => {
-      const categoryId = product.categoryId || 'other';
-      if (!groupedMap.has(categoryId)) {
-        const category = categories.find(c => c.id === categoryId || c.publicId === categoryId);
-        groupedMap.set(categoryId, {
-          id: categoryId,
-          name: category?.name || 'Autres',
-          products: []
-        });
-      }
-      groupedMap.get(categoryId)?.products.push(product);
-    });
-
-    // Convert map to array and sort by category order
-    let result = Array.from(groupedMap.values());
-    
-    if (categories.length > 0) {
-      result = result.sort((a, b) => {
-        const indexA = categories.findIndex(c => c.id === a.id || c.publicId === a.id);
-        const indexB = categories.findIndex(c => c.id === b.id || c.publicId === b.id);
-        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-      });
-    }
-    
-    return result;
   }
 
   addProductToCart(product: any): void {

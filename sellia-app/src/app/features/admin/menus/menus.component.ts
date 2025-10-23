@@ -187,6 +187,25 @@ import { ToastService } from '../../../shared/services/toast.service';
               <textarea formControlName="description" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Description..."></textarea>
             </div>
 
+            <div>
+              <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">📷 Image</label>
+              <div class="space-y-2">
+                <div *ngIf="imagePreview()" class="relative w-24 h-24 rounded-lg border border-neutral-600 overflow-hidden bg-neutral-700">
+                  <img [src]="imagePreview()" alt="Preview" class="w-full h-full object-cover">
+                  <button type="button" (click)="clearImage()" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+                <div *ngIf="!imagePreview()" class="w-24 h-24 rounded-lg border-2 border-dashed border-neutral-600 bg-neutral-700/50 flex items-center justify-center">
+                  <p class="text-neutral-400 text-xs">📷</p>
+                </div>
+                <input #fileInput type="file" accept=".jpg,.jpeg,.png,.gif,.webp" (change)="onImageSelected($event)" class="hidden">
+                <button type="button" (click)="fileInput.click()" class="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded text-sm font-medium transition-colors">
+                  Choisir une image
+                </button>
+              </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-sm font-semibold text-neutral-300 mb-2">Type</label>
@@ -314,6 +333,8 @@ export class MenusComponent implements OnInit {
   isSaving = signal(false);
   isGenerating = signal(false);
   error = signal<string | null>(null);
+  imageFile = signal<File | null>(null);
+  imagePreview = signal<string | null>(null);
   activeTab = signal<'menus' | 'items'>('menus');
   
   showMenuModal = false;
@@ -418,9 +439,27 @@ export class MenusComponent implements OnInit {
     });
   }
 
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.imageFile.set(file);
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview.set(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearImage(): void {
+    this.imageFile.set(null);
+    this.imagePreview.set(null);
+  }
+
   openCreateMenuModal(): void {
     this.editingMenu = null;
     this.menuForm.reset();
+    this.imageFile.set(null);
+    this.imagePreview.set(null);
     this.showMenuModal = true;
   }
 
@@ -437,6 +476,8 @@ export class MenusComponent implements OnInit {
 
   closeMenuModal(): void {
     this.showMenuModal = false;
+    this.imageFile.set(null);
+    this.imagePreview.set(null);
   }
 
   saveMenu(): void {
@@ -465,6 +506,9 @@ export class MenusComponent implements OnInit {
       formData.append('menuType', request.menuType);
       formData.append('bundlePrice', request.bundlePrice ? request.bundlePrice.toString() : '');
       formData.append('active', 'true');
+      if (this.imageFile()) {
+        formData.append('image', this.imageFile()!);
+      }
 
       this.apiService.createMenu(formData).subscribe({
         next: () => {
