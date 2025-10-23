@@ -45,7 +45,7 @@ public class FileService {
             Files.createDirectories(uploadPath);
             Files.write(uploadPath.resolve(fileName), file.getBytes());
             log.info("Product image uploaded successfully: {}", fileName);
-            return "/uploads/products/" + fileName;
+            return "/api/files/products/" + fileName;
         } catch (IOException e) {
             log.error("Failed to upload product image", e);
             throw new BusinessException("Failed to upload image. Please try again later.");
