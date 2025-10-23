@@ -22,7 +22,7 @@ import { ApiService } from '../../../core/services/api.service';
       </div>
 
       <!-- Form -->
-      <form *ngIf="!isLoading()" [formGroup]="form" (ngSubmit)="onSubmit()" class="bg-gradient-to-b from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700 p-8 space-y-8">
+      <form *ngIf="!isLoading()" [formGroup]="form" (ngSubmit)="onSubmit()" class="bg-gradient-to-b from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700 p-6 space-y-4">
         
         <!-- Error -->
         <div *ngIf="error()" class="p-4 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
@@ -30,55 +30,55 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
 
         <!-- Two Column Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- LEFT COLUMN -->
-          <div class="space-y-5">
+          <div class="space-y-3">
             <!-- Image Upload -->
             <div>
-              <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-3">📷 Image</label>
-              <div class="space-y-3">
-                <div *ngIf="imagePreview()" class="relative w-full aspect-square rounded-lg border border-neutral-600 overflow-hidden bg-neutral-700">
+              <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">📷 Image</label>
+              <div class="space-y-2">
+                <div *ngIf="imagePreview()" class="relative w-24 h-24 rounded-lg border border-neutral-600 overflow-hidden bg-neutral-700">
                   <img [src]="imagePreview()" alt="Preview" class="w-full h-full object-cover">
-                  <button type="button" (click)="clearImage()" class="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-lg transition">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+                  <button type="button" (click)="clearImage()" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
                   </button>
                 </div>
-                <div *ngIf="!imagePreview()" class="w-full aspect-square rounded-lg border-2 border-dashed border-neutral-600 bg-neutral-700/50 flex items-center justify-center">
-                  <p class="text-neutral-400 text-sm">Pas d'image</p>
+                <div *ngIf="!imagePreview()" class="w-24 h-24 rounded-lg border-2 border-dashed border-neutral-600 bg-neutral-700/50 flex items-center justify-center">
+                  <p class="text-neutral-400 text-xs">📷</p>
                 </div>
                 <input #fileInput type="file" accept=".jpg,.jpeg,.png,.gif,.webp" (change)="onImageSelected($event)" class="hidden">
-                <button type="button" (click)="fileInput.click()" class="w-full px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white text-sm font-medium rounded-lg transition">
+                <button type="button" (click)="fileInput.click()" class="w-full px-2 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-medium rounded transition">
                   Sélectionner
                 </button>
-                <p class="text-xs text-neutral-400">Max 5MB • JPG, PNG, GIF, WebP</p>
+                <p class="text-xs text-neutral-400">Max 5MB</p>
               </div>
             </div>
 
             <!-- Description -->
             <div>
-              <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">Description</label>
-              <textarea formControlName="description" class="w-full px-4 py-2.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-24 resize-none" placeholder="Description du produit..."></textarea>
-              <p class="text-xs text-neutral-400 mt-1">{{ form.get('description')?.value?.length || 0 }}/500</p>
+              <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-1">Description</label>
+              <textarea formControlName="description" class="w-full px-4 py-2 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-14 resize-none text-xs" placeholder="Description..."></textarea>
+              <p class="text-xs text-neutral-400 mt-0.5">{{ form.get('description')?.value?.length || 0 }}/500</p>
             </div>
 
             <!-- Ingredients & Allergens -->
             <div>
-              <h4 class="text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-3">🥗 Composition</h4>
-              <div class="space-y-3">
+              <h4 class="text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">🥗 Composition</h4>
+              <div class="space-y-2">
                 <div>
-                  <label class="block text-xs font-semibold text-neutral-300 mb-2">Ingrédients</label>
-                  <textarea formControlName="ingredients" class="w-full px-4 py-2.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-14 resize-none text-sm" placeholder="Ex: Tomate, Mozzarella, Basilic"></textarea>
+                  <label class="block text-xs font-semibold text-neutral-300 mb-1">Ingrédients</label>
+                  <textarea formControlName="ingredients" class="w-full px-3 py-1.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-10 resize-none text-xs" placeholder="Ex: Tomate, Mozzarella"></textarea>
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-neutral-300 mb-2">⚠️ Allergènes</label>
-                  <textarea formControlName="allergens" class="w-full px-4 py-2.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-14 resize-none text-sm" placeholder="Ex: Gluten, Lait, Œufs"></textarea>
+                  <label class="block text-xs font-semibold text-neutral-300 mb-1">⚠️ Allergènes</label>
+                  <textarea formControlName="allergens" class="w-full px-3 py-1.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition h-10 resize-none text-xs" placeholder="Ex: Gluten, Lait"></textarea>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- RIGHT COLUMN -->
-          <div class="space-y-5">
+          <div class="space-y-3">
             <!-- Name -->
             <div>
               <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">Nom du produit *</label>
@@ -87,9 +87,9 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
 
             <!-- Price & Category -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">Prix (FCFA) *</label>
+                <label class="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-1">Prix (FCFA) *</label>
                 <input formControlName="price" type="number" class="w-full px-4 py-2.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:border-primary/50 focus:outline-none transition" placeholder="1000">
                 <p *ngIf="hasError('price')" class="text-red-400 text-xs mt-1">Requis (≥ 1)</p>
               </div>
@@ -112,12 +112,12 @@ import { ApiService } from '../../../core/services/api.service';
 
             <!-- Settings Section -->
             <div>
-              <h4 class="text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-3">⚙️ Paramètres</h4>
-              <div class="space-y-3">
+              <h4 class="text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">⚙️ Paramètres</h4>
+              <div class="space-y-2">
                 <!-- Station & Prep Time -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label class="block text-xs font-semibold text-neutral-300 mb-2">Station *</label>
+                    <label class="block text-xs font-semibold text-neutral-300 mb-1">Station *</label>
                     <select formControlName="workStation" class="w-full px-4 py-2.5 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white focus:border-primary/50 focus:outline-none transition text-sm">
                       <option *ngFor="let ws of workStations()" [value]="ws.value">{{ ws.label }}</option>
                     </select>
@@ -149,11 +149,11 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
 
         <!-- Buttons -->
-        <div class="flex gap-3 pt-4 border-t border-neutral-700">
-          <button type="submit" [disabled]="isSubmitting() || form.invalid" class="flex-1 px-4 py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition">
-            {{ isSubmitting() ? "⏳ En cours..." : isEditMode() ? "✓ Mettre à jour" : "✓ Créer" }}
+        <div class="flex gap-2 pt-3 border-t border-neutral-700">
+          <button type="submit" [disabled]="isSubmitting() || form.invalid" class="flex-1 px-3 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded transition text-sm">
+            {{ isSubmitting() ? "⏳..." : isEditMode() ? "✓ Mettre à jour" : "✓ Créer" }}
           </button>
-          <a routerLink="/admin/products/catalog" class="flex-1 px-4 py-3 bg-neutral-700 hover:bg-neutral-600 text-white font-semibold rounded-lg transition text-center">
+          <a routerLink="/admin/products/catalog" class="flex-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-semibold rounded transition text-center text-sm">
             Annuler
           </a>
         </div>

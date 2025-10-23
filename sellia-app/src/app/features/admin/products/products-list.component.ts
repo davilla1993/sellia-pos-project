@@ -1,12 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <style>
       .image-zoom {
@@ -39,8 +40,24 @@ import { ApiService } from '../../../core/services/api.service';
         {{ error() }}
       </div>
 
+      <!-- Search Bar -->
+      <div *ngIf="!isLoading() && products().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 p-4">
+        <div class="flex items-center gap-2 bg-neutral-700/50 rounded-lg px-4 py-2 border border-neutral-600">
+          <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input 
+            [(ngModel)]="searchTerm" 
+            (input)="filterProducts()"
+            type="text" 
+            placeholder="Rechercher un produit..." 
+            class="flex-1 bg-transparent text-white placeholder-neutral-500 focus:outline-none text-sm">
+        </div>
+        <p class="text-xs text-neutral-400 mt-2">{{ filteredProducts().length }} / {{ products().length }} produits</p>
+      </div>
+
       <!-- Products Table -->
-      <div *ngIf="!isLoading() && products().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden">
+      <div *ngIf="!isLoading() && filteredProducts().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden">
         <table class="w-full">
           <thead class="bg-neutral-700 border-b border-neutral-600">
             <tr>
@@ -113,7 +130,7 @@ import { ApiService } from '../../../core/services/api.service';
       </div>
 
       <!-- Pagination Controls -->
-      <div *ngIf="!isLoading() && products().length > 0" class="flex justify-center items-center gap-3 bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+      <div *ngIf="!isLoading() && filteredProducts().length > 0" class="flex justify-center items-center gap-3 bg-neutral-800 rounded-lg p-4 border border-neutral-700">
         <button (click)="previousPage()" [disabled]="currentPage() === 1" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
           ← Précédent
         </button>
@@ -131,7 +148,13 @@ import { ApiService } from '../../../core/services/api.service';
         <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 rounded font-medium">
           Suivant →
         </button>
-        <span class="text-neutral-400 text-sm ml-2">{{ currentPage() }} / {{ totalPages() }} ({{ products().length }} produits)</span>
+        <span class="text-neutral-400 text-sm ml-2">{{ currentPage() }} / {{ totalPages() }} ({{ filteredProducts().length }} produits)</span>
+      </div>
+
+      <!-- No Results State -->
+      <div *ngIf="!isLoading() && products().length > 0 && filteredProducts().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
+        <p class="text-neutral-400 mb-4">Aucun produit ne correspond à votre recherche</p>
+        <button (click)="searchTerm.set('')" (click)="filterProducts()" class="text-primary hover:text-primary-dark font-medium">Réinitialiser la recherche</button>
       </div>
 
       <!-- Empty State -->
@@ -147,6 +170,8 @@ export class ProductsListComponent implements OnInit {
   private apiService = inject(ApiService);
 
   products = signal<any[]>([]);
+  filteredProducts = signal<any[]>([]);
+  searchTerm = signal<string>('');
   isLoading = signal(false);
   error = signal<string | null>(null);
   currentPage = signal(1);
@@ -165,6 +190,7 @@ export class ProductsListComponent implements OnInit {
       next: (data) => {
         const loadedProducts = Array.isArray(data) ? data : data.content || [];
         this.products.set(loadedProducts);
+        this.filteredProducts.set(loadedProducts);
         this.loadImages(loadedProducts);
         this.isLoading.set(false);
       },
@@ -173,6 +199,21 @@ export class ProductsListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  filterProducts(): void {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) {
+      this.filteredProducts.set(this.products());
+      this.currentPage.set(1);
+    } else {
+      const filtered = this.products().filter(product =>
+        product.name.toLowerCase().includes(term) ||
+        product.description?.toLowerCase().includes(term)
+      );
+      this.filteredProducts.set(filtered);
+      this.currentPage.set(1);
+    }
   }
 
   loadImages(products: any[]): void {
@@ -218,13 +259,13 @@ export class ProductsListComponent implements OnInit {
   }
 
   totalPages(): number {
-    return Math.ceil(this.products().length / this.itemsPerPage);
+    return Math.ceil(this.filteredProducts().length / this.itemsPerPage);
   }
 
   paginatedProducts() {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.products().slice(start, end);
+    return this.filteredProducts().slice(start, end);
   }
 
   getPageNumbers(): number[] {

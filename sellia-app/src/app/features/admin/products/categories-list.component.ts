@@ -29,8 +29,24 @@ import { ToastService } from '../../../shared/services/toast.service';
         {{ error() }}
       </div>
 
+      <!-- Search Bar -->
+      <div *ngIf="!isLoading() && categories().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 p-4">
+        <div class="flex items-center gap-2 bg-neutral-700/50 rounded-lg px-4 py-2 border border-neutral-600">
+          <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input 
+            [(ngModel)]="searchTerm" 
+            (input)="filterCategories()"
+            type="text" 
+            placeholder="Rechercher une catégorie..." 
+            class="flex-1 bg-transparent text-white placeholder-neutral-500 focus:outline-none text-sm">
+        </div>
+        <p class="text-xs text-neutral-400 mt-2">{{ filteredCategories().length }} / {{ categories().length }} catégories</p>
+      </div>
+
       <!-- Categories Table -->
-      <div *ngIf="!isLoading() && categories().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden">
+      <div *ngIf="!isLoading() && filteredCategories().length > 0" class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden">
         <table class="w-full">
           <thead class="bg-neutral-700 border-b border-neutral-600">
             <tr>
@@ -43,7 +59,7 @@ import { ToastService } from '../../../shared/services/toast.service';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let category of categories()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+            <tr *ngFor="let category of filteredCategories()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
               <td class="px-6 py-4 text-2xl">
                 {{ category.icon || '📁' }}
               </td>
@@ -74,6 +90,12 @@ import { ToastService } from '../../../shared/services/toast.service';
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- No Results State -->
+      <div *ngIf="!isLoading() && categories().length > 0 && filteredCategories().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
+        <p class="text-neutral-400 mb-4">Aucune catégorie ne correspond à votre recherche</p>
+        <button (click)="searchTerm.set('')" (click)="filterCategories()" class="text-primary hover:text-primary-dark font-medium">Réinitialiser la recherche</button>
       </div>
 
       <!-- Empty State -->
@@ -161,6 +183,8 @@ export class CategoriesListComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   categories = signal<any[]>([]);
+  filteredCategories = signal<any[]>([]);
+  searchTerm = signal<string>('');
   isLoading = signal(false);
   isSaving = signal(false);
   error = signal<string | null>(null);
@@ -190,6 +214,7 @@ export class CategoriesListComponent implements OnInit {
       next: (data: any) => {
         const loaded = Array.isArray(data) ? data : (data && data.content) ? data.content : [];
         this.categories.set(loaded);
+        this.filteredCategories.set(loaded);
         this.isLoading.set(false);
         this.error.set(null);
       },
@@ -199,6 +224,20 @@ export class CategoriesListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  filterCategories(): void {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) {
+      this.filteredCategories.set(this.categories());
+    } else {
+      const filtered = this.categories().filter(cat =>
+        cat.name.toLowerCase().includes(term) ||
+        cat.description?.toLowerCase().includes(term) ||
+        cat.icon?.includes(term)
+      );
+      this.filteredCategories.set(filtered);
+    }
   }
 
   openCreateModal(): void {
