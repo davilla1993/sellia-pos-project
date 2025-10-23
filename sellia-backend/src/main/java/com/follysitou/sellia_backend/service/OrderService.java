@@ -14,11 +14,13 @@ import com.follysitou.sellia_backend.model.CustomerSession;
 import com.follysitou.sellia_backend.model.Order;
 import com.follysitou.sellia_backend.model.OrderItem;
 import com.follysitou.sellia_backend.model.Product;
+import com.follysitou.sellia_backend.model.Menu;
 import com.follysitou.sellia_backend.model.MenuItem;
 import com.follysitou.sellia_backend.model.RestaurantTable;
 import com.follysitou.sellia_backend.model.User;
 import com.follysitou.sellia_backend.repository.CashierSessionRepository;
 import com.follysitou.sellia_backend.repository.CustomerSessionRepository;
+import com.follysitou.sellia_backend.repository.MenuRepository;
 import com.follysitou.sellia_backend.repository.OrderItemRepository;
 import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.repository.ProductRepository;
@@ -52,6 +54,7 @@ public class OrderService {
     private final RestaurantTableRepository restaurantTableRepository;
     private final ProductRepository productRepository;
     private final MenuItemRepository menuItemRepository;
+    private final MenuRepository menuRepository;
     private final CustomerSessionRepository customerSessionRepository;
     private final OrderMapper orderMapper;
     private final NotificationService notificationService;
@@ -120,15 +123,27 @@ public class OrderService {
         long totalAmount = 0;
 
         for (OrderCreateRequest.OrderItemRequest itemRequest : request.getItems()) {
-            // Get MenuItem (required)
-            com.follysitou.sellia_backend.model.MenuItem menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found: " + itemRequest.getMenuItemPublicId()));
-
-            // Calculate unit price from MenuItem
-            long unitPrice = menuItem.getPriceOverride() != null ? menuItem.getPriceOverride() : 
+            // Get MenuItem or Menu
+            com.follysitou.sellia_backend.model.MenuItem menuItem = null;
+            long unitPrice = 0;
+            if (itemRequest.getMenuPublicId() != null && !itemRequest.getMenuPublicId().isBlank()) {
+                // Load complete Menu (new POS flow)
+                com.follysitou.sellia_backend.model.Menu menu = menuRepository.findByPublicId(itemRequest.getMenuPublicId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Menu not found: " + itemRequest.getMenuPublicId()));
+                unitPrice = menu.getBundlePrice() != null ? menu.getBundlePrice() : 0L;
+                menuItem = menu.getMenuItems() != null && !menu.getMenuItems().isEmpty() 
+                        ? menu.getMenuItems().stream().findFirst().orElse(null) 
+                        : null;
+            } else {
+                // Load MenuItem (legacy flow)
+                menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found: " + itemRequest.getMenuItemPublicId()));
+                // Calculate unit price from MenuItem
+                unitPrice = menuItem.getPriceOverride() != null ? menuItem.getPriceOverride() : 
                            menuItem.getBundlePrice() != null ? menuItem.getBundlePrice() :
                            menuItem.getProducts().isEmpty() ? 0L : 
                            menuItem.getProducts().stream().mapToLong(Product::getPrice).sum();
+            }
 
             long itemTotal = unitPrice * itemRequest.getQuantity();
 

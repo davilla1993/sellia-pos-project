@@ -32,8 +32,9 @@ public class OrderCreateRequest {
 
     @Data
     public static class OrderItemRequest {
-        @NotBlank(message = "Menu Item ID is required")
-        private String menuItemPublicId;
+        private String menuItemPublicId; // Optional: MenuItem from catalog
+
+        private String menuPublicId; // Optional: Complete Menu to order
 
         @NotNull(message = "Quantity is required")
         @Positive(message = "Quantity must be positive")
