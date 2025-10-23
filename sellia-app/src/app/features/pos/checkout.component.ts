@@ -42,24 +42,32 @@ import { ApiService } from '../../core/services/api.service';
 
           <div *ngIf="!isLoadingTables()" class="flex-1 overflow-hidden">
             <div class="grid gap-4" [ngStyle]="{'gridTemplateColumns': 'repeat(auto-fit, minmax(140px, 1fr))'}">
-              <button *ngFor="let table of paginatedTables()"
-                (click)="selectTable(table)"
+              <div *ngFor="let table of paginatedTables()"
                 [class.ring-3]="selectedTableId() === table.publicId"
                 [class.ring-primary]="selectedTableId() === table.publicId"
                 [class.bg-green-900]="tablesWithSessions().has(table.publicId)"
                 [class.bg-red-900]="!tablesWithSessions().has(table.publicId)"
                 [class.border-green-600]="tablesWithSessions().has(table.publicId)"
                 [class.border-red-600]="!tablesWithSessions().has(table.publicId)"
-                class="p-4 bg-neutral-800 hover:opacity-80 border-2 border-neutral-700 rounded-lg transition-all">
-                <div class="flex items-center gap-2 mb-2">
-                  <div [class.bg-green-500]="tablesWithSessions().has(table.publicId)" [class.bg-red-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
-                  <p class="font-bold text-white text-lg">{{ table.number }}</p>
-                </div>
-                <p class="text-sm text-neutral-400 mb-2">{{ table.name }}</p>
-                <p class="text-xs font-semibold" [class.text-green-400]="tablesWithSessions().has(table.publicId)" [class.text-red-400]="!tablesWithSessions().has(table.publicId)">
-                  {{ tablesWithSessions().has(table.publicId) ? '✓ Actif' : '○ Libre' }}
-                </p>
-              </button>
+                class="p-4 bg-neutral-800 border-2 border-neutral-700 rounded-lg transition-all relative">
+                <button (click)="selectTable(table)" class="w-full text-left">
+                  <div class="flex items-center gap-2 mb-2">
+                    <div [class.bg-green-500]="tablesWithSessions().has(table.publicId)" [class.bg-red-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
+                    <p class="font-bold text-white text-lg">{{ table.number }}</p>
+                    <span *ngIf="table.isVip" class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded font-bold ml-auto">VIP</span>
+                  </div>
+                  <p class="text-sm text-neutral-400 mb-2">{{ table.name }}</p>
+                  <p class="text-xs font-semibold" [class.text-green-400]="tablesWithSessions().has(table.publicId)" [class.text-red-400]="!tablesWithSessions().has(table.publicId)">
+                    {{ tablesWithSessions().has(table.publicId) ? '✓ Actif' : '○ Libre' }}
+                  </p>
+                </button>
+                <button 
+                  (click)="downloadTableQrCode(table); $event.stopPropagation()"
+                  class="absolute bottom-2 right-2 p-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-semibold transition-colors"
+                  title="Télécharger QR Code">
+                  📥 QR
+                </button>
+              </div>
             </div>
           </div>
 
@@ -571,5 +579,22 @@ export class CheckoutComponent implements OnInit {
 
   goToTablePage(page: number): void {
     this.currentTablePage.set(page);
+  }
+
+  downloadTableQrCode(table: any): void {
+    this.apiService.generateTableQrCode(table.publicId).subscribe({
+      next: (response) => {
+        if (response.qrCodeUrl) {
+          // Download the QR code image
+          const link = document.createElement('a');
+          link.href = response.qrCodeUrl;
+          link.download = `table-${table.number}-qr-code.png`;
+          link.click();
+        }
+      },
+      error: (err) => {
+        console.error('Error generating QR code:', err);
+      }
+    });
   }
 }
