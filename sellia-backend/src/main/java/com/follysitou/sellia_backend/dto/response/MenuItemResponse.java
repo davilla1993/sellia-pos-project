@@ -13,7 +13,6 @@ public class MenuItemResponse {
     private List<ProductSummary> products;
     private Integer displayOrder;
     private Long priceOverride;
-    private Long calculatedPrice;
     private Boolean available;
     private Boolean isSpecial;
     private String specialDescription;

@@ -23,7 +23,8 @@ public class MenuCreateRequest {
     @NotNull(message = "Menu type is required")
     private MenuType menuType;
 
-    @Min(value = 0L, message = "Bundle price cannot be negative")
+    @NotNull(message = "Bundle price is required")
+    @Min(value = 1L, message = "Bundle price must be at least 1 FCFA")
     private Long bundlePrice;
 
     private Boolean active = true;

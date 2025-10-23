@@ -49,15 +49,7 @@ public class MenuItemMapper {
                     ))
                     .collect(Collectors.toList()));
 
-            // Calculate price: use Override if set, otherwise sum of product prices
-            if (menuItem.getPriceOverride() != null) {
-                response.setCalculatedPrice(menuItem.getPriceOverride());
-            } else {
-                Long totalPrice = menuItem.getProducts().stream()
-                        .mapToLong(p -> p.getPrice() != null ? p.getPrice() : 0)
-                        .sum();
-                response.setCalculatedPrice(totalPrice);
-            }
+
         }
 
         return response;

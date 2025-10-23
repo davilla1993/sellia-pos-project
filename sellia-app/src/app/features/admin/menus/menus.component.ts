@@ -72,7 +72,7 @@ import { ToastService } from '../../../shared/services/toast.service';
             <p class="text-xs text-neutral-400 mb-1 line-clamp-1 flex-shrink">{{ menu.description }}</p>
             <div class="text-xs text-neutral-500 mb-1 flex-shrink">{{ menu.itemCount || 0 }} art.</div>
             <div class="text-sm font-bold text-orange-400 mb-1.5 flex-shrink">
-              {{ getMenuPrice(menu) }} FCFA
+              {{ menu.bundlePrice || '-' }} FCFA
             </div>
             <div class="flex gap-0.5 mt-auto">
               <button 
@@ -127,8 +127,8 @@ import { ToastService } from '../../../shared/services/toast.service';
             <thead class="bg-neutral-700 border-b border-neutral-600">
               <tr>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Produit(s)</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Normal</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Override</th>
-                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Calculé</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Ordre</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Dispo</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Actions</th>
@@ -142,11 +142,11 @@ import { ToastService } from '../../../shared/services/toast.service';
                     <span *ngIf="item.products.length > 1" class="text-xs text-neutral-400 ml-2">+{{ item.products.length - 1 }} autre(s)</span>
                   </div>
                 </td>
+                <td class="px-4 py-3 text-green-400 font-semibold">
+                  {{ item.products && item.products[0] ? item.products[0].price : '-' }} FCFA
+                </td>
                 <td class="px-4 py-3 text-yellow-400 font-semibold">
                   {{ item.priceOverride ? item.priceOverride : '-' }} {{ item.priceOverride ? 'FCFA' : '' }}
-                </td>
-                <td class="px-4 py-3 text-orange-400 font-semibold">
-                  {{ item.calculatedPrice ? item.calculatedPrice : '-' }} FCFA
                 </td>
                 <td class="px-4 py-3 text-neutral-400">{{ item.displayOrder }}</td>
                 <td class="px-4 py-3">
@@ -327,7 +327,7 @@ export class MenusComponent implements OnInit {
       name: ['', Validators.required],
       description: [''],
       menuType: ['', Validators.required],
-      bundlePrice: ['']
+      bundlePrice: ['', Validators.required]
     });
 
     this.itemForm = this.fb.group({
@@ -626,31 +626,5 @@ export class MenusComponent implements OnInit {
       },
       error: () => this.error.set('Erreur')
     });
-  }
-
-  getMenuPrice(menu: any): string {
-    if (!menu) return '-';
-    
-    // Si plusieurs articles: afficher bundlePrice ou calcul
-    if ((menu.itemCount || 0) > 1) {
-      if (menu.bundlePrice) {
-        return menu.bundlePrice.toString();
-      }
-      // Calculer la somme des articles
-      if (menu.menuItems && menu.menuItems.length > 0) {
-        const total = menu.menuItems.reduce((sum: number, item: any) => {
-          return sum + (item.price || 0);
-        }, 0);
-        return total.toString();
-      }
-      return '-';
-    }
-    
-    // Si un seul article: afficher son prix
-    if ((menu.itemCount || 0) === 1 && menu.menuItems && menu.menuItems.length > 0) {
-      return (menu.menuItems[0].price || '-').toString();
-    }
-    
-    return '-';
   }
 }
