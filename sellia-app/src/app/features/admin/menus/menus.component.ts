@@ -123,20 +123,37 @@ import { ToastService } from '../../../shared/services/toast.service';
           <table class="w-full">
             <thead class="bg-neutral-700 border-b border-neutral-600">
               <tr>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Nom</th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Prix</th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Ordre</th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-white">Actions</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Produit(s)</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Calculé</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Bundle</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Ordre</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Dispo</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of menuItems()" class="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
-                <td class="px-6 py-4 text-white">{{ item.productName || item.name }}</td>
-                <td class="px-6 py-4 text-orange-400 font-semibold">FCFA {{ (item.productPrice / 100).toFixed(0) }}</td>
-                <td class="px-6 py-4 text-neutral-400">{{ item.displayOrder }}</td>
-                <td class="px-6 py-4 space-x-2 flex">
-                  <button (click)="editMenuItem(item)" class="text-blue-400 hover:text-blue-300 text-sm font-medium">Éditer</button>
-                  <button (click)="deleteMenuItem(item.publicId)" class="text-red-400 hover:text-red-300 text-sm font-medium">Supprimer</button>
+                <td class="px-4 py-3 text-white">
+                  <div *ngIf="item.products && item.products.length > 0">
+                    <span class="font-semibold">{{ item.products[0].name }}</span>
+                    <span *ngIf="item.products.length > 1" class="text-xs text-neutral-400 ml-2">+{{ item.products.length - 1 }} autre(s)</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-orange-400 font-semibold">
+                  {{ item.calculatedPrice ? (item.calculatedPrice / 100).toFixed(0) : '-' }} FCFA
+                </td>
+                <td class="px-4 py-3 text-neutral-400">
+                  {{ item.bundlePrice ? (item.bundlePrice / 100).toFixed(0) : '-' }} FCFA
+                </td>
+                <td class="px-4 py-3 text-neutral-400">{{ item.displayOrder }}</td>
+                <td class="px-4 py-3">
+                  <span [class]="item.available ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'" class="px-2 py-1 rounded text-xs font-semibold">
+                    {{ item.available ? '✓ Oui' : '✕ Non' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 space-x-2 flex">
+                  <button (click)="editMenuItem(item)" class="text-blue-400 hover:text-blue-300 text-sm font-medium">✏️</button>
+                  <button (click)="deleteMenuItem(item.publicId)" class="text-red-400 hover:text-red-300 text-sm font-medium">🗑️</button>
                 </td>
               </tr>
             </tbody>
