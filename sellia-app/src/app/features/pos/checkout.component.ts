@@ -284,32 +284,34 @@ export class CheckoutComponent implements OnInit {
   loadTables(): void {
     this.isLoadingTables.set(true);
     this.apiService.getTables().subscribe({
-      next: (tables) => {
-        this.tables.set(tables);
+      next: (response) => {
+        const tables = response?.content || response?.data || response || [];
+        const tablesArray = Array.isArray(tables) ? tables : [];
+        this.tables.set(tablesArray);
         
         // Check which tables have active sessions
         const sessionsSet = new Set<string>();
         let completedChecks = 0;
         
-        tables.forEach((table: any) => {
+        tablesArray.forEach((table: any) => {
           this.apiService.getActiveSessionByTable(table.publicId).subscribe({
             next: () => {
               sessionsSet.add(table.publicId);
               completedChecks++;
-              if (completedChecks === tables.length) {
-                this.updateTableStats(sessionsSet, tables);
+              if (completedChecks === tablesArray.length) {
+                this.updateTableStats(sessionsSet, tablesArray);
               }
             },
             error: () => {
               completedChecks++;
-              if (completedChecks === tables.length) {
-                this.updateTableStats(sessionsSet, tables);
+              if (completedChecks === tablesArray.length) {
+                this.updateTableStats(sessionsSet, tablesArray);
               }
             }
           });
         });
         
-        if (tables.length === 0) {
+        if (tablesArray.length === 0) {
           this.isLoadingTables.set(false);
         }
       },
