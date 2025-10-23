@@ -58,37 +58,37 @@ import { ToastService } from '../../../shared/services/toast.service';
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         </div>
 
-        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-3 hover:border-neutral-600 transition">
-            <div class="flex justify-between items-start mb-2">
+        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded border border-neutral-700 p-2 hover:border-neutral-600 transition flex flex-col">
+            <div class="flex justify-between items-start gap-1 mb-1 min-h-0">
               <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-bold text-white truncate">{{ menu.name }}</h3>
-                <p class="text-xs text-neutral-500">{{ menu.menuType }}</p>
+                <h3 class="text-xs font-bold text-white truncate">{{ menu.name }}</h3>
+                <p class="text-xs text-neutral-500 truncate">{{ menu.menuType }}</p>
               </div>
-              <span [class]="menu.active ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'" class="px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0 ml-1">
+              <span [class]="menu.active ? 'text-green-300' : 'text-red-300'" class="text-lg flex-shrink-0" title="{{ menu.active ? 'Actif' : 'Inactif' }}">
                 {{ menu.active ? '●' : '○' }}
               </span>
             </div>
-            <p class="text-xs text-neutral-400 mb-2 line-clamp-2">{{ menu.description }}</p>
-            <div class="text-xs text-neutral-500 mb-2">{{ menu.itemCount || 0 }} articles</div>
-            <div class="flex gap-1">
+            <p class="text-xs text-neutral-400 mb-1 line-clamp-1 flex-shrink">{{ menu.description }}</p>
+            <div class="text-xs text-neutral-500 mb-1.5 flex-shrink">{{ menu.itemCount || 0 }} art.</div>
+            <div class="flex gap-0.5 mt-auto">
               <button 
                 (click)="editMenu(menu)"
                 title="Éditer"
-                class="flex-1 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+                class="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
                 ✏️
               </button>
               <button 
                 (click)="toggleMenuStatus(menu)"
                 title="{{ menu.active ? 'Désactiver' : 'Activer' }}"
                 [class]="menu.active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
-                class="flex-1 px-2 py-1.5 text-white rounded text-xs font-semibold transition-colors">
+                class="p-1.5 text-white rounded text-sm transition-colors">
                 {{ menu.active ? '🔒' : '🔓' }}
               </button>
               <button 
                 (click)="deleteMenu(menu)"
                 title="Supprimer"
-                class="flex-1 px-2 py-1.5 bg-red-900 hover:bg-red-800 text-white rounded text-xs font-semibold transition-colors">
+                class="p-1.5 bg-red-900 hover:bg-red-800 text-white rounded text-sm transition-colors">
                 🗑️
               </button>
             </div>
