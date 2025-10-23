@@ -178,16 +178,7 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setUnitPrice(unitPrice);
             orderItem.setTotalPrice(itemTotal);
-            
-            // Assigner la station de travail du produit
-            if (product != null) {
-                orderItem.setWorkStation(product.getWorkStation());
-            } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
-                orderItem.setWorkStation(menuItem.getProducts().stream().findFirst().get().getWorkStation());
-            } else {
-                // Default to KITCHEN if no product or menuItem available
-                orderItem.setWorkStation(com.follysitou.sellia_backend.enums.WorkStation.KITCHEN);
-            }
+            orderItem.setWorkStation(product.getWorkStation());
 
             items.add(orderItem);
             totalAmount += itemTotal;
@@ -453,6 +444,11 @@ public class OrderService {
             if (!menuItem.getProducts().isEmpty()) {
                 product = menuItem.getProducts().stream().findFirst().orElse(null);
             }
+            
+            // Product is required by database constraint
+            if (product == null) {
+                throw new BusinessException("Le menu item ne contient aucun produit. Veuillez ajouter des produits au menu item avant de créer une commande.");
+            }
 
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -462,8 +458,9 @@ public class OrderService {
                     .unitPrice(unitPrice)
                     .totalPrice(itemTotal)
                     .specialInstructions(itemRequest.getNotes())
-                    .workStation(product != null ? product.getWorkStation() : com.follysitou.sellia_backend.enums.WorkStation.KITCHEN)
+                    .workStation(product.getWorkStation())
                     .status(com.follysitou.sellia_backend.enums.OrderItemStatus.PENDING)
+                    .isPrepared(false)
                     .build();
 
             order.getItems().add(orderItem);

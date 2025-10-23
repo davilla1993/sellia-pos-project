@@ -89,6 +89,9 @@ public class OrderMapper {
                 .specialInstructions(request.getNotes())
                 .unitPrice(0L) // Will be set when MenuItem is attached
                 .totalPrice(0L) // Will be calculated
+                .status(com.follysitou.sellia_backend.enums.OrderItemStatus.PENDING)
+                .workStation(com.follysitou.sellia_backend.enums.WorkStation.KITCHEN)
+                .isPrepared(false)
                 .build();
         // Note: MenuItem and Product will be set in service layer
         return item;
