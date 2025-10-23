@@ -51,9 +51,14 @@ public class MenuItemMapper {
                     ))
                     .collect(Collectors.toList()));
 
-            // Calculate total price
+            // Calculate total price based on priority:
+            // 1. If Bundle Price is set → use Bundle Price
+            // 2. Else if Override Price is set → use Override Price
+            // 3. Else → sum of all product prices
             if (menuItem.getBundlePrice() != null) {
                 response.setCalculatedPrice(menuItem.getBundlePrice());
+            } else if (menuItem.getPriceOverride() != null) {
+                response.setCalculatedPrice(menuItem.getPriceOverride());
             } else {
                 Long totalPrice = menuItem.getProducts().stream()
                         .mapToLong(p -> p.getPrice() != null ? p.getPrice() : 0)
