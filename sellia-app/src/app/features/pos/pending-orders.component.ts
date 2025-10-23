@@ -101,12 +101,9 @@ export class PendingOrdersComponent implements OnInit {
     
     this.apiService.getOrdersByStatus('EN_ATTENTE').subscribe({
       next: (response: any) => {
-        console.log('API Response:', response);
         const data = response?.content || response?.data || response || [];
-        console.log('Extracted data:', data);
         const ordersArray = Array.isArray(data) ? data : [];
         this.orders.set(ordersArray);
-        console.log(`Loaded ${ordersArray.length} orders`);
         this.isLoading.set(false);
       },
       error: (err) => {
