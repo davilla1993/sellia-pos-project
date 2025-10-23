@@ -413,15 +413,14 @@ public class OrderService {
         Order order = orderRepository.findByPublicId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Vérifier que la commande est EN_ATTENTE (pas encore en préparation)
-        if (order.getStatus() != OrderStatus.EN_ATTENTE) {
-            throw new BusinessException(
-                    "Cannot add items to order in " + order.getStatus() + " status. " +
-                    "Only EN_ATTENTE orders can be modified. Create a new order instead.");
+        // Règle métier: Le caissier peut ajouter des items tant que le client n'a pas payé
+        // Peu importe le statut de la commande (EN_ATTENTE, EN_PREPARATION, PRETE, LIVREE)
+        if (order.getIsPaid()) {
+            throw new BusinessException("Impossible d'ajouter des produits à une commande déjà payée");
         }
 
-        if (order.getIsPaid()) {
-            throw new BusinessException("Cannot add items to a paid order");
+        if (order.getStatus() == OrderStatus.ANNULEE) {
+            throw new BusinessException("Impossible d'ajouter des produits à une commande annulée");
         }
 
         // Ajouter les nouveaux items
