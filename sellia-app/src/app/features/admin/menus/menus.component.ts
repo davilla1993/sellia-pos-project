@@ -235,9 +235,42 @@ import { ToastService } from '../../../shared/services/toast.service';
               </select>
             </div>
 
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Ordre d'affichage</label>
+                <input formControlName="displayOrder" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix Override (FCFA)</label>
+                <input formControlName="priceOverride" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Optionnel">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix Bundle (FCFA)</label>
+                <input formControlName="bundlePrice" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Optionnel">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Disponibilité</label>
+                <div class="flex items-center gap-2 h-10 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded">
+                  <input type="checkbox" formControlName="available" class="w-4 h-4 rounded cursor-pointer">
+                  <span class="text-white text-sm">{{ itemForm.get('available')?.value ? 'Disponible' : 'Indisponible' }}</span>
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Ordre d'affichage</label>
-              <input formControlName="displayOrder" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Article Spécial?</label>
+              <div class="flex items-center gap-2 h-10 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded">
+                <input type="checkbox" formControlName="isSpecial" class="w-4 h-4 rounded cursor-pointer">
+                <span class="text-white text-sm">{{ itemForm.get('isSpecial')?.value ? 'Oui' : 'Non' }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="itemForm.get('isSpecial')?.value">
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Description Spéciale</label>
+              <textarea formControlName="specialDescription" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white h-16 resize-none" placeholder="Ex: Offre limitée, en promotion..."></textarea>
             </div>
 
             <div class="flex gap-2">
@@ -295,7 +328,12 @@ export class MenusComponent implements OnInit {
 
     this.itemForm = this.fb.group({
       productId: ['', Validators.required],
-      displayOrder: [0, Validators.required]
+      displayOrder: [0, Validators.required],
+      priceOverride: [''],
+      bundlePrice: [''],
+      available: [true],
+      isSpecial: [false],
+      specialDescription: ['']
     });
   }
 
@@ -498,9 +536,15 @@ export class MenusComponent implements OnInit {
 
   editMenuItem(item: any): void {
     this.editingMenuItem = item;
+    const product = item.products && item.products.length > 0 ? item.products[0] : null;
     this.itemForm.patchValue({
-      productId: item.productPublicId || item.productId,
-      displayOrder: item.displayOrder
+      productId: product?.publicId || '',
+      displayOrder: item.displayOrder || 0,
+      priceOverride: item.priceOverride || '',
+      bundlePrice: item.bundlePrice || '',
+      available: item.available !== false,
+      isSpecial: item.isSpecial || false,
+      specialDescription: item.specialDescription || ''
     });
     this.showItemModal = true;
   }
@@ -517,13 +561,18 @@ export class MenusComponent implements OnInit {
     if (!this.itemForm.valid) return;
 
     this.isSaving.set(true);
-    const productId = this.itemForm.value.productId;
-    const displayOrder = this.itemForm.value.displayOrder;
+    const formValue = this.itemForm.value;
+    const productId = formValue.productId;
 
     if (this.editingMenuItem) {
       const updateRequest = {
         productPublicId: productId,
-        displayOrder: displayOrder
+        displayOrder: formValue.displayOrder || 0,
+        priceOverride: formValue.priceOverride ? parseInt(formValue.priceOverride) : null,
+        bundlePrice: formValue.bundlePrice ? parseInt(formValue.bundlePrice) : null,
+        available: formValue.available !== false,
+        isSpecial: formValue.isSpecial || false,
+        specialDescription: formValue.specialDescription || ''
       };
       this.apiService.updateMenuItem(this.editingMenuItem.publicId, updateRequest).subscribe({
         next: () => {
@@ -542,7 +591,12 @@ export class MenusComponent implements OnInit {
       const createRequest = {
         menuId: this.selectedMenuForItems,
         productIds: [productId],
-        displayOrder: displayOrder
+        displayOrder: formValue.displayOrder || 0,
+        priceOverride: formValue.priceOverride ? parseInt(formValue.priceOverride) : null,
+        bundlePrice: formValue.bundlePrice ? parseInt(formValue.bundlePrice) : null,
+        available: formValue.available !== false,
+        isSpecial: formValue.isSpecial || false,
+        specialDescription: formValue.specialDescription || ''
       };
       this.apiService.createMenuItem(createRequest).subscribe({
         next: () => {
