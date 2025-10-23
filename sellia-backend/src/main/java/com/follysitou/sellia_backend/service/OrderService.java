@@ -169,7 +169,7 @@ public class OrderService {
             
             // Product is required by database constraint
             if (product == null) {
-                throw new BusinessException("No product found for order item. Menu must contain at least one product.");
+                throw new BusinessException("Le menu que vous avez choisi ne contient aucun produit. Veuillez ajouter des produits au menu avant de créer une commande.");
             }
 
             OrderItem orderItem = orderMapper.toItemEntity(itemRequest);
