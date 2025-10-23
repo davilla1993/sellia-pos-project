@@ -28,9 +28,6 @@ public class FileService {
     @Value("${app.receipts-dir:./uploads/receipts}")
     private String receiptsDir;
 
-    @Value("${app.server-url:http://localhost:8080}")
-    private String serverUrl;
-
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"};
 
@@ -48,7 +45,7 @@ public class FileService {
             Files.createDirectories(uploadPath);
             Files.write(uploadPath.resolve(fileName), file.getBytes());
             log.info("Product image uploaded successfully: {}", fileName);
-            return serverUrl + "/api/files/products/" + fileName;
+            return fileName;
         } catch (IOException e) {
             log.error("Failed to upload product image", e);
             throw new BusinessException("Failed to upload image. Please try again later.");

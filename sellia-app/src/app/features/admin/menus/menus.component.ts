@@ -393,15 +393,10 @@ export class MenusComponent implements OnInit {
     this.isLoading.set(true);
     this.apiService.getAllMenus(0, 100).subscribe({
       next: (data) => {
-        console.log('Menus du backend:', data);
-        data.forEach((menu: any) => {
-          console.log(`Menu: ${menu.name}, imageUrl: ${menu.imageUrl}`);
-        });
         this.menus.set(data);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Erreur chargement menus:', err);
         this.error.set('Erreur lors du chargement des menus');
         this.isLoading.set(false);
       }

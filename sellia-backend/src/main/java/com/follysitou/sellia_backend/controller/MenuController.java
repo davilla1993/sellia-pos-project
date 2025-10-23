@@ -8,23 +8,35 @@ import com.follysitou.sellia_backend.enums.MenuType;
 import com.follysitou.sellia_backend.service.MenuService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/menus")
 @RequiredArgsConstructor
 public class MenuController {
 
     private final MenuService menuService;
+
+    @Value("${app.products-images-dir:./uploads/products}")
+    private String productsImagesDir;
 
     @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
@@ -59,6 +71,30 @@ public class MenuController {
         
         MenuResponse response = menuService.createMenu(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<Resource> getMenuImage(@PathVariable String filename) throws IOException {
+        try {
+            java.nio.file.Path filePath = Paths.get(productsImagesDir).resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                log.warn("Menu image not found: {}", filePath);
+                return ResponseEntity.notFound().build();
+            }
+            String contentType = java.nio.file.Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            log.info("Serving menu image: {}", filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            log.error("Error serving menu image: {}", filename, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/{publicId}")

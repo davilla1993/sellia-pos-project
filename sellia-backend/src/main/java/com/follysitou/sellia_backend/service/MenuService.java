@@ -45,9 +45,9 @@ public class MenuService {
 
         // Upload image if provided
         if (request.getImage() != null && !request.getImage().isEmpty()) {
-            String imageUrl = fileService.uploadProductImage(request.getImage());
-            menu.setImageUrl(imageUrl);
-            log.info("Menu image uploaded: {}", imageUrl);
+            String fileName = fileService.uploadProductImage(request.getImage());
+            menu.setImageUrl("/api/menus/images/" + fileName);
+            log.info("Menu image uploaded: /api/menus/images/{}", fileName);
         }
 
         Menu saved = menuRepository.save(menu);
