@@ -35,9 +35,12 @@ spring:
 # Server Configuration
 server:
   port: 8080
+  servlet:
+    context-path: /
 
 # Application Configuration
 app:
+  server-url: http://localhost:8080
   jwt:
     secret: SevvwQ3vogESlsvgFTgBoXqfnbVeSsJiC917Mi7ZprAloOegCz5NNEuWwktK4qqoT0DDAPzsvtEBm0XLmUBNIQ==
     access-token-expiration: 3600000  # 1 hour in milliseconds
