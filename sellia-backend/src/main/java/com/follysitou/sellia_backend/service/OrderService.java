@@ -153,7 +153,7 @@ public class OrderService {
             if (itemRequest.getProductPublicId() != null && !itemRequest.getProductPublicId().isBlank()) {
                 product = productRepository.findByPublicId(itemRequest.getProductPublicId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
-            } else if (!menuItem.getProducts().isEmpty()) {
+            } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
                 product = menuItem.getProducts().stream().findFirst().orElse(null);
             }
 
@@ -167,8 +167,11 @@ public class OrderService {
             // Assigner la station de travail du produit
             if (product != null) {
                 orderItem.setWorkStation(product.getWorkStation());
-            } else if (!menuItem.getProducts().isEmpty()) {
+            } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
                 orderItem.setWorkStation(menuItem.getProducts().stream().findFirst().get().getWorkStation());
+            } else {
+                // Default to KITCHEN if no product or menuItem available
+                orderItem.setWorkStation(com.follysitou.sellia_backend.enums.WorkStation.KITCHEN);
             }
 
             items.add(orderItem);
