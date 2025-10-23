@@ -611,6 +611,15 @@ export class ApiService {
   }
 
   // Menu Items
+  getAvailableMenuItems(page: number = 0, size: number = 100): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/menu-items/available`, { params }).pipe(
+      map(response => this.extractArray(response))
+    );
+  }
+
   getMenuItemsByMenu(menuId: string, page: number = 0, size: number = 20): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())

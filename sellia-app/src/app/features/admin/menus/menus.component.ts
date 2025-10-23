@@ -74,6 +74,11 @@ import { ToastService } from '../../../shared/services/toast.service';
                 class="flex-1 px-2 py-2 text-white rounded text-xs font-semibold transition-colors">
                 {{ menu.active ? '🔒 Désactiver' : '🔓 Activer' }}
               </button>
+              <button 
+                (click)="deleteMenu(menu)"
+                class="flex-1 px-2 py-2 bg-red-900 hover:bg-red-800 text-white rounded text-xs font-semibold transition-colors">
+                🗑️ Supprimer
+              </button>
             </div>
           </div>
         </div>
@@ -384,6 +389,21 @@ export class MenusComponent implements OnInit {
         error: () => this.error.set('Erreur')
       });
     }
+  }
+
+  deleteMenu(menu: any): void {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer le menu "${menu.name}" ?`)) return;
+    
+    this.apiService.deleteMenu(menu.publicId).subscribe({
+      next: () => {
+        this.toast.success('Menu supprimé');
+        this.loadMenus();
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || 'Erreur lors de la suppression';
+        this.error.set(errorMsg);
+      }
+    });
   }
 
   openCreateItemModal(): void {

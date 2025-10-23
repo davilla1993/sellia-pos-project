@@ -230,12 +230,10 @@ export class OrderEntryComponent implements OnInit {
   // Products and Menus
   isLoadingProducts = signal(false);
   allProducts = signal<any[]>([]);
-  allMenus = signal<any[]>([]);
   filteredProducts = signal<any[]>([]);
   categories = signal<any[]>([]);
   selectedCategory = signal<any>('');
   searchTerm = signal<string>('');
-  showMenusTab = signal(false);
 
   // Cart
   cartItems = signal<any[]>([]);
@@ -265,39 +263,42 @@ export class OrderEntryComponent implements OnInit {
   }
 
   /**
-   * Charge MENUS ET PRODUITS pour l'affichage POS
-   * Utilise une nouvelle fonction dédiée pour ne pas impacter loadProducts() existant
+   * Charge MENUS ET PRODUITS via les MenuItems disponibles
+   * Les MenuItems contiennent les produits et ont un prix calculé
    */
   loadMenusAndProducts(): void {
     this.isLoadingProducts.set(true);
 
-    // Charger les menus
-    this.apiService.getAllMenus(0, 100).subscribe({
-      next: (menus) => {
-        console.log('Menus chargés:', menus);
-        const menuList = Array.isArray(menus) ? menus : [];
-        this.allMenus.set(menuList);
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des menus:', err);
-      }
-    });
-
-    // Charger les produits
-    this.apiService.getProducts().subscribe({
-      next: (products) => {
-        console.log('Produits chargés:', products);
-        const productList = Array.isArray(products) ? products : [];
-        this.allProducts.set(productList);
-        this.filteredProducts.set(productList);
+    // Charger les MenuItems disponibles (qui contiennent les produits vendables)
+    this.apiService.getAvailableMenuItems(0, 100).subscribe({
+      next: (menuItems) => {
+        console.log('MenuItems chargés:', menuItems);
+        const itemList = Array.isArray(menuItems) ? menuItems : [];
+        
+        // Convertir les MenuItems en format compatible avec la liste de produits
+        const itemsAsProducts = itemList.map((item: any) => ({
+          publicId: item.publicId,
+          name: item.products?.[0]?.name || 'Menu Item',
+          description: item.specialDescription || 'Article du menu',
+          price: item.calculatedPrice || 0,
+          imageUrl: item.products?.[0]?.imageUrl,
+          categoryId: item.products?.[0]?.categoryId || 'MENU_ITEMS',
+          isMenuItem: true,
+          menuItemPublicId: item.publicId,
+          products: item.products || []
+        }));
+        
+        this.allProducts.set(itemsAsProducts);
+        this.filteredProducts.set(itemsAsProducts);
         this.isLoadingProducts.set(false);
-        if (productList.length === 0 && this.allMenus().length === 0) {
-          this.toast.warning('Aucun produit ou menu disponible');
+        
+        if (itemList.length === 0) {
+          this.toast.warning('Aucun article disponible');
         }
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des produits:', err);
-        this.toast.error('Impossible de charger les produits');
+        console.error('Erreur lors du chargement des articles:', err);
+        this.toast.error('Impossible de charger les articles');
         this.isLoadingProducts.set(false);
       }
     });
@@ -397,22 +398,25 @@ export class OrderEntryComponent implements OnInit {
       });
     }
     
-    console.log('Produits groupés:', result);
     return result;
   }
 
   addProductToCart(product: any): void {
     const cart = [...this.cartItems()];
-    const existingItem = cart.find(item => item.productId === product.publicId);
+    const existingItem = cart.find(item => item.itemId === product.publicId);
 
     if (existingItem) {
       existingItem.quantity++;
     } else {
       cart.push({
-        productId: product.publicId,
+        itemId: product.publicId,
+        menuItemPublicId: product.isMenu ? undefined : product.publicId,
         name: product.name,
-        price: product.price,
-        quantity: 1
+        price: product.isMenu ? (product.menuItems?.[0]?.price || 0) : product.price,
+        quantity: 1,
+        isMenu: product.isMenu || false,
+        menuItems: product.menuItems || [],
+        isProduct: !product.isMenu
       });
     }
 
@@ -420,8 +424,8 @@ export class OrderEntryComponent implements OnInit {
     this.toast.info(`${product.name} ajouté au panier`, 2000);
   }
 
-  removeFromCart(productId: string): void {
-    const cart = this.cartItems().filter(item => item.productId !== productId);
+  removeFromCart(itemId: string): void {
+    const cart = this.cartItems().filter(item => item.itemId !== itemId);
     this.cartItems.set(cart);
   }
 
@@ -468,7 +472,7 @@ export class OrderEntryComponent implements OnInit {
           customerSessionPublicId: session.publicId,
           orderType: this.orderType,
           items: this.cartItems().map(item => ({
-            productPublicId: item.productId,
+            menuItemPublicId: item.menuItemPublicId || item.itemId,
             quantity: item.quantity
           }))
         };
