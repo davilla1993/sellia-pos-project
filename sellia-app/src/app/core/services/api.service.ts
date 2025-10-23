@@ -89,7 +89,11 @@ export class ApiService {
     // Extract filename from path
     const filename = imageUrl.includes('/') ? imageUrl.split('/').pop() : imageUrl;
     
-    // Use the API endpoint instead of direct file path
+    // Check if it's a menu or product image based on the path
+    if (imageUrl.includes('/menus/')) {
+      return `${this.apiUrl}/menus/images/${filename}`;
+    }
+    // Default to products
     return `${this.apiUrl}/products/images/${filename}`;
   }
 

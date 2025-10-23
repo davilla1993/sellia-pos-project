@@ -62,11 +62,11 @@ import { ToastService } from '../../../shared/services/toast.service';
           <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded border border-neutral-700 p-2 hover:border-neutral-600 transition flex flex-col">
             <div class="w-full h-20 rounded bg-neutral-700 mb-1 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img 
-                *ngIf="menu.imageUrl" 
-                [src]="menu.imageUrl" 
+                *ngIf="getImageUrl(menu)" 
+                [src]="getImageUrl(menu)" 
                 alt="{{ menu.name }}"
                 class="w-full h-full object-cover">
-              <span *ngIf="!menu.imageUrl" class="text-neutral-400">📷</span>
+              <span *ngIf="!getImageUrl(menu)" class="text-neutral-400">📷</span>
             </div>
             <div class="flex justify-between items-start gap-1 mb-1 min-h-0">
               <div class="flex-1 min-w-0">
@@ -343,6 +343,7 @@ export class MenusComponent implements OnInit {
   error = signal<string | null>(null);
   imageFile = signal<File | null>(null);
   imagePreview = signal<string | null>(null);
+  imageUrls = signal<{ [key: string]: string }>({});
   activeTab = signal<'menus' | 'items'>('menus');
   
   showMenuModal = false;
@@ -394,6 +395,7 @@ export class MenusComponent implements OnInit {
     this.apiService.getAllMenus(0, 100).subscribe({
       next: (data) => {
         this.menus.set(data);
+        this.loadMenuImages(data);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -401,6 +403,27 @@ export class MenusComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  loadMenuImages(menus: any[]): void {
+    const urls: { [key: string]: string } = {};
+    menus.forEach(menu => {
+      if (menu.imageUrl) {
+        this.apiService.getImageAsDataUrl(menu.imageUrl).subscribe({
+          next: (url) => {
+            urls[menu.publicId] = url;
+            this.imageUrls.set({ ...this.imageUrls(), ...urls });
+          },
+          error: () => {
+            // Image loading error - will show placeholder
+          }
+        });
+      }
+    });
+  }
+
+  getImageUrl(menu: any): string {
+    return this.imageUrls()[menu.publicId] || '';
   }
 
   loadProducts(): void {
