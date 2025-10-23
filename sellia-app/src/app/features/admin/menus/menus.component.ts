@@ -126,7 +126,6 @@ import { ToastService } from '../../../shared/services/toast.service';
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Produit(s)</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Override</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Prix Calculé</th>
-                <th class="px-4 py-3 text-left text-sm font-semibold text-white">Bundle</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Ordre</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Dispo</th>
                 <th class="px-4 py-3 text-left text-sm font-semibold text-white">Actions</th>
@@ -145,9 +144,6 @@ import { ToastService } from '../../../shared/services/toast.service';
                 </td>
                 <td class="px-4 py-3 text-orange-400 font-semibold">
                   {{ item.calculatedPrice ? item.calculatedPrice : '-' }} FCFA
-                </td>
-                <td class="px-4 py-3 text-neutral-400">
-                  {{ item.bundlePrice ? item.bundlePrice : '-' }} FCFA
                 </td>
                 <td class="px-4 py-3 text-neutral-400">{{ item.displayOrder }}</td>
                 <td class="px-4 py-3">
@@ -250,17 +246,11 @@ import { ToastService } from '../../../shared/services/toast.service';
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix Bundle (FCFA)</label>
-                <input formControlName="bundlePrice" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Optionnel">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-neutral-300 mb-2">Disponibilité</label>
-                <div class="flex items-center gap-2 h-10 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded">
-                  <input type="checkbox" formControlName="available" class="w-4 h-4 rounded cursor-pointer">
-                  <span class="text-white text-sm">{{ itemForm.get('available')?.value ? 'Disponible' : 'Indisponible' }}</span>
-                </div>
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Disponibilité</label>
+              <div class="flex items-center gap-2 h-10 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded">
+                <input type="checkbox" formControlName="available" class="w-4 h-4 rounded cursor-pointer">
+                <span class="text-white text-sm">{{ itemForm.get('available')?.value ? 'Disponible' : 'Indisponible' }}</span>
               </div>
             </div>
 
@@ -334,7 +324,6 @@ export class MenusComponent implements OnInit {
       productId: ['', Validators.required],
       displayOrder: [0, Validators.required],
       priceOverride: [''],
-      bundlePrice: [''],
       available: [true],
       isSpecial: [false],
       specialDescription: ['']
@@ -545,7 +534,6 @@ export class MenusComponent implements OnInit {
       productId: product?.publicId || '',
       displayOrder: item.displayOrder || 0,
       priceOverride: item.priceOverride || '',
-      bundlePrice: item.bundlePrice || '',
       available: item.available !== false,
       isSpecial: item.isSpecial || false,
       specialDescription: item.specialDescription || ''
@@ -573,7 +561,6 @@ export class MenusComponent implements OnInit {
         productPublicId: productId,
         displayOrder: formValue.displayOrder || 0,
         priceOverride: formValue.priceOverride ? parseInt(formValue.priceOverride) : null,
-        bundlePrice: formValue.bundlePrice ? parseInt(formValue.bundlePrice) : null,
         available: formValue.available !== false,
         isSpecial: formValue.isSpecial || false,
         specialDescription: formValue.specialDescription || ''
@@ -597,7 +584,6 @@ export class MenusComponent implements OnInit {
         productIds: [productId],
         displayOrder: formValue.displayOrder || 0,
         priceOverride: formValue.priceOverride ? parseInt(formValue.priceOverride) : null,
-        bundlePrice: formValue.bundlePrice ? parseInt(formValue.bundlePrice) : null,
         available: formValue.available !== false,
         isSpecial: formValue.isSpecial || false,
         specialDescription: formValue.specialDescription || ''

@@ -21,7 +21,6 @@ public class MenuItemMapper {
                 .products(products)
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
                 .priceOverride(request.getPriceOverride())
-                .bundlePrice(request.getBundlePrice())
                 .available(request.getAvailable() != null ? request.getAvailable() : true)
                 .isSpecial(request.getIsSpecial() != null ? request.getIsSpecial() : false)
                 .specialDescription(request.getSpecialDescription())
@@ -34,7 +33,6 @@ public class MenuItemMapper {
         response.setMenuId(menuItem.getMenu().getPublicId());
         response.setDisplayOrder(menuItem.getDisplayOrder());
         response.setPriceOverride(menuItem.getPriceOverride());
-        response.setBundlePrice(menuItem.getBundlePrice());
         response.setAvailable(menuItem.getAvailable());
         response.setIsSpecial(menuItem.getIsSpecial());
         response.setSpecialDescription(menuItem.getSpecialDescription());
@@ -51,13 +49,8 @@ public class MenuItemMapper {
                     ))
                     .collect(Collectors.toList()));
 
-            // Calculate total price based on priority:
-            // 1. If Bundle Price is set → use Bundle Price
-            // 2. Else if Override Price is set → use Override Price
-            // 3. Else → sum of all product prices
-            if (menuItem.getBundlePrice() != null) {
-                response.setCalculatedPrice(menuItem.getBundlePrice());
-            } else if (menuItem.getPriceOverride() != null) {
+            // Calculate price: use Override if set, otherwise sum of product prices
+            if (menuItem.getPriceOverride() != null) {
                 response.setCalculatedPrice(menuItem.getPriceOverride());
             } else {
                 Long totalPrice = menuItem.getProducts().stream()
@@ -79,9 +72,6 @@ public class MenuItemMapper {
         }
         if (request.getPriceOverride() != null) {
             menuItem.setPriceOverride(request.getPriceOverride());
-        }
-        if (request.getBundlePrice() != null) {
-            menuItem.setBundlePrice(request.getBundlePrice());
         }
         if (request.getAvailable() != null) {
             menuItem.setAvailable(request.getAvailable());

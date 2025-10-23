@@ -17,9 +17,6 @@ public class MenuItemUpdateRequest {
     @Min(value = 0L, message = "Price override cannot be negative")
     private Long priceOverride;
 
-    @Min(value = 0L, message = "Bundle price cannot be negative")
-    private Long bundlePrice;
-
     private Boolean available;
 
     private Boolean isSpecial;

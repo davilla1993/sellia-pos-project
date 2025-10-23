@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.dto.request;
 
 import com.follysitou.sellia_backend.enums.MenuType;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,9 @@ public class MenuCreateRequest {
 
     @NotNull(message = "Menu type is required")
     private MenuType menuType;
+
+    @Min(value = 0L, message = "Bundle price cannot be negative")
+    private Long bundlePrice;
 
     private Boolean active = true;
 
