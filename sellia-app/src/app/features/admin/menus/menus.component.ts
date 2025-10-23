@@ -181,12 +181,18 @@ import { ToastService } from '../../../shared/services/toast.service';
               <textarea formControlName="description" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Description..."></textarea>
             </div>
 
-            <div>
-              <label class="block text-sm font-semibold text-neutral-300 mb-2">Type</label>
-              <select formControlName="menuType" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
-                <option value="">-- Sélectionner --</option>
-                <option *ngFor="let type of menuTypes()" [value]="type">{{ type }}</option>
-              </select>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Type</label>
+                <select formControlName="menuType" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white">
+                  <option value="">-- Sélectionner --</option>
+                  <option *ngFor="let type of menuTypes()" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Prix Bundle (FCFA)</label>
+                <input formControlName="bundlePrice" type="number" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white" placeholder="Optionnel">
+              </div>
             </div>
 
             <div class="flex gap-2">
@@ -317,7 +323,8 @@ export class MenusComponent implements OnInit {
     this.menuForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
-      menuType: ['', Validators.required]
+      menuType: ['', Validators.required],
+      bundlePrice: ['']
     });
 
     this.itemForm = this.fb.group({
@@ -416,7 +423,8 @@ export class MenusComponent implements OnInit {
     this.menuForm.patchValue({
       name: menu.name,
       description: menu.description,
-      menuType: menu.menuType
+      menuType: menu.menuType,
+      bundlePrice: menu.bundlePrice || ''
     });
     this.showMenuModal = true;
   }
@@ -449,6 +457,7 @@ export class MenusComponent implements OnInit {
       formData.append('name', request.name);
       formData.append('description', request.description || '');
       formData.append('menuType', request.menuType);
+      formData.append('bundlePrice', request.bundlePrice ? request.bundlePrice.toString() : '');
       formData.append('active', 'true');
 
       this.apiService.createMenu(formData).subscribe({
