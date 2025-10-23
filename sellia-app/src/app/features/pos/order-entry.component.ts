@@ -436,10 +436,17 @@ export class OrderEntryComponent implements OnInit {
         const orderRequest: any = {
           customerSessionPublicId: session.publicId,
           orderType: this.orderType,
-          items: this.cartItems().map(item => ({
-            menuItemPublicId: item.menuPublicId || item.itemId,
-            quantity: item.quantity
-          }))
+          items: this.cartItems().map(item => {
+            const orderItem: any = {
+              quantity: item.quantity
+            };
+            if (item.isMenu && item.menuPublicId) {
+              orderItem.menuPublicId = item.menuPublicId;
+            } else {
+              orderItem.menuItemPublicId = item.itemId;
+            }
+            return orderItem;
+          })
         };
 
         if (this.orderType === 'TABLE') {
