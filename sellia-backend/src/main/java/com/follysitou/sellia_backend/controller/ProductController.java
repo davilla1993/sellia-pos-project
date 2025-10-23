@@ -152,6 +152,20 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{publicId}/activate")
+    public ResponseEntity<Void> activateProduct(@PathVariable String publicId) {
+        productService.activateProduct(publicId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{publicId}/deactivate")
+    public ResponseEntity<Void> deactivateProduct(@PathVariable String publicId) {
+        productService.deactivateProduct(publicId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/work-stations/all")
     public ResponseEntity<List<WorkStationDto>> getWorkStations() {
         List<WorkStationDto> stations = List.of(WorkStation.values()).stream()

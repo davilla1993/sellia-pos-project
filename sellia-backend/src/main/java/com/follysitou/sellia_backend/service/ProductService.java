@@ -172,6 +172,24 @@ public class ProductService {
     }
 
     @Transactional
+    public void activateProduct(String publicId) {
+        Product product = productRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "publicId", publicId));
+        product.setAvailable(true);
+        productRepository.save(product);
+        log.info("Product activated: {}", publicId);
+    }
+
+    @Transactional
+    public void deactivateProduct(String publicId) {
+        Product product = productRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "publicId", publicId));
+        product.setAvailable(false);
+        productRepository.save(product);
+        log.info("Product deactivated: {}", publicId);
+    }
+
+    @Transactional
     public void deleteProduct(String publicId) {
         Product product = productRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "publicId", publicId));

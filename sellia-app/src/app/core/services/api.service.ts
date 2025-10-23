@@ -250,6 +250,11 @@ export class ApiService {
     return this.http.delete<any>(`${this.apiUrl}/products/${publicId}`);
   }
 
+  toggleProductAvailability(publicId: string, available: boolean): Observable<any> {
+    const endpoint = available ? 'activate' : 'deactivate';
+    return this.http.post<any>(`${this.apiUrl}/products/${publicId}/${endpoint}`, {});
+  }
+
   getWorkStations(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/products/work-stations/all`);
   }

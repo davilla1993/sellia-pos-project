@@ -47,6 +47,7 @@ import { ApiService } from '../../../core/services/api.service';
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Image</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Nom</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Prix</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-white">Disponibilité</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Stock</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-white">Actions</th>
             </tr>
@@ -78,6 +79,16 @@ import { ApiService } from '../../../core/services/api.service';
               <!-- Prix -->
               <td class="px-6 py-4">
                 <span class="text-lg font-bold text-primary">{{ product.price }} FCFA</span>
+              </td>
+
+              <!-- Disponibilité -->
+              <td class="px-6 py-4">
+                <button 
+                  (click)="toggleAvailability(product)"
+                  [class]="product.available ? 'bg-green-900/30 text-green-300 hover:bg-green-900/50' : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'"
+                  class="px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer">
+                  {{ product.available ? '✓ Disponible' : '✕ Indisponible' }}
+                </button>
               </td>
 
               <!-- Stock -->
@@ -193,6 +204,17 @@ export class ProductsListComponent implements OnInit {
         error: () => this.error.set('Erreur lors de la suppression')
       });
     }
+  }
+
+  toggleAvailability(product: any): void {
+    const newStatus = !product.available;
+    this.apiService.toggleProductAvailability(product.publicId, newStatus).subscribe({
+      next: () => {
+        product.available = newStatus;
+        this.error.set(null);
+      },
+      error: () => this.error.set('Erreur lors du changement de disponibilité')
+    });
   }
 
   totalPages(): number {
