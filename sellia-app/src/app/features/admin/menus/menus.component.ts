@@ -500,13 +500,15 @@ export class MenusComponent implements OnInit {
     if (!this.itemForm.valid) return;
 
     this.isSaving.set(true);
-    const request = {
-      productPublicId: this.itemForm.value.productId,
-      displayOrder: this.itemForm.value.displayOrder
-    };
+    const productId = this.itemForm.value.productId;
+    const displayOrder = this.itemForm.value.displayOrder;
 
     if (this.editingMenuItem) {
-      this.apiService.updateMenuItem(this.editingMenuItem.publicId, request).subscribe({
+      const updateRequest = {
+        productPublicId: productId,
+        displayOrder: displayOrder
+      };
+      this.apiService.updateMenuItem(this.editingMenuItem.publicId, updateRequest).subscribe({
         next: () => {
           this.toast.success('Article mis à jour');
           this.closeItemModal();
@@ -521,8 +523,9 @@ export class MenusComponent implements OnInit {
       });
     } else {
       const createRequest = {
-        ...request,
-        menuId: this.selectedMenuForItems
+        menuId: this.selectedMenuForItems,
+        productIds: [productId],
+        displayOrder: displayOrder
       };
       this.apiService.createMenuItem(createRequest).subscribe({
         next: () => {
