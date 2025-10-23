@@ -8,7 +8,11 @@ import com.follysitou.sellia_backend.exception.ConflictException;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.MenuMapper;
 import com.follysitou.sellia_backend.model.Menu;
+import com.follysitou.sellia_backend.model.MenuItem;
+import com.follysitou.sellia_backend.model.Product;
 import com.follysitou.sellia_backend.repository.MenuRepository;
+import com.follysitou.sellia_backend.repository.MenuItemRepository;
+import com.follysitou.sellia_backend.repository.ProductRepository;
 import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,8 @@ import java.util.stream.Collectors;
 public class MenuService {
 
     private final MenuRepository menuRepository;
+    private final MenuItemRepository menuItemRepository;
+    private final ProductRepository productRepository;
     private final MenuMapper menuMapper;
     private final FileService fileService;
 
@@ -123,5 +129,59 @@ public class MenuService {
                 .orElseThrow(() -> new ResourceNotFoundException("Menu", "publicId", publicId));
         menu.setActive(false);
         menuRepository.save(menu);
+    }
+
+    /**
+     * Génère automatiquement des MenuItems individuels pour chaque Produit disponible.
+     * Crée ou récupère un Menu "Produits Individuels" et y ajoute un MenuItem par produit.
+     * 
+     * @return nombre de MenuItems créés
+     */
+    @Transactional
+    public int generateIndividualProductMenuItems() {
+        // Créer ou récupérer le menu "Produits Individuels"
+        Menu individualsMenu = menuRepository.findByNameAndDeletedFalse("Produits Individuels")
+                .orElseGet(() -> {
+                    Menu newMenu = Menu.builder()
+                            .name("Produits Individuels")
+                            .description("Produits disponibles à l'unité")
+                            .menuType(MenuType.STANDARD)
+                            .active(true)
+                            .build();
+                    Menu saved = menuRepository.save(newMenu);
+                    log.info("Menu 'Produits Individuels' créé: {}", saved.getPublicId());
+                    return saved;
+                });
+
+        // Récupérer tous les produits disponibles
+        List<Product> availableProducts = productRepository.findAll().stream()
+                .filter(p -> p.getAvailable() && !p.getDeleted())
+                .collect(Collectors.toList());
+
+        int createdCount = 0;
+
+        // Pour chaque produit, créer un MenuItem s'il n'existe pas déjà
+        for (Product product : availableProducts) {
+            // Vérifier si un MenuItem existe déjà pour ce produit dans ce menu
+            boolean menuItemExists = menuItemRepository.findAll().stream()
+                    .anyMatch(mi -> mi.getMenu().getId().equals(individualsMenu.getId())
+                            && mi.getProducts().stream().anyMatch(p -> p.getId().equals(product.getId()))
+                            && !mi.getDeleted());
+
+            if (!menuItemExists) {
+                MenuItem menuItem = MenuItem.builder()
+                        .menu(individualsMenu)
+                        .products(new java.util.HashSet<>(java.util.List.of(product)))
+                        .displayOrder(createdCount)
+                        .available(true)
+                        .build();
+                menuItemRepository.save(menuItem);
+                createdCount++;
+                log.info("MenuItem créé pour produit: {} ({})", product.getName(), product.getPublicId());
+            }
+        }
+
+        log.info("Génération des MenuItems individuels terminée: {} créés", createdCount);
+        return createdCount;
     }
 }

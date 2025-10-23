@@ -37,4 +37,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m FROM Menu m WHERE m.deleted = false AND m.active = :active AND m.menuType = :menuType")
     List<Menu> findByMenuTypeAndActive(@Param("menuType") MenuType menuType, @Param("active") Boolean active);
+
+    @Query("SELECT m FROM Menu m WHERE m.name = :name AND m.deleted = false")
+    Optional<Menu> findByNameAndDeletedFalse(@Param("name") String name);
 }

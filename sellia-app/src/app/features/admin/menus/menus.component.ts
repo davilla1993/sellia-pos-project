@@ -16,9 +16,18 @@ import { ToastService } from '../../../shared/services/toast.service';
           <h1 class="text-3xl font-bold text-white mb-2">Gestion des Menus</h1>
           <p class="text-neutral-400">Créez et gérez vos menus</p>
         </div>
-        <button (click)="openCreateMenuModal()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
-          + Nouveau Menu
-        </button>
+        <div class="flex gap-2">
+          <button 
+            (click)="generateIndividualProducts()" 
+            [disabled]="isGenerating()"
+            title="Génère automatiquement un MenuItem pour chaque produit"
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
+            ✨ {{ isGenerating() ? 'Génération...' : 'Produits Individuels' }}
+          </button>
+          <button (click)="openCreateMenuModal()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+            + Nouveau Menu
+          </button>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -224,6 +233,7 @@ export class MenusComponent implements OnInit {
   availableProducts = signal<any[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
+  isGenerating = signal(false);
   error = signal<string | null>(null);
   activeTab = signal<'menus' | 'items'>('menus');
   
@@ -402,6 +412,25 @@ export class MenusComponent implements OnInit {
       error: (err) => {
         const errorMsg = err.error?.message || 'Erreur lors de la suppression';
         this.error.set(errorMsg);
+      }
+    });
+  }
+
+  generateIndividualProducts(): void {
+    if (!confirm('Cela va générer automatiquement un MenuItem pour chaque produit disponible.\n\nContinuer ?')) return;
+    
+    this.isGenerating.set(true);
+    this.apiService.generateIndividualProductMenuItems().subscribe({
+      next: (response) => {
+        this.isGenerating.set(false);
+        this.toast.success(`✨ ${response.itemsCreated} MenuItems créés`);
+        this.loadMenus();
+      },
+      error: (err) => {
+        this.isGenerating.set(false);
+        const errorMsg = err.error?.message || 'Erreur lors de la génération';
+        this.error.set(errorMsg);
+        this.toast.error(errorMsg);
       }
     });
   }

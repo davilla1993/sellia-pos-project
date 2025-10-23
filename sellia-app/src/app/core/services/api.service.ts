@@ -610,6 +610,10 @@ export class ApiService {
     return this.http.get<string[]>(`${this.apiUrl}/menus/types/all`);
   }
 
+  generateIndividualProductMenuItems(): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/menus/generate-individual-products`, {});
+  }
+
   // Menu Items
   getAvailableMenuItems(page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()

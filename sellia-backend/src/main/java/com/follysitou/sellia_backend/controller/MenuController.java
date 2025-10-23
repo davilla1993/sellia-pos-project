@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/menus")
@@ -143,5 +144,16 @@ public class MenuController {
                 .map(Enum::name)
                 .toList();
         return ResponseEntity.ok(types);
+    }
+
+    @PostMapping("/generate-individual-products")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> generateIndividualProductMenuItems() {
+        int created = menuService.generateIndividualProductMenuItems();
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Génération des MenuItems individuels terminée",
+            "itemsCreated", created
+        ));
     }
 }
