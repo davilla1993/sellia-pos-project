@@ -140,10 +140,10 @@ import { ToastService } from '../../../shared/services/toast.service';
                   </div>
                 </td>
                 <td class="px-4 py-3 text-orange-400 font-semibold">
-                  {{ item.calculatedPrice ? (item.calculatedPrice / 100).toFixed(0) : '-' }} FCFA
+                  {{ item.calculatedPrice ? item.calculatedPrice : '-' }} FCFA
                 </td>
                 <td class="px-4 py-3 text-neutral-400">
-                  {{ item.bundlePrice ? (item.bundlePrice / 100).toFixed(0) : '-' }} FCFA
+                  {{ item.bundlePrice ? item.bundlePrice : '-' }} FCFA
                 </td>
                 <td class="px-4 py-3 text-neutral-400">{{ item.displayOrder }}</td>
                 <td class="px-4 py-3">
@@ -230,7 +230,7 @@ import { ToastService } from '../../../shared/services/toast.service';
               <select formControlName="productId" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white max-h-40">
                 <option value="">-- Sélectionner un produit --</option>
                 <option *ngFor="let product of filteredProducts()" [value]="product.publicId">
-                  {{ product.name }} - FCFA {{ (product.price / 100).toFixed(0) }}
+                  {{ product.name }} - {{ product.price }} FCFA
                 </option>
               </select>
             </div>
