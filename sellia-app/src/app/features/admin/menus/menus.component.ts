@@ -60,6 +60,14 @@ import { ToastService } from '../../../shared/services/toast.service';
 
         <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded border border-neutral-700 p-2 hover:border-neutral-600 transition flex flex-col">
+            <div class="w-full h-20 rounded bg-neutral-700 mb-1 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <img 
+                *ngIf="menu.imageUrl" 
+                [src]="menu.imageUrl" 
+                alt="{{ menu.name }}"
+                class="w-full h-full object-cover">
+              <span *ngIf="!menu.imageUrl" class="text-neutral-400">📷</span>
+            </div>
             <div class="flex justify-between items-start gap-1 mb-1 min-h-0">
               <div class="flex-1 min-w-0">
                 <h3 class="text-xs font-bold text-white truncate">{{ menu.name }}</h3>
@@ -385,10 +393,15 @@ export class MenusComponent implements OnInit {
     this.isLoading.set(true);
     this.apiService.getAllMenus(0, 100).subscribe({
       next: (data) => {
+        console.log('Menus du backend:', data);
+        data.forEach((menu: any) => {
+          console.log(`Menu: ${menu.name}, imageUrl: ${menu.imageUrl}`);
+        });
         this.menus.set(data);
         this.isLoading.set(false);
       },
       error: (err) => {
+        console.error('Erreur chargement menus:', err);
         this.error.set('Erreur lors du chargement des menus');
         this.isLoading.set(false);
       }

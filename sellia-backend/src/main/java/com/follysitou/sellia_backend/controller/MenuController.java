@@ -32,6 +32,7 @@ public class MenuController {
             @RequestParam String name,
             @RequestParam(required = false) String description,
             @RequestParam String menuType,
+            @RequestParam String bundlePrice,
             @RequestParam(required = false, defaultValue = "true") String active,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -45,6 +46,7 @@ public class MenuController {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid menu type: " + menuType);
         }
+        request.setBundlePrice(Long.parseLong(bundlePrice));
         request.setActive(Boolean.parseBoolean(active));
         
         if (startDate != null && !startDate.isEmpty()) {
