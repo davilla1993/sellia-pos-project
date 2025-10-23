@@ -126,7 +126,7 @@ import { ToastService } from '../../shared/services/toast.service';
                     <span *ngIf="!getImageUrl(product)" class="text-neutral-400">📷</span>
                   </div>
                   <p class="font-semibold line-clamp-2 mb-1">{{ product.name }}</p>
-                  <p class="text-primary font-bold">FCFA {{ (product.price / 100).toFixed(0) }}</p>
+                  <p class="text-primary font-bold">FCFA {{ product.price.toLocaleString('fr-FR') }}</p>
                 </button>
               </div>
             </div>
@@ -150,7 +150,7 @@ import { ToastService } from '../../shared/services/toast.service';
               <div class="flex-1 min-w-0">
                 <p class="text-white font-semibold truncate">{{ item.name }}</p>
                 <p class="text-neutral-400">x{{ item.quantity }}</p>
-                <p class="text-primary font-bold">FCFA {{ ((item.price / 100) * item.quantity).toFixed(0) }}</p>
+                <p class="text-primary font-bold">FCFA {{ (item.price * item.quantity).toLocaleString('fr-FR') }}</p>
               </div>
               <button 
                 (click)="removeFromCart(item.productId)"
@@ -165,7 +165,7 @@ import { ToastService } from '../../shared/services/toast.service';
           <div class="border-t border-neutral-600 pt-3 space-y-2">
             <div class="flex justify-between items-center text-white text-sm lg:text-base">
               <span class="font-semibold">Total:</span>
-              <span class="text-primary font-bold text-lg">FCFA {{ (cartTotal() / 100).toFixed(0) }}</span>
+              <span class="text-primary font-bold text-lg">FCFA {{ cartTotal().toLocaleString('fr-FR') }}</span>
             </div>
 
             <button 
