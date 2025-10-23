@@ -96,14 +96,15 @@ public class OrderService {
 
         // Get current cashier session for CAISSIER/ADMIN users
         com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        // Only get cashier session if user is CAISSIER or ADMIN
-        if (currentUser.getRole().getName().toString().equals("CAISSIER") || 
-            currentUser.getRole().getName().toString().equals("ADMIN")) {
-            var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUser.getPublicId());
-            if (optionalSession.isPresent()) {
-                cashierSession = optionalSession.get();
+        String currentUsername = SecurityUtil.getCurrentUsername();
+        if (!currentUsername.equals("SYSTEM") && !currentUsername.equals("anonymousUser")) {
+            try {
+                var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUsername);
+                if (optionalSession.isPresent()) {
+                    cashierSession = optionalSession.get();
+                }
+            } catch (Exception e) {
+                log.warn("Could not get cashier session for user: {}", currentUsername, e);
             }
         }
 
