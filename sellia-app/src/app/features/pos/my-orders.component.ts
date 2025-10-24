@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { CurrencyService } from '../../shared/services/currency.service';
 
 @Component({
   selector: 'app-my-orders',
@@ -10,10 +11,10 @@ import { ApiService } from '../../core/services/api.service';
   template: `
     <div class="flex h-full bg-neutral-900 overflow-hidden">
       <!-- Left Sidebar: Filters -->
-      <div class="w-64 bg-neutral-800 border-r border-neutral-700 p-6 pt-40 overflow-y-auto flex flex-col gap-6">
+      <div class="w-64 bg-neutral-800 border-r border-neutral-700 p-6 overflow-y-auto flex flex-col gap-6 pt-16">
         <div>
           <h2 class="text-lg font-bold text-white mb-4">Statuts</h2>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-3">
             <button *ngFor="let status of statusList"
               (click)="changeStatus(status)"
               [class.bg-primary]="selectedStatus() === status"
@@ -36,7 +37,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- Right Content: Orders List -->
       <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Header -->
-        <div class="p-6 border-b border-neutral-700">
+        <div class="p-6 pt-12 border-b border-neutral-700">
           <div class="flex justify-between items-center gap-6 mb-2">
             <h1 class="text-3xl font-bold text-white">Mes Commandes</h1>
             <input 
@@ -58,43 +59,32 @@ import { ApiService } from '../../core/services/api.service';
         <!-- Orders List -->
         <div *ngIf="!isLoading() && filteredOrders().length > 0" class="flex-1 flex flex-col overflow-hidden">
           <div class="flex-1 overflow-y-auto p-6">
-            <div class="grid gap-4">
-              <div *ngFor="let order of paginatedOrders()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div *ngFor="let order of paginatedOrders()" class="bg-neutral-800 rounded-lg border border-neutral-700 p-3 space-y-2">
           <!-- Order Header -->
           <div class="flex justify-between items-start">
             <div>
-              <p class="text-lg font-bold text-white">Commande #{{ order.orderNumber }}</p>
-              <p class="text-sm text-neutral-400">Table: {{ order.table?.number }} - {{ order.table?.name }}</p>
-              <p class="text-xs text-neutral-500">{{ formatDate(order.createdAt) }}</p>
+              <p class="text-base font-bold text-white">{{ order.orderNumber }}</p>
+              <p class="text-xs text-neutral-400">{{ order.table?.number }} • {{ formatDate(order.createdAt) }}</p>
             </div>
-            <span [class]="getStatusBadgeClass(order.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+            <span [class]="getStatusBadgeClass(order.status)" class="px-2 py-0.5 rounded-full text-xs font-semibold">
               {{ formatStatus(order.status) }}
             </span>
           </div>
 
           <!-- Order Items -->
-          <div class="bg-neutral-700 rounded p-3 space-y-2">
-            <p class="text-xs text-neutral-400 uppercase font-semibold">Items ({{ order.items?.length || 0 }})</p>
-            <div *ngFor="let item of order.items" class="flex justify-between text-sm">
+          <div class="bg-neutral-700 rounded p-2 space-y-1">
+            <p class="text-xs text-neutral-400 uppercase font-semibold mb-1">{{ order.items?.length || 0 }} item(s)</p>
+            <div *ngFor="let item of order.items" class="flex justify-between text-xs">
               <span class="text-neutral-300">{{ item.quantity }}x {{ item.product.name }}</span>
-              <span class="text-neutral-400">FCFA {{ (item.totalPrice / 100).toFixed(0) }}</span>
+              <span class="text-neutral-400">{{ currencyService.formatPrice(item.totalPrice) }}</span>
             </div>
           </div>
 
           <!-- Order Total -->
-          <div class="flex justify-between items-center pt-2 border-t border-neutral-600">
-            <span class="text-neutral-300">Total:</span>
-            <span class="text-xl font-bold text-primary">FCFA {{ (order.totalAmount / 100).toFixed(0) }}</span>
-          </div>
-
-          <!-- Status Badges -->
-          <div class="flex gap-2 flex-wrap">
-            <span *ngIf="order.isPaid" class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-semibold">
-              ✓ Payé
-            </span>
-            <span *ngIf="!order.isPaid && order.status === 'PRETE'" class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded text-xs font-semibold">
-              ⚠ À encaisser
-            </span>
+          <div class="flex justify-between items-center pt-1 border-t border-neutral-600">
+            <span class="text-sm text-neutral-300">Total:</span>
+            <span class="text-lg font-bold text-primary">{{ currencyService.formatPrice(order.totalAmount) }}</span>
           </div>
 
             <!-- Action Buttons -->
@@ -104,11 +94,11 @@ import { ApiService } from '../../core/services/api.service';
                 class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors text-sm">
                 💳 Encaisser
               </button>
-              <button *ngIf="isNextStatusAllowed(order.status)"
-                (click)="updateStatus(order.publicId, getNextStatus(order.status))"
+              <button *ngIf="canCancelOrder(order.status)"
+                (click)="cancelOrder(order.publicId)"
                 [disabled]="updatingOrderId() === order.publicId"
-                class="flex-1 py-2 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold rounded transition-colors text-sm">
-                {{ updatingOrderId() === order.publicId ? '⏳' : getNextStatusLabel(order.status) }}
+                class="flex-1 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold rounded transition-colors text-sm">
+                {{ updatingOrderId() === order.publicId ? '⏳' : '✕ Annuler' }}
               </button>
               </div>
             </div>
@@ -152,6 +142,7 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class MyOrdersComponent implements OnInit {
   private apiService = inject(ApiService);
+  public currencyService = inject(CurrencyService);
 
   orders = signal<any[]>([]);
   selectedStatus = signal('ACCEPTEE');
@@ -267,24 +258,27 @@ export class MyOrdersComponent implements OnInit {
     console.log('Go to checkout for order:', order.publicId);
   }
 
-  isNextStatusAllowed(status: string): boolean {
-    return ['ACCEPTEE', 'EN_PREPARATION'].includes(status);
+  canCancelOrder(status: string): boolean {
+    return ['ACCEPTEE'].includes(status);
   }
 
-  getNextStatus(status: string): string {
-    const map: { [key: string]: string } = {
-      'ACCEPTEE': 'EN_PREPARATION',
-      'EN_PREPARATION': 'PRETE'
-    };
-    return map[status] || status;
-  }
+  cancelOrder(publicId: string): void {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+      return;
+    }
 
-  getNextStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      'ACCEPTEE': '→ Préparation',
-      'EN_PREPARATION': '→ Prête'
-    };
-    return labels[status] || 'Suivant';
+    this.updatingOrderId.set(publicId);
+    
+    this.apiService.updateOrderStatus(publicId, 'ANNULEE').subscribe({
+      next: () => {
+        this.updatingOrderId.set(null);
+        this.loadOrders();
+      },
+      error: () => {
+        this.errorMessage.set('Erreur lors de l\'annulation de la commande');
+        this.updatingOrderId.set(null);
+      }
+    });
   }
 
   formatStatus(status: string): string {
@@ -321,4 +315,7 @@ export class MyOrdersComponent implements OnInit {
       return '';
     }
   }
+
+
 }
+

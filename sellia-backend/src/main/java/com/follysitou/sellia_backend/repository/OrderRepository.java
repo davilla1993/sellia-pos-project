@@ -26,7 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.table.id = :tableId ORDER BY o.createdAt DESC")
     Page<Order> findByTableId(@Param("tableId") Long tableId, Pageable pageable);
 
-    @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.status = :status ORDER BY o.createdAt DESC")
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items LEFT JOIN FETCH o.table WHERE o.deleted = false AND o.status = :status ORDER BY o.createdAt DESC")
     Page<Order> findByStatus(@Param("status") OrderStatus status, Pageable pageable);
 
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.customerSession.publicId = :customerSessionId ORDER BY o.createdAt DESC")
