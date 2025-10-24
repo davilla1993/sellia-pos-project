@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { CurrencyService } from '../../../shared/services/currency.service';
 import { interval, Subscription } from 'rxjs';
 
 @Component({
@@ -166,6 +167,7 @@ import { interval, Subscription } from 'rxjs';
 export class ActiveSessionsComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
+  currencyService = inject(CurrencyService);
   
   activeSessions = signal<any[]>([]);
   isLoading = signal(false);
@@ -282,8 +284,9 @@ export class ActiveSessionsComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(value: number): string {
-    if (!value) return '0,00 €';
-    return (value / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+    if (!value) return '0 FCFA';
+    const amountInFcfa = Math.round(value / 100);
+    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
   }
 
   forceCloseSession(session: any): void {

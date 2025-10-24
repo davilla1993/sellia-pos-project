@@ -118,6 +118,13 @@ public class OrderService {
         order.setCustomerSession(customerSession);
         order.setCashierSession(cashierSession);
         order.setOrderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE);
+        
+        // Set cashier ID from current user or cashier session
+        if (cashierSession != null && cashierSession.getUser() != null) {
+            order.setCashierId(cashierSession.getUser().getPublicId());
+        } else if (!currentUsername.equals("SYSTEM") && !currentUsername.equals("anonymousUser")) {
+            order.setCashierId(currentUsername);
+        }
 
         // Create order items (via MenuItems, not Products directly)
         List<OrderItem> items = new ArrayList<>();

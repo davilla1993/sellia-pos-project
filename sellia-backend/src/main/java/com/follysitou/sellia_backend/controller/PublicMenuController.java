@@ -23,11 +23,23 @@ public class PublicMenuController {
     /**
      * Récupérer le menu public pour une table via QR code
      * Accessible sans authentification
-     * URL publique: /qr/{qrToken} pour angular
+     * URL publique: /menu?table={tablePublicId}
+     * Crée ou réutilise une session active pour la table
      */
-    @GetMapping("/menu/{qrToken}")
-    public ResponseEntity<PublicMenuResponse> getPublicMenu(@PathVariable String qrToken) {
-        PublicMenuResponse menu = publicMenuService.getPublicMenu(qrToken);
+    @GetMapping("/menu")
+    public ResponseEntity<PublicMenuResponse> getPublicMenu(@RequestParam String table) {
+        PublicMenuResponse menu = publicMenuService.getPublicMenuByTable(table);
+        return ResponseEntity.ok(menu);
+    }
+
+    /**
+     * Récupérer le menu public via QR code token
+     * Accessible sans authentification
+     * URL publique: /qr/{qrCodeToken}
+     */
+    @GetMapping("/menu/{qrCodeToken}")
+    public ResponseEntity<PublicMenuResponse> getPublicMenuByQrToken(@PathVariable String qrCodeToken) {
+        PublicMenuResponse menu = publicMenuService.getPublicMenuByQrToken(qrCodeToken);
         return ResponseEntity.ok(menu);
     }
 

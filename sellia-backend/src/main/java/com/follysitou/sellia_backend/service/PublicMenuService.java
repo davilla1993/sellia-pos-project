@@ -27,16 +27,25 @@ public class PublicMenuService {
     private final MenuItemRepository menuItemRepository;
     private final CustomerSessionRepository customerSessionRepository;
 
-    @Transactional(readOnly = true)
-    public PublicMenuResponse getPublicMenu(String qrCodeToken) {
-        // Récupérer la session client par QR token
-        CustomerSession customerSession = customerSessionRepository.findByQrCodeToken(qrCodeToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid QR code token"));
+    @Transactional
+    public PublicMenuResponse getPublicMenuByTable(String tablePublicId) {
+        // Récupérer la table
+        RestaurantTable table = tableRepository.findByPublicId(tablePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
-        RestaurantTable table = customerSession.getTable();
-        if (table == null) {
-            throw new ResourceNotFoundException("Table not found");
-        }
+        // Chercher ou créer une session active pour cette table
+        CustomerSession customerSession = customerSessionRepository.findActiveByTable(tablePublicId)
+                .orElseGet(() -> {
+                    // Créer une nouvelle session si aucune session active
+                    CustomerSession newSession = CustomerSession.builder()
+                            .table(table)
+                            .active(true)
+                            .sessionStart(java.time.LocalDateTime.now())
+                            .numberOfCustomers(1)
+                            .isPaid(false)
+                            .build();
+                    return customerSessionRepository.save(newSession);
+                });
 
         // Récupérer les menus selon VIP ou standard
         List<Menu> applicableMenus = getApplicableMenus(table.getIsVip());
@@ -76,10 +85,25 @@ public class PublicMenuService {
                 .tablePublicId(table.getPublicId())
                 .tableNumber(table.getNumber())
                 .isVip(table.getIsVip())
-                .customerSessionToken(qrCodeToken)
+                .customerSessionToken(customerSession.getPublicId())
                 .categories(new ArrayList<>(categories.values()))
                 .popularItems(popularItems)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    @Deprecated
+    public PublicMenuResponse getPublicMenu(String qrCodeToken) {
+        // Ancienne méthode gardée pour compatibilité
+        CustomerSession customerSession = customerSessionRepository.findByQrCodeToken(qrCodeToken)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid QR code token"));
+
+        RestaurantTable table = customerSession.getTable();
+        if (table == null) {
+            throw new ResourceNotFoundException("Table not found");
+        }
+
+        return getPublicMenuByTable(table.getPublicId());
     }
 
     private List<Menu> getApplicableMenus(Boolean isVip) {
@@ -116,7 +140,20 @@ public class PublicMenuService {
     }
 
     @Transactional
+    public PublicMenuResponse getPublicMenuByQrToken(String qrCodeToken) {
+        // Récupérer la table par QR code token
+        RestaurantTable table = tableRepository.findByQrCodeToken(qrCodeToken)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid QR code token"));
+
+        // Récupérer le menu par table public ID
+        return getPublicMenuByTable(table.getPublicId());
+    }
+
+    @Transactional
+    @Deprecated
     public CustomerSession createSessionFromQrCode(String qrCodeToken) {
+        // Cette méthode est deprecated, utiliser getPublicMenuByTable() à la place
+        // qui crée automatiquement la session
         RestaurantTable table = tableRepository.findByQrCodeToken(qrCodeToken)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid QR code"));
 

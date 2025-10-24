@@ -30,9 +30,9 @@ public class PublicOrderService {
 
     @Transactional
     public PublicOrderResponse createOrderFromQrCode(PublicOrderRequest request) {
-        // Valider le token de session
-        CustomerSession customerSession = customerSessionRepository.findByQrCodeToken(request.getCustomerSessionToken())
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid customer session token"));
+        // Valider la session par publicId (le token retourné par getPublicMenuByTable)
+        CustomerSession customerSession = customerSessionRepository.findByPublicId(request.getCustomerSessionToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid customer session"));
 
         if (!customerSession.getActive()) {
             throw new ValidationException("Session is no longer active");

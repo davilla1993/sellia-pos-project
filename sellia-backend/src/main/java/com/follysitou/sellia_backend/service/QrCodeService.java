@@ -43,11 +43,9 @@ public class QrCodeService {
         RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
                 .orElseThrow(() -> new BusinessException("Table not found"));
 
-        // Generate unique session token
-        String sessionToken = generateSessionToken();
-
-        // Build QR code content (URL to customer interface)
-        String qrCodeContent = buildQrCodeContent(table.getPublicId(), sessionToken);
+        // Build QR code content (URL to customer interface with table ID only)
+        // Session will be created on first scan
+        String qrCodeContent = baseUrl + "/menu?table=" + table.getPublicId();
 
         // Generate QR code image
         String fileName = generateFileName();
@@ -70,10 +68,6 @@ public class QrCodeService {
 
         log.info("QR code generated for customer session {}: {}", customerSessionPublicId, filePath);
         return filePath;
-    }
-
-    private String buildQrCodeContent(String tablePublicId, String sessionToken) {
-        return baseUrl + "/menu?table=" + tablePublicId + "&session=" + sessionToken;
     }
 
     private String saveQrCodeImage(String content, String fileName) {
@@ -105,9 +99,5 @@ public class QrCodeService {
 
     private String generateFileName() {
         return UUID.randomUUID() + ".png";
-    }
-
-    private String generateSessionToken() {
-        return UUID.randomUUID().toString();
     }
 }

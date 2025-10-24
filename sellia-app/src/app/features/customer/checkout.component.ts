@@ -55,21 +55,21 @@ import { Order } from '../../shared/models/types';
             <div class="space-y-3 pb-4 border-b border-neutral-200">
               <div class="flex justify-between text-neutral-700">
                 <span>Subtotal</span>
-                <span>{{ '$' + subtotal().toFixed(0) }}</span>
+                <span>{{ formatPrice(subtotal()) }}</span>
               </div>
               <div class="flex justify-between text-neutral-700">
                 <span>Tax (10%)</span>
-                <span>{{ '$' + tax().toFixed(0) }}</span>
+                <span>{{ formatPrice(tax()) }}</span>
               </div>
               <div *ngIf="discount() > 0" class="flex justify-between text-green-600">
                 <span>Discount</span>
-                <span>{{ '-$' + discount().toFixed(0) }}</span>
+                <span>{{ '-' + formatPrice(discount()) }}</span>
               </div>
             </div>
 
             <div class="flex justify-between text-xl font-bold text-dark mb-6 pt-4">
               <span>Total</span>
-              <span class="text-primary">{{ '$' + total().toFixed(0) }}</span>
+              <span class="text-primary">{{ formatPrice(total()) }}</span>
             </div>
 
             <!-- Payment Method -->
@@ -168,10 +168,13 @@ export class CheckoutComponent implements OnInit {
   }
 
   formatItemTotal(price: number, quantity: number): string {
-    return '$' + (price * quantity).toFixed(0);
+    const total = price * quantity;
+    const amountInFcfa = Math.round(total / 100);
+    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
   }
 
   formatPrice(value: number): string {
-    return '$' + value.toFixed(0);
+    const amountInFcfa = Math.round(value / 100);
+    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
   }
 }

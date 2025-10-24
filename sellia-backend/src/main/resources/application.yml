@@ -41,6 +41,7 @@ server:
 # Application Configuration
 app:
   server-url: http://localhost:8080
+  base-url: http://localhost:4200  # Frontend URL for QR code generation
   jwt:
     secret: SevvwQ3vogESlsvgFTgBoXqfnbVeSsJiC917Mi7ZprAloOegCz5NNEuWwktK4qqoT0DDAPzsvtEBm0XLmUBNIQ==
     access-token-expiration: 3600000  # 1 hour in milliseconds

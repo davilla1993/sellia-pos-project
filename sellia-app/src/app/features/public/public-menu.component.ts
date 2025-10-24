@@ -32,7 +32,8 @@ interface CartItem {
 })
 export class PublicMenuComponent implements OnInit {
 
-  qrToken: string = '';
+  tablePublicId: string = '';
+  customerSessionToken: string = '';
   tableNumber: string = '';
   isVip: boolean = false;
   loading: boolean = false;
@@ -60,27 +61,69 @@ export class PublicMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Lire le QR token depuis les params d'URL
     this.route.params.subscribe(params => {
-      this.qrToken = params['token'];
-      this.loadMenu();
+      const qrToken = params['token'];
+      
+      if (qrToken) {
+        this.customerSessionToken = qrToken;
+        this.loadMenuByQrToken(qrToken);
+        return;
+      }
+
+      // Sinon, lire tablePublicId depuis les query params
+      this.route.queryParams.subscribe(queryParams => {
+        const tableId = queryParams['table'];
+        
+        if (tableId) {
+          this.tablePublicId = tableId;
+          this.loadMenu();
+        } else {
+          this.error = 'Table non spécifiée';
+          setTimeout(() => this.router.navigate(['/']), 3000);
+        }
+      });
     });
   }
 
-  loadMenu(): void {
+  loadMenuByQrToken(qrToken: string): void {
     this.loading = true;
     this.error = '';
     
-    this.apiService.getPublicMenu(this.qrToken).subscribe(
+    this.apiService.getPublicMenuByQrToken(qrToken).subscribe(
       response => {
         this.tableNumber = response.tableNumber;
         this.isVip = response.isVip;
+        this.customerSessionToken = response.customerSessionToken;
         this.categories = response.categories;
         this.popularItems = response.popularItems;
         this.flattenMenuItems();
         this.loading = false;
       },
       error => {
-        this.error = 'QR code invalide ou table non trouvée';
+        this.error = 'QR code invalide ou menu indisponible';
+        this.loading = false;
+        setTimeout(() => this.router.navigate(['/']), 3000);
+      }
+    );
+  }
+
+  loadMenu(): void {
+    this.loading = true;
+    this.error = '';
+    
+    this.apiService.getPublicMenu(this.tablePublicId).subscribe(
+      response => {
+        this.tableNumber = response.tableNumber;
+        this.isVip = response.isVip;
+        this.customerSessionToken = response.customerSessionToken;
+        this.categories = response.categories;
+        this.popularItems = response.popularItems;
+        this.flattenMenuItems();
+        this.loading = false;
+      },
+      error => {
+        this.error = 'Table non trouvée ou menu indisponible';
         this.loading = false;
         setTimeout(() => this.router.navigate(['/']), 3000);
       }
@@ -141,7 +184,7 @@ export class PublicMenuComponent implements OnInit {
     this.error = '';
 
     const orderRequest = {
-      customerSessionToken: this.qrToken,
+      customerSessionToken: this.customerSessionToken,
       items: this.cart.map(item => ({
         menuItemPublicId: item.menuItemPublicId,
         quantity: item.quantity

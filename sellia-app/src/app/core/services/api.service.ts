@@ -688,8 +688,14 @@ export class ApiService {
   }
 
   // Public/QR Code Endpoints (No authentication required)
-  getPublicMenu(qrToken: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/public/menu/${qrToken}`);
+  getPublicMenu(tablePublicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/public/menu`, {
+      params: { table: tablePublicId }
+    });
+  }
+
+  getPublicMenuByQrToken(qrCodeToken: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/public/menu/${qrCodeToken}`);
   }
 
   createPublicOrder(request: any): Observable<any> {

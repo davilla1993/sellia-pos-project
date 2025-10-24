@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
+import { CurrencyService } from '../../shared/services/currency.service';
 
 @Component({
   selector: 'app-pending-orders',
@@ -56,7 +57,7 @@ import { ApiService } from '../../core/services/api.service';
           <!-- Order Total -->
           <div class="flex justify-between items-center">
             <span class="text-neutral-300">Total:</span>
-            <span class="text-xl font-bold text-primary">FCFA {{ (order.totalAmount / 100).toFixed(0) }}</span>
+            <span class="text-xl font-bold text-primary">{{ currencyService.formatPrice(order.totalAmount) }}</span>
           </div>
 
           <!-- Accept Button -->
@@ -83,6 +84,7 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class PendingOrdersComponent implements OnInit {
   private apiService = inject(ApiService);
+  currencyService = inject(CurrencyService);
 
   orders = signal<any[]>([]);
   isLoading = signal(false);
@@ -128,4 +130,6 @@ export class PendingOrdersComponent implements OnInit {
       }
     });
   }
+
+
 }

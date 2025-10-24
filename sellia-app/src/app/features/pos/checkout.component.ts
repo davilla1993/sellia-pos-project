@@ -2,13 +2,14 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { CurrencyService } from '../../shared/services/currency.service';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex flex-col h-full gap-6 px-8 pb-8 pt-24 pr-96 bg-neutral-900 overflow-hidden">
+    <div class="flex flex-col h-full gap-6 px-8 pb-8 pr-96 bg-neutral-900 overflow-hidden">
       <!-- TOP: Table Selection - FULL WIDTH -->
       <div class="flex-1 flex flex-col gap-4 overflow-hidden">
         <div>
@@ -114,11 +115,11 @@ import { ApiService } from '../../core/services/api.service';
               </div>
               <div *ngFor="let item of order.items" class="flex justify-between text-sm text-neutral-300">
                 <span>{{ item.quantity }}x {{ item.product.name }}</span>
-                <span>FCFA {{ (item.totalPrice / 100).toFixed(0) }}</span>
+                <span>{{ currencyService.formatPrice(item.totalPrice) }}</span>
               </div>
               <div class="border-t border-neutral-600 pt-2 flex justify-between text-sm font-semibold">
                 <span class="text-neutral-400">Total:</span>
-                <span class="text-primary">FCFA {{ (order.totalAmount / 100).toFixed(0) }}</span>
+                <span class="text-primary">{{ currencyService.formatPrice(order.totalAmount) }}</span>
               </div>
             </div>
           </div>
@@ -138,15 +139,15 @@ import { ApiService } from '../../core/services/api.service';
           <div class="space-y-2">
             <div class="flex justify-between text-neutral-300">
               <span>Sous-total:</span>
-              <span>FCFA {{ (sessionTotal() / 100).toFixed(0) }}</span>
+              <span>{{ currencyService.formatPrice(sessionTotal()) }}</span>
             </div>
             <div *ngIf="discountAmount() > 0" class="flex justify-between text-neutral-300">
               <span>Réduction:</span>
-              <span class="text-yellow-400">-FCFA {{ (discountAmount() / 100).toFixed(0) }}</span>
+              <span class="text-yellow-400">-{{ currencyService.formatPrice(discountAmount()) }}</span>
             </div>
             <div class="border-t border-neutral-600 pt-2 flex justify-between items-center">
               <span class="text-lg font-bold text-white">Total:</span>
-              <span class="text-3xl font-bold text-primary">FCFA {{ (finalTotal() / 100).toFixed(0) }}</span>
+              <span class="text-3xl font-bold text-primary">{{ currencyService.formatPrice(finalTotal()) }}</span>
             </div>
           </div>
 
@@ -159,11 +160,11 @@ import { ApiService } from '../../core/services/api.service';
               <div class="flex justify-between text-neutral-300">
                 <span>Rendu:</span>
                 <span [class]="amountPaid() >= finalTotal() ? 'text-green-400' : 'text-red-400'" class="font-semibold">
-                  FCFA {{ (changeAmount() / 100).toFixed(0) }}
+                  {{ currencyService.formatPrice(changeAmount()) }}
                 </span>
               </div>
               <p *ngIf="amountPaid() < finalTotal()" class="text-xs text-red-400">
-                Montant insuffisant: manque FCFA {{ ((finalTotal() - amountPaid()) / 100).toFixed(0) }}
+                Montant insuffisant: manque {{ currencyService.formatPrice(finalTotal() - amountPaid()) }}
               </p>
             </div>
           </div>
@@ -193,12 +194,16 @@ import { ApiService } from '../../core/services/api.service';
       <div #receiptTemplate style="display: none;">
         <div id="receipt" class="w-80 bg-white p-4 text-black text-xs font-mono">
           <div class="text-center mb-4">
+            <img *ngIf="restaurantInfo().logoUrl" [src]="restaurantInfo().logoUrl" alt="Logo" class="mx-auto w-20 mb-2">
+            <p class="font-bold">{{ restaurantInfo().name }}</p>
+            <p class="text-xs text-gray-600 mb-1">{{ restaurantInfo().address }}</p>
+            <p class="text-xs text-gray-600 mb-2">{{ restaurantInfo().phoneNumber }}</p>
             <p class="font-bold text-lg">TICKET DE CAISSE</p>
             <p class="text-xs">{{ receiptDate() }}</p>
           </div>
           
           <div class="border-b border-black mb-4 pb-4">
-            <p class="font-bold">Table {{ selectedSession()?.table?.number }}</p>
+            <p class="font-bold">Table: {{ selectedSession()?.table?.number || 'Takeaway' }}</p>
             <p class="text-xs">Session: {{ selectedSession()?.publicId?.substring(0, 8) }}</p>
           </div>
 
@@ -207,7 +212,7 @@ import { ApiService } from '../../core/services/api.service';
               <p class="font-bold">#{{ order.orderNumber }}</p>
               <div *ngFor="let item of order.items" class="flex justify-between">
                 <span>{{ item.quantity }}x {{ item.product.name }}</span>
-                <span>FCFA {{ (item.totalPrice / 100).toFixed(0) }}</span>
+                <span>{{ currencyService.formatPrice(item.totalPrice) }}</span>
               </div>
             </div>
           </div>
@@ -215,21 +220,21 @@ import { ApiService } from '../../core/services/api.service';
           <div class="space-y-1 mb-4">
             <div class="flex justify-between">
               <span>Sous-total:</span>
-              <span>FCFA {{ (sessionTotal() / 100).toFixed(0) }}</span>
+              <span>{{ currencyService.formatPrice(sessionTotal()) }}</span>
             </div>
             <div *ngIf="discountAmount() > 0" class="flex justify-between">
               <span>Réduction:</span>
-              <span>-FCFA {{ (discountAmount() / 100).toFixed(0) }}</span>
+              <span>-{{ currencyService.formatPrice(discountAmount()) }}</span>
             </div>
             <div class="border-t border-black pt-1 flex justify-between font-bold text-base">
               <span>TOTAL:</span>
-              <span>FCFA {{ (finalTotal() / 100).toFixed(0) }}</span>
+              <span>{{ currencyService.formatPrice(finalTotal()) }}</span>
             </div>
           </div>
 
           <div class="space-y-1 text-center border-t border-black pt-2">
-            <p>Montant remis: FCFA {{ (amountPaid() / 100).toFixed(0) }}</p>
-            <p>Rendu: FCFA {{ (changeAmount() / 100).toFixed(0) }}</p>
+            <p>Montant remis: {{ currencyService.formatPrice(amountPaid()) }}</p>
+            <p>Rendu: {{ currencyService.formatPrice(changeAmount()) }}</p>
           </div>
 
           <div class="text-center mt-4 border-t border-black pt-2">
@@ -251,6 +256,15 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class CheckoutComponent implements OnInit {
   private apiService = inject(ApiService);
+  public currencyService = inject(CurrencyService);
+
+  // Restaurant Info
+  restaurantInfo = signal<any>({
+    name: 'SELLIA Restaurant',
+    address: '123 Rue de la Gastronomie, Douala',
+    phoneNumber: '+237 6 XX XX XX XX',
+    logoUrl: '/assets/logo.jpg'
+  });
 
   // Tables
   searchTable = signal('');
@@ -278,7 +292,25 @@ export class CheckoutComponent implements OnInit {
   errorMessage = signal('');
 
   ngOnInit(): void {
+    this.loadRestaurantInfo();
     this.loadTables();
+  }
+
+  loadRestaurantInfo(): void {
+    this.apiService.getRestaurant().subscribe({
+      next: (response: any) => {
+        const info = response.data || response;
+        this.restaurantInfo.set({
+          name: info.name || 'SELLIA Restaurant',
+          address: info.address || '123 Rue de la Gastronomie, Douala',
+          phoneNumber: info.phoneNumber || '+237 6 XX XX XX XX',
+          logoUrl: info.logoUrl || '/assets/logo.jpg'
+        });
+      },
+      error: (err) => {
+        console.error('Erreur chargement infos restaurant:', err);
+      }
+    });
   }
 
   filteredTables() {
@@ -441,8 +473,11 @@ export class CheckoutComponent implements OnInit {
   }
 
   printReceipt(): void {
-    const printWindow = window.open('', '', 'width=300,height=500');
+    const printWindow = window.open('', '', 'width=300,height=600');
     if (printWindow) {
+      const tableNumber = this.selectedSession()?.table?.number || 'Takeaway';
+      const restaurant = this.restaurantInfo();
+      
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -450,6 +485,10 @@ export class CheckoutComponent implements OnInit {
           <style>
             body { font-family: 'Courier New', monospace; font-size: 11px; width: 80mm; margin: 0; padding: 0; }
             .receipt { padding: 10mm; text-align: center; }
+            .logo { margin-bottom: 8px; }
+            .logo img { max-width: 60mm; height: auto; }
+            .restaurant-info { font-weight: bold; margin-bottom: 5px; }
+            .restaurant-details { font-size: 9px; color: #333; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
             .header { font-weight: bold; font-size: 14px; margin-bottom: 10px; }
             .section { border-bottom: 1px dashed #000; margin: 10px 0; padding: 10px 0; text-align: left; }
             .line { display: flex; justify-content: space-between; }
@@ -459,11 +498,21 @@ export class CheckoutComponent implements OnInit {
         </head>
         <body>
           <div class="receipt">
+            <div class="logo">
+              <img src="${restaurant.logoUrl}" alt="Logo">
+            </div>
+            
+            <div class="restaurant-info">${restaurant.name}</div>
+            <div class="restaurant-details">
+              ${restaurant.address}<br>
+              Tél: ${restaurant.phoneNumber}
+            </div>
+            
             <div class="header">TICKET DE CAISSE</div>
             <div>${this.receiptDate()}</div>
             
             <div class="section">
-              <div>Table ${this.selectedSession()?.table?.number}</div>
+              <div>Table: <strong>${tableNumber}</strong></div>
               <div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>
             </div>
 
@@ -473,7 +522,7 @@ export class CheckoutComponent implements OnInit {
                 ${order.items.map((item: any) => `
                   <div class="line">
                     <span>${item.quantity}x ${item.product.name}</span>
-                    <span>FCFA ${(item.totalPrice / 100).toFixed(0)}</span>
+                    <span>${this.currencyService.formatPrice(item.totalPrice)}</span>
                   </div>
                 `).join('')}
               `).join('')}
@@ -482,28 +531,28 @@ export class CheckoutComponent implements OnInit {
             <div class="section">
               <div class="line">
                 <span>Sous-total:</span>
-                <span>FCFA ${(this.sessionTotal() / 100).toFixed(0)}</span>
+                <span>${this.currencyService.formatPrice(this.sessionTotal())}</span>
               </div>
               ${this.discountAmount() > 0 ? `
                 <div class="line">
                   <span>Réduction:</span>
-                  <span>-FCFA ${(this.discountAmount() / 100).toFixed(0)}</span>
+                  <span>-${this.currencyService.formatPrice(this.discountAmount())}</span>
                 </div>
               ` : ''}
               <div class="line total" style="padding-top: 5px; border-top: 1px dashed #000; margin-top: 5px;">
                 <span>TOTAL:</span>
-                <span>FCFA ${(this.finalTotal() / 100).toFixed(0)}</span>
+                <span>${this.currencyService.formatPrice(this.finalTotal())}</span>
               </div>
             </div>
 
             <div class="section">
               <div class="line">
                 <span>Montant remis:</span>
-                <span>FCFA ${(this.amountPaid() / 100).toFixed(0)}</span>
+                <span>${this.currencyService.formatPrice(this.amountPaid())}</span>
               </div>
               <div class="line">
                 <span>Rendu:</span>
-                <span>FCFA ${(this.changeAmount() / 100).toFixed(0)}</span>
+                <span>${this.currencyService.formatPrice(this.changeAmount())}</span>
               </div>
             </div>
 
@@ -543,7 +592,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   getButtonLabel(): string {
-    return `💳 Encaisser et Imprimer Reçu - FCFA ${(this.finalTotal() / 100).toFixed(0)}`;
+    return `💳 Encaisser et Imprimer Reçu - ${this.currencyService.formatPrice(this.finalTotal())}`;
   }
 
   // Table Pagination
@@ -597,4 +646,7 @@ export class CheckoutComponent implements OnInit {
       }
     });
   }
+
+
 }
+

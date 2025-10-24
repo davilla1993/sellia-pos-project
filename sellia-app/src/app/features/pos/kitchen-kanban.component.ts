@@ -74,6 +74,11 @@ interface KitchenOrder {
                 </div>
               </div>
 
+              <div *ngIf="order.notes" class="bg-yellow-100 border-l-4 border-yellow-500 p-2 mb-3 rounded text-xs text-yellow-900">
+                <p class="font-semibold">📝 Notes:</p>
+                <p class="italic">{{ order.notes }}</p>
+              </div>
+
               <button 
                 (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
                 class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 rounded-lg transition-colors">
@@ -115,6 +120,11 @@ interface KitchenOrder {
                 </div>
               </div>
 
+              <div *ngIf="order.notes" class="bg-yellow-100 border-l-4 border-yellow-500 p-2 mb-3 rounded text-xs text-yellow-900">
+                <p class="font-semibold">📝 Notes:</p>
+                <p class="italic">{{ order.notes }}</p>
+              </div>
+
               <button 
                 (click)="updateOrderStatus(order.publicId, 'PRETE')"
                 class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition-colors">
@@ -147,13 +157,18 @@ interface KitchenOrder {
                 <p class="font-semibold">Prêt depuis {{ getElapsedTime(order.createdAt) }}</p>
               </div>
 
-              <div class="space-y-1 text-sm">
+              <div class="space-y-1 mb-3 text-sm">
                 <div *ngFor="let item of order.items" class="flex justify-between">
                   <span class="text-gray-800">{{ item.quantity }}x {{ item.product?.name }}</span>
                   <span *ngIf="getCategoryTag(item)" [ngClass]="getCategoryClass(item)" class="px-2 py-1 rounded text-xs font-semibold">
                     {{ getCategoryTag(item) }}
                   </span>
                 </div>
+              </div>
+
+              <div *ngIf="order.notes" class="bg-yellow-100 border-l-4 border-yellow-500 p-2 mb-3 rounded text-xs text-yellow-900">
+                <p class="font-semibold">📝 Notes:</p>
+                <p class="italic">{{ order.notes }}</p>
               </div>
             </div>
           </div>

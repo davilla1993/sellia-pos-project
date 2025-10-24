@@ -33,6 +33,10 @@ export const routes: Routes = [
     component: PublicMenuComponent
   },
   {
+    path: 'menu',
+    component: PublicMenuComponent
+  },
+  {
     path: 'scan',
     component: QrScannerComponent
   },

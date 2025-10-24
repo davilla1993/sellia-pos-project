@@ -87,6 +87,17 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
           </div>
 
+          <!-- Order Notes -->
+          <div class="bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+            <label class="block text-white font-semibold mb-2 text-sm lg:text-base">📝 Notes de commande:</label>
+            <textarea 
+              [(ngModel)]="orderNotes" 
+              placeholder="Ex: Pas de piment, allergies, remarques..."
+              rows="3"
+              class="w-full bg-neutral-700 text-white rounded-lg p-2 lg:p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary placeholder-neutral-500 text-sm lg:text-base resize-none">
+            </textarea>
+          </div>
+
           <!-- Menus Section -->
           <div class="flex-1 flex flex-col gap-3 overflow-hidden bg-neutral-800 rounded-lg p-4 border border-neutral-700">
             <h3 class="text-base lg:text-lg font-bold text-white">🍽️ Menus</h3>
@@ -210,6 +221,9 @@ export class OrderEntryComponent implements OnInit {
   // Customer Info (for takeaway)
   customerName = signal<string>('');
   customerPhone = signal<string>('');
+
+  // Order Notes
+  orderNotes = signal<string>('');
 
   // Products and Menus
   isLoadingProducts = signal(false);
@@ -453,6 +467,17 @@ export class OrderEntryComponent implements OnInit {
           orderRequest.tablePublicId = this.selectedTableId();
         }
 
+        // Ajouter les notes si présentes
+        if (this.orderNotes().trim()) {
+          orderRequest.notes = this.orderNotes();
+        }
+
+        // Ajouter les infos client pour TAKEAWAY
+        if (this.orderType === 'TAKEAWAY') {
+          orderRequest.customerName = this.customerName();
+          orderRequest.customerPhone = this.customerPhone();
+        }
+
         this.apiService.createOrder(orderRequest).subscribe({
           next: () => {
             this.isSubmitting.set(false);
@@ -461,6 +486,7 @@ export class OrderEntryComponent implements OnInit {
             this.selectedTableId.set('');
             this.customerName.set('');
             this.customerPhone.set('');
+            this.orderNotes.set('');
             setTimeout(() => {
               this.router.navigate(['/pos/pending-orders']);
             }, 1500);

@@ -23,7 +23,7 @@ interface KitchenOrder {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="h-full flex flex-col bg-neutral-900 p-6 pt-24 overflow-hidden">
+    <div class="h-full flex flex-col bg-neutral-900 p-6 overflow-hidden">
       <!-- Header -->
       <div class="mb-6 space-y-3">
         <div class="flex justify-between items-start">
@@ -114,62 +114,73 @@ interface KitchenOrder {
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let order of filteredOrders()" class="bg-neutral-800 hover:bg-neutral-700 transition-colors border-b border-neutral-700">
-              <!-- Order Number -->
-              <td class="px-4 py-3 text-white font-semibold">
-                {{ order.orderNumber }}
-              </td>
+            <ng-container *ngFor="let order of filteredOrders()">
+              <tr class="bg-neutral-800 hover:bg-neutral-700 transition-colors border-b border-neutral-700">
+                <!-- Order Number -->
+                <td class="px-4 py-3 text-white font-semibold">
+                  {{ order.orderNumber }}
+                </td>
 
-              <!-- Table -->
-              <td class="px-4 py-3">
-                <span class="text-neutral-300">{{ order.table?.number || 'Takeaway' }}</span>
-              </td>
+                <!-- Table -->
+                <td class="px-4 py-3">
+                  <span class="text-neutral-300">{{ order.table?.number || 'Takeaway' }}</span>
+                </td>
 
-              <!-- Items -->
-              <td class="px-4 py-3">
-                <div class="text-sm text-neutral-300 max-w-xs">
-                  <div *ngFor="let item of order.items" class="truncate">
-                    {{ item.quantity }}x {{ item.product?.name }}
+                <!-- Items -->
+                <td class="px-4 py-3">
+                  <div class="text-sm text-neutral-300 max-w-xs">
+                    <div *ngFor="let item of order.items" class="truncate">
+                      {{ item.quantity }}x {{ item.product?.name }}
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- Status -->
-              <td class="px-4 py-3">
-                <span [ngClass]="getStatusClass(order.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
-                  {{ getStatusLabel(order.status) }}
-                </span>
-              </td>
+                <!-- Status -->
+                <td class="px-4 py-3">
+                  <span [ngClass]="getStatusClass(order.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </td>
 
-              <!-- Time -->
-              <td class="px-4 py-3">
-                <span class="text-neutral-300 text-sm">{{ getElapsedTime(order.createdAt) }}</span>
-              </td>
+                <!-- Time -->
+                <td class="px-4 py-3">
+                  <span class="text-neutral-300 text-sm">{{ getElapsedTime(order.createdAt) }}</span>
+                </td>
 
-              <!-- Actions -->
-              <td class="px-4 py-3">
-                <div class="flex gap-2">
-                  <button 
-                    *ngIf="canChangeStatus(order.status, 'EN_PREPARATION')"
-                    (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
-                    class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-semibold transition-colors">
-                    Préparer
-                  </button>
-                  <button 
-                    *ngIf="canChangeStatus(order.status, 'PRETE')"
-                    (click)="updateOrderStatus(order.publicId, 'PRETE')"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition-colors">
-                    Prêt
-                  </button>
-                  <button 
-                    *ngIf="canChangeStatus(order.status, 'LIVREE')"
-                    (click)="updateOrderStatus(order.publicId, 'LIVREE')"
-                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
-                    Livrer
-                  </button>
-                </div>
-              </td>
-            </tr>
+                <!-- Actions -->
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <button 
+                      *ngIf="canChangeStatus(order.status, 'EN_PREPARATION')"
+                      (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
+                      class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-semibold transition-colors">
+                      Préparer
+                    </button>
+                    <button 
+                      *ngIf="canChangeStatus(order.status, 'PRETE')"
+                      (click)="updateOrderStatus(order.publicId, 'PRETE')"
+                      class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition-colors">
+                      Prêt
+                    </button>
+                    <button 
+                      *ngIf="canChangeStatus(order.status, 'LIVREE')"
+                      (click)="updateOrderStatus(order.publicId, 'LIVREE')"
+                      class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
+                      Livrer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Notes row -->
+              <tr *ngIf="order.notes" class="bg-neutral-750 border-b border-neutral-700">
+                <td colspan="6" class="px-4 py-2">
+                  <div class="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded text-sm text-yellow-900">
+                    <p class="font-semibold mb-1">📝 Notes de commande:</p>
+                    <p class="italic">{{ order.notes }}</p>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
           </tbody>
         </table>
 
