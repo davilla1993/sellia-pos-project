@@ -53,11 +53,11 @@ app:
   receipts-dir: ./uploads/receipts
   
   # Default Admin Configuration
-  admin:
-    email: admin@sellia.com
-    password: Admin123!
-    first-name: Admin
-    last-name: System
+#  admin:
+#    email: admin@sellia.com
+#    password: Admin123!
+#    first-name: Admin
+#    last-name: System
 
 # Actuator Configuration (minimal)
 management:
