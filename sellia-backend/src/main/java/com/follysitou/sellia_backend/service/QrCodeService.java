@@ -43,25 +43,25 @@ public class QrCodeService {
         RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
                 .orElseThrow(() -> new BusinessException("Table not found"));
 
-        // Generate unique QR code token if not already present
+        // Generate unique QR code token if not already present (pour usage futur)
         String qrToken = table.getQrCodeToken();
         if (qrToken == null || qrToken.isEmpty()) {
             qrToken = UUID.randomUUID().toString();
             table.setQrCodeToken(qrToken);
         }
 
-        // Build QR code content using the QR token
-        String qrCodeContent = baseUrl + "/qr/" + qrToken;
+        // Build QR code content using the simple menu URL with table parameter
+        String qrCodeContent = baseUrl + "/menu?table=" + table.getPublicId();
 
         // Generate QR code image
         String fileName = generateFileName();
         String filePath = saveQrCodeImage(qrCodeContent, fileName);
 
-        // Save QR code URL and token to table
+        // Save QR code URL to table
         table.setQrCodeUrl(filePath);
         restaurantTableRepository.save(table);
 
-        log.info("QR code generated for table {}: {} (token: {})", table.getNumber(), filePath, qrToken);
+        log.info("QR code generated for table {}: {}", table.getNumber(), filePath);
         return filePath;
     }
 

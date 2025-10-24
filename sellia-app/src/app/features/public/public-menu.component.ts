@@ -61,51 +61,18 @@ export class PublicMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Lire le QR token depuis les params d'URL
-    this.route.params.subscribe(params => {
-      const qrToken = params['token'];
+    // Lire tablePublicId depuis les query params
+    this.route.queryParams.subscribe(queryParams => {
+      const tableId = queryParams['table'];
       
-      if (qrToken) {
-        this.customerSessionToken = qrToken;
-        this.loadMenuByQrToken(qrToken);
-        return;
-      }
-
-      // Sinon, lire tablePublicId depuis les query params
-      this.route.queryParams.subscribe(queryParams => {
-        const tableId = queryParams['table'];
-        
-        if (tableId) {
-          this.tablePublicId = tableId;
-          this.loadMenu();
-        } else {
-          this.error = 'Table non spécifiée';
-          setTimeout(() => this.router.navigate(['/']), 3000);
-        }
-      });
-    });
-  }
-
-  loadMenuByQrToken(qrToken: string): void {
-    this.loading = true;
-    this.error = '';
-    
-    this.apiService.getPublicMenuByQrToken(qrToken).subscribe(
-      response => {
-        this.tableNumber = response.tableNumber;
-        this.isVip = response.isVip;
-        this.customerSessionToken = response.customerSessionToken;
-        this.categories = response.categories;
-        this.popularItems = response.popularItems;
-        this.flattenMenuItems();
-        this.loading = false;
-      },
-      error => {
-        this.error = 'QR code invalide ou menu indisponible';
-        this.loading = false;
+      if (tableId) {
+        this.tablePublicId = tableId;
+        this.loadMenu();
+      } else {
+        this.error = 'Table non spécifiée';
         setTimeout(() => this.router.navigate(['/']), 3000);
       }
-    );
+    });
   }
 
   loadMenu(): void {

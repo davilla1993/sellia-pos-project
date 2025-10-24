@@ -11,9 +11,7 @@ import { Observable } from 'rxjs';
 export class AuthInterceptor implements HttpInterceptor {
 
   private publicRoutes = [
-    '/api/public/menu',
-    '/api/public/orders',
-    '/api/public/health'
+    '/api/public'
   ];
 
   constructor() {}
