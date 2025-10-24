@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-tables',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -66,7 +67,7 @@ import { ToastService } from '../../../shared/services/toast.service';
       </div>
 
       <!-- Tables Grid -->
-      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <div *ngFor="let table of tables()" class="bg-neutral-800 rounded-lg p-5 border border-neutral-700 hover:border-orange-500 transition">
           <!-- Header -->
           <div class="flex justify-between items-start mb-3">
@@ -82,35 +83,66 @@ import { ToastService } from '../../../shared/services/toast.service';
           <!-- Capacity -->
           <p class="text-sm text-neutral-400 mb-4">👥 Capacité: <span class="text-white font-semibold">{{ table.capacity }} places</span></p>
 
-          <!-- QR Code Placeholder -->
-          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-4 flex items-center justify-center mb-4 h-32">
+          <!-- QR Code Display -->
+          <div class="bg-neutral-700 border-2 border-dashed border-neutral-600 rounded-lg p-3 flex flex-col items-center justify-center mb-3">
             <div *ngIf="!table.qrCodeUrl" class="text-center">
               <div class="text-4xl mb-2">📱</div>
-              <p class="text-xs text-neutral-400">À générer</p>
+              <p class="text-xs text-neutral-400">QR Code à générer</p>
             </div>
-            <div *ngIf="table.qrCodeUrl" class="text-center">
-              <div class="text-2xl mb-2">✅</div>
-              <p class="text-xs text-green-400">Généré</p>
+            <div *ngIf="table.qrCodeUrl" class="text-center w-full">
+              <a 
+                *ngIf="table.qrCodeToken"
+                [routerLink]="['/qr', table.qrCodeToken]"
+                target="_blank"
+                class="block">
+                <img [src]="getQrCodeUrl(table.qrCodeUrl)" alt="QR Code" class="w-32 h-32 mx-auto mb-2 bg-white p-1 rounded hover:ring-2 hover:ring-primary cursor-pointer transition-all">
+              </a>
+              <img 
+                *ngIf="!table.qrCodeToken"
+                [src]="getQrCodeUrl(table.qrCodeUrl)" alt="QR Code" class="w-32 h-32 mx-auto mb-2 bg-white p-1 rounded">
+              <div class="text-xs text-green-400 mb-1 font-semibold">✅ QR Code généré</div>
+              <div class="text-xs text-neutral-400 break-all px-2">
+                <a 
+                  *ngIf="table.qrCodeToken"
+                  [routerLink]="['/qr', table.qrCodeToken]"
+                  target="_blank"
+                  class="text-primary hover:text-primary-light underline cursor-pointer">
+                  {{ getQrMenuUrl(table.qrCodeToken) }}
+                </a>
+                <span *ngIf="!table.qrCodeToken">
+                  {{ getMenuUrl(table.publicId) }}
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-2 flex-wrap">
+          <div class="flex gap-1 justify-center">
             <button 
               (click)="editTable(table)"
-              class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors">
-              ✏️ Modifier
+              class="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center justify-center"
+              title="Modifier">
+              ✏️
             </button>
             <button 
               (click)="generateQrCode(table)"
               [disabled]="table.generatingQr"
-              class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded text-xs font-semibold transition-colors">
-              {{ table.generatingQr ? '⏳...' : '🎯 QR' }}
+              class="w-8 h-8 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded text-sm transition-colors flex items-center justify-center"
+              title="Générer QR Code">
+              {{ table.generatingQr ? '⏳' : '🎯' }}
+            </button>
+            <button 
+              (click)="downloadQrCode(table)"
+              [disabled]="!table.qrCodeUrl"
+              class="w-8 h-8 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded text-sm transition-colors flex items-center justify-center"
+              title="Télécharger QR Code">
+              📥
             </button>
             <button 
               (click)="deleteTable(table)"
-              class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition-colors">
-              🗑️ Supprimer
+              class="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors flex items-center justify-center"
+              title="Supprimer">
+              🗑️
             </button>
           </div>
         </div>
@@ -195,6 +227,7 @@ export class TablesComponent implements OnInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   tables = signal<any[]>([]);
   isLoading = signal(false);
@@ -338,6 +371,37 @@ export class TablesComponent implements OnInit {
     });
   }
 
+  downloadQrCode(table: any): void {
+    if (!table.qrCodeUrl) {
+      this.error.set('QR code non disponible');
+      setTimeout(() => this.error.set(null), 3000);
+      return;
+    }
+
+    const qrCodeUrl = this.getQrCodeUrl(table.qrCodeUrl);
+    
+    fetch(qrCodeUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `qr-code-${table.number}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        this.success.set('QR code téléchargé');
+        setTimeout(() => this.success.set(null), 2000);
+      })
+      .catch(error => {
+        console.error('Erreur téléchargement QR code:', error);
+        this.error.set('Erreur lors du téléchargement');
+        setTimeout(() => this.error.set(null), 3000);
+      });
+  }
+
   bulkGenerateQrCodes(): void {
     const tableIds = this.tables().map(t => t.publicId);
     if (tableIds.length === 0) {
@@ -454,5 +518,27 @@ export class TablesComponent implements OnInit {
 
   getCountByStatus(status: string): number {
     return this.tables().filter(t => t.status === status).length;
+  }
+
+  getQrCodeUrl(qrCodeUrl: string): string {
+    if (!qrCodeUrl) return '';
+    if (qrCodeUrl.startsWith('http')) return qrCodeUrl;
+    return `http://localhost:8080${qrCodeUrl}`;
+  }
+
+  getMenuUrl(tablePublicId: string): string {
+    return `${window.location.origin}/menu?table=${tablePublicId}`;
+  }
+
+  getQrMenuUrl(qrCodeToken: string): string {
+    return `${window.location.origin}/qr/${qrCodeToken}`;
+  }
+
+  openQrMenu(table: any): void {
+    if (table.qrCodeToken) {
+      this.router.navigate(['/qr', table.qrCodeToken]);
+    } else {
+      this.toast.warning('QR Code token non disponible');
+    }
   }
 }

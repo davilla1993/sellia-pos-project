@@ -15,6 +15,7 @@ public class RestaurantTableResponse {
     private Boolean available;
     private Boolean isVip;
     private String qrCodeUrl;
+    private String qrCodeToken;
     private String currentOrderId;
     private Boolean occupied;
     private LocalDateTime createdAt;

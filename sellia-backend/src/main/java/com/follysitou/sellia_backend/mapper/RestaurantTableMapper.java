@@ -34,6 +34,7 @@ public class RestaurantTableMapper {
         response.setAvailable(table.getAvailable());
         response.setIsVip(table.getIsVip());
         response.setQrCodeUrl(table.getQrCodeUrl());
+        response.setQrCodeToken(table.getQrCodeToken());
         response.setCurrentOrderId(table.getCurrentOrderId());
         response.setOccupied(table.getOccupied());
         response.setCreatedAt(table.getCreatedAt());
