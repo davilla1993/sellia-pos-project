@@ -17,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PublicMenuService {
 
     private final RestaurantTableRepository tableRepository;
@@ -29,66 +31,93 @@ public class PublicMenuService {
 
     @Transactional
     public PublicMenuResponse getPublicMenuByTable(String tablePublicId) {
-        // Récupérer la table
-        RestaurantTable table = tableRepository.findByPublicId(tablePublicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        try {
+            log.info("Loading public menu for table: {}", tablePublicId);
+            
+            // Récupérer la table
+            RestaurantTable table = tableRepository.findByPublicId(tablePublicId)
+                    .orElseThrow(() -> {
+                        log.error("Table not found: {}", tablePublicId);
+                        return new ResourceNotFoundException("Table not found");
+                    });
 
-        // Chercher ou créer une session active pour cette table
-        CustomerSession customerSession = customerSessionRepository.findActiveByTable(tablePublicId)
-                .orElseGet(() -> {
-                    // Créer une nouvelle session si aucune session active
-                    CustomerSession newSession = CustomerSession.builder()
-                            .table(table)
-                            .active(true)
-                            .sessionStart(java.time.LocalDateTime.now())
-                            .numberOfCustomers(1)
-                            .isPaid(false)
-                            .build();
-                    return customerSessionRepository.save(newSession);
-                });
+            if (table.getDeleted() != null && table.getDeleted()) {
+                log.error("Table is deleted: {}", tablePublicId);
+                throw new ResourceNotFoundException("Table has been deleted");
+            }
 
-        // Récupérer les menus selon VIP ou standard
-        List<Menu> applicableMenus = getApplicableMenus(table.getIsVip());
+            log.info("Table found: {} ({}), VIP: {}", table.getNumber(), table.getName(), table.getIsVip());
 
-        // Grouper les items par catégorie
-        Map<String, PublicMenuResponse.MenuCategoryResponse> categories = new HashMap<>();
-        List<PublicMenuResponse.MenuItemResponse> popularItems = new ArrayList<>();
+            // Chercher ou créer une session active pour cette table
+            CustomerSession customerSession = customerSessionRepository.findActiveByTable(tablePublicId)
+                    .orElseGet(() -> {
+                        log.info("Creating new customer session for table: {}", tablePublicId);
+                        // Créer une nouvelle session si aucune session active
+                        CustomerSession newSession = CustomerSession.builder()
+                                .table(table)
+                                .active(true)
+                                .sessionStart(java.time.LocalDateTime.now())
+                                .numberOfCustomers(1)
+                                .isPaid(false)
+                                .build();
+                        return customerSessionRepository.save(newSession);
+                    });
 
-        for (Menu menu : applicableMenus) {
-            List<MenuItem> menuItems = menu.getMenuItems();
-            if (menuItems != null) {
-                for (MenuItem menuItem : menuItems) {
-                    if (menuItem.getAvailable()) {
-                        String categoryKey = menu.getName();
-                        
-                        categories.putIfAbsent(categoryKey, PublicMenuResponse.MenuCategoryResponse.builder()
-                                .publicId(menu.getPublicId())
-                                .name(menu.getName())
-                                .description(menu.getDescription())
-                                .itemCount(0)
-                                .build());
+            // Récupérer les menus selon VIP ou standard
+            List<Menu> applicableMenus = getApplicableMenus(table.getIsVip());
+            log.info("Found {} applicable menus for table: {}", applicableMenus.size(), tablePublicId);
 
-                        PublicMenuResponse.MenuCategoryResponse category = categories.get(categoryKey);
-                        category.setItemCount(category.getItemCount() + 1);
+            // Grouper les items par catégorie
+            Map<String, PublicMenuResponse.MenuCategoryResponse> categories = new HashMap<>();
+            List<PublicMenuResponse.MenuItemResponse> popularItems = new ArrayList<>();
 
-                        // Ajouter au menu item response
-                        PublicMenuResponse.MenuItemResponse itemResponse = mapMenuItemToResponse(menuItem);
-                        if (Boolean.TRUE.equals(menuItem.getIsSpecial())) {
-                            popularItems.add(itemResponse);
+            for (Menu menu : applicableMenus) {
+                List<MenuItem> menuItems = menu.getMenuItems();
+                if (menuItems != null) {
+                    log.debug("Menu: {} has {} items", menu.getName(), menuItems.size());
+                    for (MenuItem menuItem : menuItems) {
+                        if (menuItem.getAvailable()) {
+                            String categoryKey = menu.getName();
+                            
+                            categories.putIfAbsent(categoryKey, PublicMenuResponse.MenuCategoryResponse.builder()
+                                    .publicId(menu.getPublicId())
+                                    .name(menu.getName())
+                                    .description(menu.getDescription())
+                                    .itemCount(0)
+                                    .build());
+
+                            PublicMenuResponse.MenuCategoryResponse category = categories.get(categoryKey);
+                            category.setItemCount(category.getItemCount() + 1);
+
+                            // Ajouter au menu item response
+                            PublicMenuResponse.MenuItemResponse itemResponse = mapMenuItemToResponse(menuItem);
+                            if (Boolean.TRUE.equals(menuItem.getIsSpecial())) {
+                                popularItems.add(itemResponse);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        return PublicMenuResponse.builder()
-                .tablePublicId(table.getPublicId())
-                .tableNumber(table.getNumber())
-                .isVip(table.getIsVip())
-                .customerSessionToken(customerSession.getPublicId())
-                .categories(new ArrayList<>(categories.values()))
-                .popularItems(popularItems)
-                .build();
+            log.info("Menu loaded successfully for table: {} - Categories: {}, Items: {}", 
+                    tablePublicId, categories.size(), 
+                    categories.values().stream().mapToInt(PublicMenuResponse.MenuCategoryResponse::getItemCount).sum());
+
+            return PublicMenuResponse.builder()
+                    .tablePublicId(table.getPublicId())
+                    .tableNumber(table.getNumber())
+                    .isVip(table.getIsVip())
+                    .customerSessionToken(customerSession.getPublicId())
+                    .categories(new ArrayList<>(categories.values()))
+                    .popularItems(popularItems)
+                    .build();
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found for table {}: {}", tablePublicId, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error loading menu for table {}: {}", tablePublicId, e.getMessage(), e);
+            throw new ResourceNotFoundException("Failed to load menu: " + e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
