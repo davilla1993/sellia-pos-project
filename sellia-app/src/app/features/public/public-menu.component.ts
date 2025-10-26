@@ -61,16 +61,25 @@ export class PublicMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Lire tablePublicId depuis les query params
-    this.route.queryParams.subscribe(queryParams => {
-      const tableId = queryParams['table'];
+    // Try to get QR token from route params first (for /qr/:token route)
+    this.route.params.subscribe(params => {
+      const qrToken = params['token'];
       
-      if (tableId) {
-        this.tablePublicId = tableId;
-        this.loadMenu();
+      if (qrToken) {
+        this.loadMenuByQrToken(qrToken);
       } else {
-        this.error = 'Table non spécifiée. Veuillez scanner un QR code valide.';
-        this.loading = false;
+        // Try to get table ID from query params (for /menu?table=xxx route)
+        this.route.queryParams.subscribe(queryParams => {
+          const tableId = queryParams['table'];
+          
+          if (tableId) {
+            this.tablePublicId = tableId;
+            this.loadMenu();
+          } else {
+            this.error = 'Table non spécifiée. Veuillez scanner un QR code valide.';
+            this.loading = false;
+          }
+        });
       }
     });
   }
@@ -91,6 +100,27 @@ export class PublicMenuComponent implements OnInit {
       },
       error => {
         this.error = 'Table non trouvée ou menu indisponible. Veuillez vérifier le QR code et réessayer.';
+        this.loading = false;
+      }
+    );
+  }
+
+  loadMenuByQrToken(qrToken: string): void {
+    this.loading = true;
+    this.error = '';
+    
+    this.apiService.getPublicMenuByQrToken(qrToken).subscribe(
+      response => {
+        this.tableNumber = response.tableNumber;
+        this.isVip = response.isVip;
+        this.customerSessionToken = response.customerSessionToken;
+        this.categories = response.categories;
+        this.popularItems = response.popularItems;
+        this.flattenMenuItems();
+        this.loading = false;
+      },
+      error => {
+        this.error = 'QR code invalide ou table non trouvée. Veuillez scanner un code valide.';
         this.loading = false;
       }
     );

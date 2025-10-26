@@ -61,6 +61,10 @@ interface KitchenOrder {
               <div class="text-xs space-y-1 mb-2">
                 <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
+              <div *ngIf="order.notes" class="bg-red-100 border-l-4 border-red-500 p-2 mb-2 rounded">
+                <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
+                <p class="text-xs text-red-800">{{ order.notes }}</p>
+              </div>
               <button 
                 (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
                 class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 text-xs rounded transition-colors mb-1">
@@ -93,6 +97,10 @@ interface KitchenOrder {
               <div class="text-xs space-y-1 mb-2">
                 <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
+              <div *ngIf="order.notes" class="bg-red-100 border-l-4 border-red-500 p-2 mb-2 rounded">
+                <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
+                <p class="text-xs text-red-800">{{ order.notes }}</p>
+              </div>
               <button 
                 (click)="updateOrderStatus(order.publicId, 'PRETE')"
                 class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 text-xs rounded transition-colors">
@@ -116,6 +124,10 @@ interface KitchenOrder {
             <div *ngFor="let order of ordersbyStatus('PRETE')" class="bg-white rounded-lg border-2 border-green-300 p-3 shadow-md">
               <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
               <p class="text-xs text-gray-600 mb-2">Prête depuis {{ getElapsedTime(order.createdAt) }}</p>
+              <div *ngIf="order.notes" class="bg-red-100 border-l-4 border-red-500 p-2 mb-2 rounded">
+                <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
+                <p class="text-xs text-red-800">{{ order.notes }}</p>
+              </div>
               <div class="text-xs space-y-1">
                 <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
@@ -142,6 +154,10 @@ interface KitchenOrder {
             <div *ngFor="let order of ordersbyStatus('LIVREE')" class="bg-white rounded-lg border-2 border-blue-300 p-3 shadow-md">
               <h3 class="font-bold text-gray-900 text-sm mb-1">{{ order.table?.number || 'Takeaway' }}</h3>
               <p class="text-xs text-gray-600 mb-2">Livrée il y a {{ getElapsedTime(order.createdAt) }}</p>
+              <div *ngIf="order.notes" class="bg-red-100 border-l-4 border-red-500 p-2 mb-2 rounded">
+                <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
+                <p class="text-xs text-red-800">{{ order.notes }}</p>
+              </div>
               <div class="text-xs space-y-1">
                 <div *ngFor="let item of order.items">{{ item.quantity }}x {{ item.product?.name }}</div>
               </div>
