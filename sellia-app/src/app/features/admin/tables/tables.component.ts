@@ -91,27 +91,21 @@ import { ToastService } from '../../../shared/services/toast.service';
             </div>
             <div *ngIf="table.qrCodeUrl" class="text-center w-full">
               <a 
-                *ngIf="table.qrCodeToken"
-                [routerLink]="['/qr', table.qrCodeToken]"
+                [routerLink]="['/menu']"
+                [queryParams]="{ table: table.publicId }"
                 target="_blank"
                 class="block">
                 <img [src]="getQrCodeUrl(table.qrCodeUrl)" alt="QR Code" class="w-32 h-32 mx-auto mb-2 bg-white p-1 rounded hover:ring-2 hover:ring-primary cursor-pointer transition-all">
               </a>
-              <img 
-                *ngIf="!table.qrCodeToken"
-                [src]="getQrCodeUrl(table.qrCodeUrl)" alt="QR Code" class="w-32 h-32 mx-auto mb-2 bg-white p-1 rounded">
               <div class="text-xs text-green-400 mb-1 font-semibold">✅ QR Code généré</div>
               <div class="text-xs text-neutral-400 break-all px-2">
                 <a 
-                  *ngIf="table.qrCodeToken"
-                  [routerLink]="['/qr', table.qrCodeToken]"
+                  [routerLink]="['/menu']"
+                  [queryParams]="{ table: table.publicId }"
                   target="_blank"
                   class="text-primary hover:text-primary-light underline cursor-pointer">
-                  {{ getQrMenuUrl(table.qrCodeToken) }}
-                </a>
-                <span *ngIf="!table.qrCodeToken">
                   {{ getMenuUrl(table.publicId) }}
-                </span>
+                </a>
               </div>
             </div>
           </div>
@@ -530,15 +524,13 @@ export class TablesComponent implements OnInit {
     return `${window.location.origin}/menu?table=${tablePublicId}`;
   }
 
-  getQrMenuUrl(qrCodeToken: string): string {
-    return `${window.location.origin}/qr/${qrCodeToken}`;
+  getQrMenuUrl(tablePublicId: string): string {
+    return `${window.location.origin}/menu?table=${tablePublicId}`;
   }
 
   openQrMenu(table: any): void {
-    if (table.qrCodeToken) {
-      this.router.navigate(['/qr', table.qrCodeToken]);
-    } else {
-      this.toast.warning('QR Code token non disponible');
-    }
+    this.router.navigate(['/menu'], { 
+      queryParams: { table: table.publicId } 
+    });
   }
 }
