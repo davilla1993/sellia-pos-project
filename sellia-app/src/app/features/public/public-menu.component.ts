@@ -13,6 +13,14 @@ interface MenuItem {
   preparationTime: number;
   isSpecial: boolean;
   specialDescription: string;
+  imagePath?: string;
+}
+
+interface Category {
+  publicId: string;
+  name: string;
+  description: string;
+  items: MenuItem[];
 }
 
 interface CartItem {
@@ -213,6 +221,18 @@ export class PublicMenuComponent implements OnInit {
 
   toggleCart(): void {
     this.showCart = !this.showCart;
+  }
+
+  decreaseQuantity(item: CartItem): void {
+    if (item.quantity > 1) {
+      item.quantity--;
+      this.updateQuantity(item);
+    }
+  }
+
+  increaseQuantity(item: CartItem): void {
+    item.quantity++;
+    this.updateQuantity(item);
   }
 
   formatPrice(price: number): string {

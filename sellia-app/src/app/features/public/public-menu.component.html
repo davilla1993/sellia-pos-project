@@ -55,7 +55,22 @@
         <h2 class="section-title">{{ category.name }}</h2>
         <p class="category-desc">{{ category.description }}</p>
         <div class="items-container">
-          <p class="no-items">{{ category.itemCount }} articles disponibles</p>
+          <div *ngFor="let item of category.items" class="product-card">
+            <div class="product-image-container" *ngIf="item.imagePath">
+              <img [src]="item.imagePath" [alt]="item.itemName" class="product-image">
+              <span *ngIf="item.preparationTime" class="prep-time">⏱ {{ item.preparationTime }}min</span>
+            </div>
+            <div class="product-header">
+              <h3 class="product-name">{{ item.itemName }}</h3>
+              <span class="product-price">{{ formatPrice(item.price) }}</span>
+            </div>
+            <p class="product-description">{{ item.description }}</p>
+            <p *ngIf="item.specialDescription" class="product-special">{{ item.specialDescription }}</p>
+            <button class="btn-add-to-cart" (click)="addToCart(item)">
+              🛒 Ajouter au panier
+            </button>
+          </div>
+          <p *ngIf="!category.items || category.items.length === 0" class="no-items">Aucun article disponible</p>
         </div>
       </div>
     </section>
@@ -82,9 +97,9 @@
               <span class="item-price">{{ formatPrice(item.unitPrice) }}</span>
             </div>
             <div class="item-controls">
-              <button class="btn-qty-decrease" (click)="item.quantity > 1 && item.quantity--; updateQuantity(item)">−</button>
+              <button class="btn-qty-decrease" (click)="decreaseQuantity(item)">−</button>
               <span class="qty-display">{{ item.quantity }}</span>
-              <button class="btn-qty-increase" (click)="item.quantity++; updateQuantity(item)">+</button>
+              <button class="btn-qty-increase" (click)="increaseQuantity(item)">+</button>
               <span class="item-subtotal">{{ formatPrice(item.totalPrice) }}</span>
               <button class="btn-remove" (click)="removeFromCart(i)">🗑</button>
             </div>
