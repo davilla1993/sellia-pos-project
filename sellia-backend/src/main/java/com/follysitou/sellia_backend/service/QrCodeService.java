@@ -43,6 +43,11 @@ public class QrCodeService {
         RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
                 .orElseThrow(() -> new BusinessException("Table not found"));
 
+        // Delete old QR code if it exists
+        if (table.getQrCodeUrl() != null && !table.getQrCodeUrl().isEmpty()) {
+            deleteQrCodeFile(table.getQrCodeUrl());
+        }
+
         // Generate unique QR code token if not already present (pour usage futur)
         String qrToken = table.getQrCodeToken();
         if (qrToken == null || qrToken.isEmpty()) {
@@ -105,5 +110,27 @@ public class QrCodeService {
 
     private String generateFileName() {
         return UUID.randomUUID() + ".png";
+    }
+
+    private void deleteQrCodeFile(String filePath) {
+        try {
+            if (filePath == null || filePath.isEmpty()) {
+                return;
+            }
+
+            // Extract filename from path (e.g., "/uploads/qrcodes/abc123.png" -> "abc123.png")
+            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+            Path fileToDelete = Paths.get(qrCodesDir).resolve(fileName);
+
+            if (Files.exists(fileToDelete)) {
+                Files.delete(fileToDelete);
+                log.info("Old QR code file deleted: {}", fileToDelete);
+            } else {
+                log.warn("QR code file not found for deletion: {}", fileToDelete);
+            }
+        } catch (IOException e) {
+            log.error("Error deleting old QR code file: {}", filePath, e);
+            // Don't throw exception - continue with generation even if deletion fails
+        }
     }
 }
