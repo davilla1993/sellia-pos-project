@@ -10,6 +10,7 @@ public class CustomerSessionResponse {
     private String publicId;
     private String tablePublicId;
     private String tableNumber;
+    private String tableName;
     private String customerName;
     private String customerPhone;
     private Boolean active;

@@ -101,7 +101,7 @@ import { CurrencyService } from '../../shared/services/currency.service';
         <!-- Session Info -->
         <div *ngIf="selectedSession()">
           <h2 class="text-2xl font-bold text-white">Encaissement</h2>
-          <p class="text-neutral-400 text-sm">Table {{ selectedSession().table?.number }} - {{ selectedSession().table?.name }}</p>
+          <p class="text-neutral-400 text-sm">Table {{ selectedSession().tableNumber }} <span *ngIf="selectedSession().tableName"> - {{ selectedSession().tableName }}</span></p>
         </div>
 
         <!-- Orders Display -->
@@ -203,7 +203,7 @@ import { CurrencyService } from '../../shared/services/currency.service';
           </div>
           
           <div class="border-b border-black mb-4 pb-4">
-            <p class="font-bold">Table: {{ selectedSession()?.table?.number || 'Takeaway' }}</p>
+            <p class="font-bold">Table: {{ selectedSession()?.tableNumber || 'Takeaway' }}</p>
             <p class="text-xs">Session: {{ selectedSession()?.publicId?.substring(0, 8) }}</p>
           </div>
 
@@ -475,7 +475,7 @@ export class CheckoutComponent implements OnInit {
   printReceipt(): void {
     const printWindow = window.open('', '', 'width=300,height=600');
     if (printWindow) {
-      const tableNumber = this.selectedSession()?.table?.number || 'Takeaway';
+      const tableNumber = this.selectedSession()?.tableNumber || 'Takeaway';
       const restaurant = this.restaurantInfo();
       
       printWindow.document.write(`

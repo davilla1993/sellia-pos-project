@@ -16,6 +16,7 @@ public class CustomerSessionMapper {
         response.setPublicId(session.getPublicId());
         response.setTablePublicId(session.getTable() != null ? session.getTable().getPublicId() : null);
         response.setTableNumber(session.getTable() != null ? session.getTable().getNumber() : null);
+        response.setTableName(session.getTable() != null ? session.getTable().getName() : null);
         response.setCustomerName(session.getCustomerName());
         response.setCustomerPhone(session.getCustomerPhone());
         response.setActive(session.getActive());
