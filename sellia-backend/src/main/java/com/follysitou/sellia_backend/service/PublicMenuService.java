@@ -131,19 +131,33 @@ public class PublicMenuService {
     }
 
     private List<Menu> getApplicableMenus(Boolean isVip) {
+        List<Menu> menus = new ArrayList<>();
+        
         if (Boolean.TRUE.equals(isVip)) {
             // Menus VIP et Menu du Jour
             List<Menu> vipMenus = menuRepository.findByMenuTypeAndActive(MenuType.VIP, true);
+            log.debug("Found {} VIP menus", vipMenus.size());
+            menus.addAll(vipMenus);
+            
             List<Menu> dailyMenus = menuRepository.findByMenuTypeAndActive(MenuType.MENU_DU_JOUR, true);
-            vipMenus.addAll(dailyMenus);
-            return vipMenus;
+            log.debug("Found {} MENU_DU_JOUR menus", dailyMenus.size());
+            menus.addAll(dailyMenus);
         } else {
             // Menus standard et menu du jour (pas VIP)
             List<Menu> standardMenus = menuRepository.findByMenuTypeAndActive(MenuType.STANDARD, true);
+            log.debug("Found {} STANDARD menus", standardMenus.size());
+            menus.addAll(standardMenus);
+            
             List<Menu> dailyMenus = menuRepository.findByMenuTypeAndActive(MenuType.MENU_DU_JOUR, true);
-            standardMenus.addAll(dailyMenus);
-            return standardMenus;
+            log.debug("Found {} MENU_DU_JOUR menus", dailyMenus.size());
+            menus.addAll(dailyMenus);
         }
+        
+        if (menus.isEmpty()) {
+            log.warn("No applicable menus found for VIP={}", isVip);
+        }
+        
+        return menus;
     }
 
     private PublicMenuResponse.MenuItemResponse mapMenuItemToResponse(MenuItem menuItem) {
