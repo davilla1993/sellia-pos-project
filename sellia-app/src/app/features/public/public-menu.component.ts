@@ -69,8 +69,8 @@ export class PublicMenuComponent implements OnInit {
         this.tablePublicId = tableId;
         this.loadMenu();
       } else {
-        this.error = 'Table non spécifiée';
-        setTimeout(() => this.router.navigate(['/']), 3000);
+        this.error = 'Table non spécifiée. Veuillez scanner un QR code valide.';
+        this.loading = false;
       }
     });
   }
@@ -90,9 +90,8 @@ export class PublicMenuComponent implements OnInit {
         this.loading = false;
       },
       error => {
-        this.error = 'Table non trouvée ou menu indisponible';
+        this.error = 'Table non trouvée ou menu indisponible. Veuillez vérifier le QR code et réessayer.';
         this.loading = false;
-        setTimeout(() => this.router.navigate(['/']), 3000);
       }
     );
   }

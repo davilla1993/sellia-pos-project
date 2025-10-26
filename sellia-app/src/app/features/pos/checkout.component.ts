@@ -417,7 +417,7 @@ export class CheckoutComponent implements OnInit {
 
   updateAmountPaid(amountStr: string): void {
     const amount = parseInt(amountStr, 10) || 0;
-    this.amountPaid.set(amount * 100);
+    this.amountPaid.set(amount);
     this.calculateChange();
   }
 
