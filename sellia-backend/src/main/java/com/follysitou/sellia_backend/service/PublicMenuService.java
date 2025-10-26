@@ -34,17 +34,12 @@ public class PublicMenuService {
         try {
             log.info("Loading public menu for table: {}", tablePublicId);
             
-            // Récupérer la table
-            RestaurantTable table = tableRepository.findByPublicId(tablePublicId)
+            // Récupérer la table (non supprimée)
+            RestaurantTable table = tableRepository.findByPublicIdNotDeleted(tablePublicId)
                     .orElseThrow(() -> {
-                        log.error("Table not found: {}", tablePublicId);
+                        log.error("Table not found or deleted: {}", tablePublicId);
                         return new ResourceNotFoundException("Table not found");
                     });
-
-            if (table.getDeleted() != null && table.getDeleted()) {
-                log.error("Table is deleted: {}", tablePublicId);
-                throw new ResourceNotFoundException("Table has been deleted");
-            }
 
             log.info("Table found: {} ({}), VIP: {}", table.getNumber(), table.getName(), table.getIsVip());
 

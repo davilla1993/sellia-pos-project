@@ -47,4 +47,7 @@ public interface RestaurantTableRepository extends JpaRepository<RestaurantTable
 
     @Query("SELECT t FROM RestaurantTable t WHERE t.deleted = false ORDER BY t.room, t.number")
     Page<RestaurantTable> findAllNotDeleted(Pageable pageable);
+
+    @Query("SELECT t FROM RestaurantTable t WHERE t.publicId = :publicId AND t.deleted = false")
+    Optional<RestaurantTable> findByPublicIdNotDeleted(@Param("publicId") String publicId);
 }
