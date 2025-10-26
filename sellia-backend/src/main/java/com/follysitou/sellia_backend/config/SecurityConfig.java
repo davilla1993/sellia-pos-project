@@ -88,6 +88,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         // Static files (uploads)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        // Public API endpoints (QR code menu, orders, health)
+                        .requestMatchers("/api/public/**").permitAll()
                         // Public GET endpoints for products, categories, menus, tables
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
