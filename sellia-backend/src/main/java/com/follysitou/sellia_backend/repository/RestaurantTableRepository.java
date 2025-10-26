@@ -44,4 +44,7 @@ public interface RestaurantTableRepository extends JpaRepository<RestaurantTable
 
     @Query("SELECT t FROM RestaurantTable t WHERE t.deleted = false AND t.qrCodeToken = :qrCodeToken")
     Optional<RestaurantTable> findByQrCodeToken(@Param("qrCodeToken") String qrCodeToken);
+
+    @Query("SELECT t FROM RestaurantTable t WHERE t.deleted = false ORDER BY t.room, t.number")
+    Page<RestaurantTable> findAllNotDeleted(Pageable pageable);
 }

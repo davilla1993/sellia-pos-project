@@ -48,11 +48,14 @@ public class RestaurantTableService {
     public RestaurantTableResponse getTableById(String publicId) {
         RestaurantTable table = tableRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("RestaurantTable", "publicId", publicId));
+        if (table.getDeleted()) {
+            throw new ResourceNotFoundException("RestaurantTable", "publicId", publicId);
+        }
         return tableMapper.toResponse(table);
     }
 
     public Page<RestaurantTableResponse> getAllTables(Pageable pageable) {
-        Page<RestaurantTable> tables = tableRepository.findAll(pageable);
+        Page<RestaurantTable> tables = tableRepository.findAllNotDeleted(pageable);
         return tables.map(tableMapper::toResponse);
     }
 
@@ -103,6 +106,9 @@ public class RestaurantTableService {
     public RestaurantTableResponse updateTable(String publicId, RestaurantTableUpdateRequest request) {
         RestaurantTable table = tableRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("RestaurantTable", "publicId", publicId));
+        if (table.getDeleted()) {
+            throw new ResourceNotFoundException("RestaurantTable", "publicId", publicId);
+        }
 
         if (request.getNumber() != null && !request.getNumber().equals(table.getNumber())) {
             if (tableRepository.existsByNumberAndDeletedFalse(request.getNumber())) {
@@ -144,6 +150,9 @@ public class RestaurantTableService {
     public void occupyTable(String publicId, String orderId) {
         RestaurantTable table = tableRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("RestaurantTable", "publicId", publicId));
+        if (table.getDeleted()) {
+            throw new ResourceNotFoundException("RestaurantTable", "publicId", publicId);
+        }
         table.setOccupied(true);
         table.setCurrentOrderId(orderId);
         tableRepository.save(table);
@@ -153,6 +162,9 @@ public class RestaurantTableService {
     public void releaseTable(String publicId) {
         RestaurantTable table = tableRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("RestaurantTable", "publicId", publicId));
+        if (table.getDeleted()) {
+            throw new ResourceNotFoundException("RestaurantTable", "publicId", publicId);
+        }
         table.setOccupied(false);
         table.setCurrentOrderId(null);
         tableRepository.save(table);
