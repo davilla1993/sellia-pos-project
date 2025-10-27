@@ -48,8 +48,12 @@ export class PublicMenuComponent implements OnInit {
   error: string = '';
   
   categories: any[] = [];
+  allCategories: any[] = [];
+  selectedCategory: string = '';
   menuItems: MenuItem[] = [];
+  filteredItems: MenuItem[] = [];
   popularItems: MenuItem[] = [];
+  searchQuery: string = '';
   
   cart: CartItem[] = [];
   cartTotal: number = 0;
@@ -106,6 +110,7 @@ export class PublicMenuComponent implements OnInit {
         this.categories = response.categories;
         this.popularItems = response.popularItems;
         this.flattenMenuItems();
+        this.buildAllCategories();
         this.loading = false;
       },
       error => {
@@ -136,10 +141,53 @@ export class PublicMenuComponent implements OnInit {
 
   flattenMenuItems(): void {
     this.menuItems = [];
-    // Récupérer tous les items (à partir des catégories ou du service)
     this.categories.forEach(cat => {
-      // Note: À adapter selon la structure réelle des données
+      cat.items.forEach((item: MenuItem) => {
+        this.menuItems.push({
+          ...item,
+          isSpecial: this.popularItems.some(p => p.publicId === item.publicId)
+        });
+      });
     });
+    this.filterItems();
+  }
+
+  buildAllCategories(): void {
+    this.allCategories = this.categories.map(cat => ({
+      publicId: cat.publicId,
+      name: cat.name
+    }));
+    
+    if (this.allCategories.length > 0) {
+      this.selectedCategory = this.allCategories[0].publicId;
+      this.filterItems();
+    }
+  }
+
+  selectCategory(categoryPublicId: string): void {
+    this.selectedCategory = categoryPublicId;
+    this.filterItems();
+  }
+
+  filterItems(): void {
+    let filtered = [...this.menuItems];
+
+    if (this.selectedCategory) {
+      const category = this.categories.find(c => c.publicId === this.selectedCategory);
+      if (category) {
+        filtered = category.items;
+      }
+    }
+
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.itemName.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query)
+      );
+    }
+
+    this.filteredItems = filtered;
   }
 
   addToCart(item: MenuItem): void {
@@ -219,8 +267,12 @@ export class PublicMenuComponent implements OnInit {
     );
   }
 
-  toggleCart(): void {
-    this.showCart = !this.showCart;
+  openCart(): void {
+    this.showCart = true;
+  }
+
+  closeCart(): void {
+    this.showCart = false;
   }
 
   decreaseQuantity(item: CartItem): void {

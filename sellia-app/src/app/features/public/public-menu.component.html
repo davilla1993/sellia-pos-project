@@ -1,19 +1,42 @@
 <div class="menu-container">
-  <!-- Header avec logo -->
+  <!-- Header -->
   <header class="menu-header">
-    <div class="header-wrapper">
-      <div class="logo-section">
-        <img src="assets/maison-recla-logo.jpg" alt="MAISON RECLA" class="logo">
-        <h1>MAISON RECLA</h1>
+    <div class="header-content">
+      <div class="header-top">
+        <div class="logo-section">
+          <img src="assets/maison-recla-logo.jpg" alt="MAISON RECLA" class="logo">
+          <h1>MAISON RECLA</h1>
+        </div>
+        <div class="table-info">
+          <span class="table-label">Table {{ tableNumber }}</span>
+          <span *ngIf="isVip" class="vip-badge">VIP</span>
+        </div>
       </div>
-      <div class="table-info">
-        <span class="table-label">Table {{ tableNumber }}</span>
-        <span *ngIf="isVip" class="vip-badge">VIP</span>
+
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (keyup)="filterItems()" 
+          placeholder="Rechercher un plat..."
+          class="search-input">
+      </div>
+
+      <!-- Tabs des catégories -->
+      <div class="category-tabs">
+        <button 
+          *ngFor="let cat of allCategories" 
+          [class.active]="selectedCategory === cat.publicId"
+          (click)="selectCategory(cat.publicId)"
+          class="tab-button">
+          {{ cat.name }}
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Alerts -->
+  <!-- Alerts & Loading -->
   <div *ngIf="error" class="alert alert-error">
     <p>{{ error }}</p>
   </div>
@@ -28,113 +51,92 @@
     <p>Numéro: <strong>{{ orderNumber }}</strong></p>
   </div>
 
-  <!-- Main Layout -->
-  <div *ngIf="!loading && !orderSuccess" class="main-layout">
-    <!-- Left: Menu -->
-    <section class="menu-content">
-      <!-- Spécialités -->
-      <div *ngIf="popularItems.length > 0" class="menu-section">
-        <h2 class="section-title">⭐ Spécialités du Jour</h2>
-        <div class="items-container">
-          <div *ngFor="let item of popularItems" class="product-card special">
-            <div class="product-header">
-              <h3 class="product-name">{{ item.itemName }}</h3>
-              <span class="product-price">{{ formatPrice(item.price) }}</span>
-            </div>
-            <p class="product-description">{{ item.description }}</p>
-            <p *ngIf="item.specialDescription" class="product-special">{{ item.specialDescription }}</p>
-            <button class="btn-add-to-cart" (click)="addToCart(item)">
-              🛒 Ajouter au panier
-            </button>
+  <!-- Main Content -->
+  <div *ngIf="!loading && !orderSuccess" class="main-content">
+    <div class="menu-grid">
+      <!-- Items affichés -->
+      <div *ngFor="let item of filteredItems" class="product-card">
+        <div class="product-image-container" *ngIf="item.imagePath">
+          <img [src]="item.imagePath" [alt]="item.itemName" class="product-image">
+          <span *ngIf="item.isSpecial" class="special-badge">⭐ Spécialité</span>
+        </div>
+        <div class="product-body">
+          <h3 class="product-name">{{ item.itemName }}</h3>
+          <p class="product-description">{{ item.description }}</p>
+          <p *ngIf="item.specialDescription" class="product-special">{{ item.specialDescription }}</p>
+          <div class="product-footer">
+            <span class="product-price">{{ formatPrice(item.price) }}</span>
+            <button class="btn-add-to-cart" (click)="addToCart(item)">+ Ajouter</button>
           </div>
         </div>
       </div>
 
-      <!-- Catégories -->
-      <div *ngFor="let category of categories" class="menu-section">
-        <h2 class="section-title">{{ category.name }}</h2>
-        <p class="category-desc">{{ category.description }}</p>
-        <div class="items-container">
-          <div *ngFor="let item of category.items" class="product-card">
-            <div class="product-image-container" *ngIf="item.imagePath">
-              <img [src]="item.imagePath" [alt]="item.itemName" class="product-image">
-              <span *ngIf="item.preparationTime" class="prep-time">⏱ {{ item.preparationTime }}min</span>
-            </div>
-            <div class="product-header">
-              <h3 class="product-name">{{ item.itemName }}</h3>
-              <span class="product-price">{{ formatPrice(item.price) }}</span>
-            </div>
-            <p class="product-description">{{ item.description }}</p>
-            <p *ngIf="item.specialDescription" class="product-special">{{ item.specialDescription }}</p>
-            <button class="btn-add-to-cart" (click)="addToCart(item)">
-              🛒 Ajouter au panier
-            </button>
-          </div>
-          <p *ngIf="!category.items || category.items.length === 0" class="no-items">Aucun article disponible</p>
-        </div>
+      <!-- Aucun résultat -->
+      <div *ngIf="filteredItems.length === 0" class="no-results">
+        <p>Aucun article ne correspond à votre recherche</p>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- Right: Panier -->
-    <aside class="cart-panel" [class.open]="showCart">
-      <div class="cart-header">
-        <h2>🛒 Panier</h2>
-        <button class="btn-close" (click)="toggleCart()">✕</button>
+  <!-- Floating Cart Button -->
+  <button class="cart-floating-btn" *ngIf="cart.length > 0" (click)="openCart()">
+    🛒 <span class="cart-count">{{ cart.length }}</span>
+    {{ formatPrice(cartTotal) }}
+  </button>
+
+  <!-- Cart Modal -->
+  <div class="cart-modal" *ngIf="showCart" [class.open]="showCart">
+    <div class="cart-modal-overlay" (click)="closeCart()"></div>
+    <div class="cart-modal-content">
+      <div class="cart-modal-header">
+        <h2>Panier</h2>
+        <button class="btn-close-modal" (click)="closeCart()">✕</button>
       </div>
 
       <!-- Panier vide -->
       <div *ngIf="cart.length === 0" class="empty-cart">
-        <p class="empty-icon">🛒</p>
-        <p>Panier vide</p>
+        <p>Votre panier est vide</p>
       </div>
 
       <!-- Panier rempli -->
-      <div *ngIf="cart.length > 0" class="cart-full">
-        <div class="cart-items">
+      <div *ngIf="cart.length > 0" class="cart-modal-body">
+        <div class="cart-items-list">
           <div *ngFor="let item of cart; let i = index" class="cart-item">
-            <div class="item-left">
+            <div class="item-info">
               <span class="item-name">{{ item.itemName }}</span>
               <span class="item-price">{{ formatPrice(item.unitPrice) }}</span>
             </div>
-            <div class="item-controls">
-              <button class="btn-qty-decrease" (click)="decreaseQuantity(item)">−</button>
-              <span class="qty-display">{{ item.quantity }}</span>
-              <button class="btn-qty-increase" (click)="increaseQuantity(item)">+</button>
-              <span class="item-subtotal">{{ formatPrice(item.totalPrice) }}</span>
-              <button class="btn-remove" (click)="removeFromCart(i)">🗑</button>
+            <div class="item-actions">
+              <button class="qty-btn" (click)="decreaseQuantity(item)">−</button>
+              <span class="qty">{{ item.quantity }}</span>
+              <button class="qty-btn" (click)="increaseQuantity(item)">+</button>
+              <span class="item-total">{{ formatPrice(item.totalPrice) }}</span>
+              <button class="btn-delete" (click)="removeFromCart(i)">🗑</button>
             </div>
           </div>
         </div>
 
-        <!-- Totals -->
-        <div class="cart-totals">
-          <div class="total-row">
+        <div class="cart-summary">
+          <div class="summary-row">
             <span>Sous-total</span>
             <strong>{{ formatPrice(cartTotal) }}</strong>
           </div>
         </div>
 
-        <!-- Customer Info -->
-        <div class="customer-form">
+        <div class="customer-info">
           <h3>Vos informations</h3>
-          <input type="text" [(ngModel)]="customerName" placeholder="Nom (optionnel)" class="form-input">
-          <input type="tel" [(ngModel)]="customerPhone" placeholder="Tél. (optionnel)" class="form-input">
-          <textarea [(ngModel)]="notes" placeholder="Allergies, préférences..." class="form-textarea"></textarea>
+          <input type="text" [(ngModel)]="customerName" placeholder="Nom (optionnel)" class="input-field">
+          <input type="tel" [(ngModel)]="customerPhone" placeholder="Tél. (optionnel)" class="input-field">
+          <textarea [(ngModel)]="notes" placeholder="Allergies, préférences..." class="input-field"></textarea>
         </div>
 
-        <!-- Submit Button -->
         <button 
-          class="btn-commander" 
+          class="btn-submit-order" 
           (click)="submitOrder()"
-          [disabled]="submitting || cart.length === 0">
-          {{ submitting ? '⏳ Envoi...' : `🍔 Commander - ${formatPrice(cartTotal)}` }}
+          [disabled]="submitting">
+          {{ submitting ? '⏳ Envoi...' : `Commander - ${formatPrice(cartTotal)}` }}
         </button>
       </div>
-    </aside>
-
-    <!-- Mobile Cart Button -->
-    <button class="mobile-cart-btn" *ngIf="cart.length > 0" (click)="toggleCart()">
-      🛒 {{ cart.length }}
-    </button>
+    </div>
   </div>
 </div>
