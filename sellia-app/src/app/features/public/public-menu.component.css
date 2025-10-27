@@ -99,39 +99,6 @@
   background: white;
 }
 
-/* ===== CATEGORY TABS ===== */
-.category-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-
-.tab-button {
-  padding: 8px 16px;
-  border: 1.5px solid #e0e0e0;
-  background: white;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.tab-button:hover {
-  border-color: #d4a574;
-  color: #d4a574;
-}
-
-.tab-button.active {
-  background: #8B6914;
-  color: white;
-  border-color: #8B6914;
-}
-
 /* ===== ALERTS ===== */
 .alert {
   max-width: 1200px;
@@ -318,6 +285,69 @@
   text-align: center;
   padding: 60px 20px;
   color: #999;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.pagination-btn {
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: #d4a574;
+  color: #d4a574;
+  background: #f5f3f0;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 6px;
+}
+
+.page-number {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-number:hover {
+  border-color: #d4a574;
+  color: #d4a574;
+}
+
+.page-number.active {
+  background: #8B6914;
+  color: white;
+  border-color: #8B6914;
 }
 
 /* ===== FLOATING CART BUTTON ===== */

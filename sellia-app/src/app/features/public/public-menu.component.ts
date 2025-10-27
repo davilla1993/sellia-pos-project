@@ -47,13 +47,14 @@ export class PublicMenuComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
   
-  categories: any[] = [];
-  allCategories: any[] = [];
-  selectedCategory: string = '';
-  menuItems: MenuItem[] = [];
+  allMenuItems: MenuItem[] = [];
   filteredItems: MenuItem[] = [];
-  popularItems: MenuItem[] = [];
+  paginatedItems: MenuItem[] = [];
+  
   searchQuery: string = '';
+  currentPage: number = 0;
+  itemsPerPage: number = 8;
+  totalPages: number = 0;
   
   cart: CartItem[] = [];
   cartTotal: number = 0;
@@ -107,10 +108,9 @@ export class PublicMenuComponent implements OnInit {
         this.tableNumber = response.tableNumber;
         this.isVip = response.isVip;
         this.customerSessionToken = response.customerSessionToken;
-        this.categories = response.categories;
-        this.popularItems = response.popularItems;
-        this.flattenMenuItems();
-        this.buildAllCategories();
+        
+        this.allMenuItems = this.flattenMenuItems(response);
+        this.filterAndPaginate();
         this.loading = false;
       },
       error => {
@@ -118,6 +118,34 @@ export class PublicMenuComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  private flattenMenuItems(response: any): MenuItem[] {
+    const items: MenuItem[] = [];
+    
+    if (!response.categories || !Array.isArray(response.categories)) {
+      return items;
+    }
+
+    response.categories.forEach((category: any) => {
+      if (category.items && Array.isArray(category.items)) {
+        category.items.forEach((item: any) => {
+          items.push({
+            publicId: item.publicId,
+            menuName: item.menuName || '',
+            itemName: item.itemName,
+            price: item.price,
+            description: item.description,
+            preparationTime: item.preparationTime || 0,
+            isSpecial: false,
+            specialDescription: item.specialDescription || '',
+            imagePath: item.imagePath
+          });
+        });
+      }
+    });
+
+    return items;
   }
 
   loadMenuByQrToken(qrToken: string): void {
@@ -139,45 +167,8 @@ export class PublicMenuComponent implements OnInit {
     );
   }
 
-  flattenMenuItems(): void {
-    this.menuItems = [];
-    this.categories.forEach(cat => {
-      cat.items.forEach((item: MenuItem) => {
-        this.menuItems.push({
-          ...item,
-          isSpecial: this.popularItems.some(p => p.publicId === item.publicId)
-        });
-      });
-    });
-    this.filterItems();
-  }
-
-  buildAllCategories(): void {
-    this.allCategories = this.categories.map(cat => ({
-      publicId: cat.publicId,
-      name: cat.name
-    }));
-    
-    if (this.allCategories.length > 0) {
-      this.selectedCategory = this.allCategories[0].publicId;
-      this.filterItems();
-    }
-  }
-
-  selectCategory(categoryPublicId: string): void {
-    this.selectedCategory = categoryPublicId;
-    this.filterItems();
-  }
-
-  filterItems(): void {
-    let filtered = [...this.menuItems];
-
-    if (this.selectedCategory) {
-      const category = this.categories.find(c => c.publicId === this.selectedCategory);
-      if (category) {
-        filtered = category.items;
-      }
-    }
+  filterAndPaginate(): void {
+    let filtered = [...this.allMenuItems];
 
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
@@ -188,6 +179,36 @@ export class PublicMenuComponent implements OnInit {
     }
 
     this.filteredItems = filtered;
+    this.currentPage = 0;
+    this.updatePagination();
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredItems.length / this.itemsPerPage);
+    const startIndex = this.currentPage * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedItems = this.filteredItems.slice(startIndex, endIndex);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.updatePagination();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.updatePagination();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
   }
 
   addToCart(item: MenuItem): void {

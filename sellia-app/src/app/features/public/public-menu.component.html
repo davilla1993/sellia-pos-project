@@ -4,7 +4,7 @@
     <div class="header-content">
       <div class="header-top">
         <div class="logo-section">
-          <img src="assets/maison-recla-logo.jpg" alt="MAISON RECLA" class="logo">
+          <img src="assets/logo.jpg" alt="MAISON RECLA" class="logo">
           <h1>MAISON RECLA</h1>
         </div>
         <div class="table-info">
@@ -18,20 +18,9 @@
         <input 
           type="text" 
           [(ngModel)]="searchQuery" 
-          (keyup)="filterItems()" 
+          (keyup)="filterAndPaginate()" 
           placeholder="Rechercher un plat..."
           class="search-input">
-      </div>
-
-      <!-- Tabs des catégories -->
-      <div class="category-tabs">
-        <button 
-          *ngFor="let cat of allCategories" 
-          [class.active]="selectedCategory === cat.publicId"
-          (click)="selectCategory(cat.publicId)"
-          class="tab-button">
-          {{ cat.name }}
-        </button>
       </div>
     </div>
   </header>
@@ -55,7 +44,7 @@
   <div *ngIf="!loading && !orderSuccess" class="main-content">
     <div class="menu-grid">
       <!-- Items affichés -->
-      <div *ngFor="let item of filteredItems" class="product-card">
+      <div *ngFor="let item of paginatedItems" class="product-card">
         <div class="product-image-container" *ngIf="item.imagePath">
           <img [src]="item.imagePath" [alt]="item.itemName" class="product-image">
           <span *ngIf="item.isSpecial" class="special-badge">⭐ Spécialité</span>
@@ -75,6 +64,23 @@
       <div *ngIf="filteredItems.length === 0" class="no-results">
         <p>Aucun article ne correspond à votre recherche</p>
       </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 0">← Précédent</button>
+      
+      <div class="pagination-numbers">
+        <button 
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          [class.active]="i === currentPage"
+          (click)="goToPage(i)"
+          class="page-number">
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">Suivant →</button>
     </div>
   </div>
 
