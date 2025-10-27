@@ -310,7 +310,7 @@ export class PublicMenuComponent implements OnInit {
   }
 
   formatPrice(price: number): string {
-    const formatted = Math.round(price / 100).toLocaleString('fr-FR');
+    const formatted = Math.round(price).toLocaleString('fr-FR');
     return `${formatted} FCFA`;
   }
 
