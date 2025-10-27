@@ -127,22 +127,19 @@ export class PublicMenuComponent implements OnInit {
       return items;
     }
 
+    // Les catégories n'ont pas d'items, afficher les catégories comme items
     response.categories.forEach((category: any) => {
-      if (category.items && Array.isArray(category.items)) {
-        category.items.forEach((item: any) => {
-          items.push({
-            publicId: item.publicId,
-            menuName: item.menuName || '',
-            itemName: item.itemName,
-            price: item.price,
-            description: item.description,
-            preparationTime: item.preparationTime || 0,
-            isSpecial: false,
-            specialDescription: item.specialDescription || '',
-            imagePath: item.imagePath
-          });
-        });
-      }
+      items.push({
+        publicId: category.publicId,
+        menuName: category.name || '',
+        itemName: category.name,
+        price: 0,
+        description: category.description || `${category.itemCount} article(s)`,
+        preparationTime: 0,
+        isSpecial: false,
+        specialDescription: `${category.itemCount} article(s) disponible(s)`,
+        imagePath: ''
+      });
     });
 
     return items;
