@@ -41,8 +41,8 @@ public class ProductService {
         // Upload image if provided
         if (request.getImage() != null && !request.getImage().isEmpty()) {
             String fileName = fileService.uploadProductImage(request.getImage());
-            product.setImageUrl("/api/products/images/" + fileName);
-            log.info("Product image uploaded: /api/products/images/{}", fileName);
+            product.setImageUrl("/uploads/" + fileName);
+            log.info("Product image uploaded: /uploads/{}", fileName);
         }
 
         // Get category
@@ -132,8 +132,8 @@ public class ProductService {
             }
             // Upload new image
             String newFileName = fileService.uploadProductImage(request.getImage());
-            product.setImageUrl("/api/products/images/" + newFileName);
-            log.info("New product image uploaded: /api/products/images/{}", newFileName);
+            product.setImageUrl("/uploads/" + newFileName);
+            log.info("New product image uploaded: /uploads/{}", newFileName);
         }
 
         productMapper.updateEntityFromRequest(request, product);
