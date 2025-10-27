@@ -105,6 +105,9 @@ export class PublicMenuComponent implements OnInit {
     
     this.apiService.getPublicMenu(this.tablePublicId).subscribe(
       response => {
+        console.log('Raw API response:', response);
+        console.log('First item:', response.categories?.[0]?.items?.[0]);
+        
         this.tableNumber = response.tableNumber;
         this.isVip = response.isVip;
         this.customerSessionToken = response.customerSessionToken;
