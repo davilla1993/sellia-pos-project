@@ -127,19 +127,23 @@ export class PublicMenuComponent implements OnInit {
       return items;
     }
 
-    // Les catégories n'ont pas d'items, afficher les catégories comme items
-    response.categories.forEach((category: any) => {
-      items.push({
-        publicId: category.publicId,
-        menuName: category.name || '',
-        itemName: category.name,
-        price: 0,
-        description: category.description || `${category.itemCount} article(s)`,
-        preparationTime: 0,
-        isSpecial: false,
-        specialDescription: `${category.itemCount} article(s) disponible(s)`,
-        imagePath: ''
-      });
+    // Extraire les items depuis les catégories (qui contiennent les items détaillés)
+    response.categories.forEach((menu: any) => {
+      if (menu.items && Array.isArray(menu.items)) {
+        menu.items.forEach((item: any) => {
+          items.push({
+            publicId: item.publicId,
+            menuName: item.menuName || '',
+            itemName: item.itemName,
+            price: item.price || 0,
+            description: item.description || '',
+            preparationTime: item.preparationTime || 0,
+            isSpecial: item.isSpecial || false,
+            specialDescription: item.specialDescription || '',
+            imagePath: item.imageUrl || ''
+          });
+        });
+      }
     });
 
     return items;

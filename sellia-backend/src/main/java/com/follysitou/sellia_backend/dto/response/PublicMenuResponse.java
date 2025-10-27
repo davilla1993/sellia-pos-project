@@ -30,6 +30,7 @@ public class PublicMenuResponse {
         private String name;
         private String description;
         private Integer itemCount;
+        private List<MenuItemResponse> items;
     }
 
     @Data
