@@ -48,5 +48,19 @@ public class PublicMenuResponse {
         private List<String> allergens;
         private Boolean isSpecial;
         private String specialDescription;
+        private String categoryName;
+        private Long categoryId;
+        private Integer productCount;
+        private List<ComboProductDetail> comboProducts;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ComboProductDetail {
+        private String name;
+        private String imageUrl;
+        private Long price;
     }
 }

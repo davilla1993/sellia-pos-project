@@ -14,6 +14,15 @@ interface MenuItem {
   isSpecial: boolean;
   specialDescription: string;
   imagePath?: string;
+  categoryName?: string;
+  categoryId?: number;
+  productCount?: number;
+}
+
+interface CategoryFilter {
+  id: string;
+  name: string;
+  count: number;
 }
 
 interface Category {
@@ -49,12 +58,9 @@ export class PublicMenuComponent implements OnInit {
   
   allMenuItems: MenuItem[] = [];
   filteredItems: MenuItem[] = [];
-  paginatedItems: MenuItem[] = [];
-  
   searchQuery: string = '';
-  currentPage: number = 0;
-  itemsPerPage: number = 8;
-  totalPages: number = 0;
+  categories: CategoryFilter[] = [];
+  selectedCategory: string = 'all';
   
   cart: CartItem[] = [];
   cartTotal: number = 0;
@@ -105,15 +111,13 @@ export class PublicMenuComponent implements OnInit {
     
     this.apiService.getPublicMenu(this.tablePublicId).subscribe(
       response => {
-        console.log('Raw API response:', response);
-        console.log('First item:', response.categories?.[0]?.items?.[0]);
-        
         this.tableNumber = response.tableNumber;
         this.isVip = response.isVip;
         this.customerSessionToken = response.customerSessionToken;
-        
+
         this.allMenuItems = this.flattenMenuItems(response);
-        this.filterAndPaginate();
+        this.extractCategories();
+        this.filterItems();
         this.loading = false;
       },
       error => {
@@ -125,7 +129,7 @@ export class PublicMenuComponent implements OnInit {
 
   private flattenMenuItems(response: any): MenuItem[] {
     const items: MenuItem[] = [];
-    
+
     if (!response.categories || !Array.isArray(response.categories)) {
       return items;
     }
@@ -143,13 +147,80 @@ export class PublicMenuComponent implements OnInit {
             preparationTime: item.preparationTime || 0,
             isSpecial: item.isSpecial || false,
             specialDescription: item.specialDescription || '',
-            imagePath: item.imageUrl || ''
+            imagePath: this.buildImageUrl(item.imageUrl),
+            categoryName: item.categoryName,
+            categoryId: item.categoryId,
+            productCount: item.productCount || 0
           });
         });
       }
     });
 
     return items;
+  }
+
+  /**
+   * Extrait les catégories uniques des items et compte le nombre d'items par catégorie
+   * Crée une catégorie virtuelle "Combos" pour les menus avec plusieurs produits
+   */
+  private extractCategories(): void {
+    const categoryMap = new Map<string, { name: string; count: number }>();
+
+    // Ajouter la catégorie "Tous"
+    categoryMap.set('all', { name: 'Tous', count: this.allMenuItems.length });
+
+    this.allMenuItems.forEach(item => {
+      // Si le menu contient plusieurs produits, c'est un combo
+      if (item.productCount && item.productCount > 1) {
+        const existing = categoryMap.get('combos');
+        if (existing) {
+          existing.count++;
+        } else {
+          categoryMap.set('combos', { name: 'Combos', count: 1 });
+        }
+      }
+      // Sinon, utiliser la catégorie du produit
+      else if (item.categoryName && item.categoryId) {
+        const key = `cat_${item.categoryId}`;
+        const existing = categoryMap.get(key);
+        if (existing) {
+          existing.count++;
+        } else {
+          categoryMap.set(key, { name: item.categoryName, count: 1 });
+        }
+      }
+    });
+
+    // Convertir en tableau et trier
+    this.categories = Array.from(categoryMap.entries())
+      .map(([id, data]) => ({ id, name: data.name, count: data.count }))
+      .sort((a, b) => {
+        // "Tous" en premier
+        if (a.id === 'all') return -1;
+        if (b.id === 'all') return 1;
+        // "Combos" en dernier
+        if (a.id === 'combos') return 1;
+        if (b.id === 'combos') return -1;
+        // Les autres par ordre alphabétique
+        return a.name.localeCompare(b.name);
+      });
+  }
+
+  /**
+   * Construit l'URL complète de l'image à partir de l'URL relative
+   * Convertit "/uploads/filename.jpg" en "http://localhost:8080/api/products/images/filename.jpg"
+   */
+  private buildImageUrl(imageUrl: string | null | undefined): string {
+    if (!imageUrl) return '';
+
+    // Si l'URL est déjà complète (commence par http), la retourner telle quelle
+    if (imageUrl.startsWith('http')) return imageUrl;
+
+    // Extraire le nom du fichier depuis le chemin
+    const filename = imageUrl.includes('/') ? imageUrl.split('/').pop() : imageUrl;
+
+    // Construire l'URL complète vers l'API backend
+    return `http://localhost:8080/api/products/images/${filename}`;
   }
 
   loadMenuByQrToken(qrToken: string): void {
@@ -171,48 +242,36 @@ export class PublicMenuComponent implements OnInit {
     );
   }
 
-  filterAndPaginate(): void {
-    let filtered = [...this.allMenuItems];
+  filterItems(): void {
+    let items = [...this.allMenuItems];
 
+    // Filtrer par catégorie
+    if (this.selectedCategory !== 'all') {
+      if (this.selectedCategory === 'combos') {
+        // Filtrer les combos (menus avec plusieurs produits)
+        items = items.filter(item => item.productCount && item.productCount > 1);
+      } else {
+        // Filtrer par catégorie de produit
+        const categoryId = parseInt(this.selectedCategory.replace('cat_', ''));
+        items = items.filter(item => item.categoryId === categoryId);
+      }
+    }
+
+    // Filtrer par recherche
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(item =>
+      items = items.filter(item =>
         item.itemName.toLowerCase().includes(query) ||
         item.description.toLowerCase().includes(query)
       );
     }
 
-    this.filteredItems = filtered;
-    this.currentPage = 0;
-    this.updatePagination();
+    this.filteredItems = items;
   }
 
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredItems.length / this.itemsPerPage);
-    const startIndex = this.currentPage * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedItems = this.filteredItems.slice(startIndex, endIndex);
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.updatePagination();
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.updatePagination();
-    }
-  }
-
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.updatePagination();
-    }
+  selectCategory(categoryId: string): void {
+    this.selectedCategory = categoryId;
+    this.filterItems();
   }
 
   addToCart(item: MenuItem): void {

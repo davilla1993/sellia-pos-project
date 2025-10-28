@@ -68,32 +68,42 @@ public class PublicMenuService {
 
             for (Menu menu : applicableMenus) {
                 List<MenuItem> menuItems = menu.getMenuItems();
-                if (menuItems != null) {
+                if (menuItems != null && !menuItems.isEmpty()) {
                     log.debug("Menu: {} has {} items", menu.getName(), menuItems.size());
-                    
-                    List<PublicMenuResponse.MenuItemResponse> menuItemResponses = new ArrayList<>();
-                    
-                    for (MenuItem menuItem : menuItems) {
-                        if (menuItem.getAvailable()) {
-                            String categoryKey = menu.getName();
-                            
-                            categories.putIfAbsent(categoryKey, PublicMenuResponse.MenuCategoryResponse.builder()
-                                    .publicId(menu.getPublicId())
-                                    .name(menu.getName())
-                                    .description(menu.getDescription())
-                                    .itemCount(0)
-                                    .items(new ArrayList<>())
-                                    .build());
 
-                            PublicMenuResponse.MenuCategoryResponse category = categories.get(categoryKey);
-                            category.setItemCount(category.getItemCount() + 1);
+                    // Vérifier si au moins un MenuItem est disponible
+                    boolean hasAvailableItem = menuItems.stream().anyMatch(MenuItem::getAvailable);
 
-                            // Ajouter au menu item response
-                            PublicMenuResponse.MenuItemResponse itemResponse = mapMenuItemToResponse(menuItem);
-                            menuItemResponses.add(itemResponse);
+                    if (hasAvailableItem) {
+                        String categoryKey = menu.getName();
+
+                        categories.putIfAbsent(categoryKey, PublicMenuResponse.MenuCategoryResponse.builder()
+                                .publicId(menu.getPublicId())
+                                .name(menu.getName())
+                                .description(menu.getDescription())
+                                .itemCount(0)
+                                .items(new ArrayList<>())
+                                .build());
+
+                        PublicMenuResponse.MenuCategoryResponse category = categories.get(categoryKey);
+                        category.setItemCount(category.getItemCount() + 1);
+
+                        // Créer UNE SEULE réponse par Menu (pas par MenuItem)
+                        // Utiliser le premier MenuItem disponible pour les infos
+                        MenuItem firstAvailableItem = menuItems.stream()
+                                .filter(MenuItem::getAvailable)
+                                .findFirst()
+                                .orElse(null);
+
+                        if (firstAvailableItem != null) {
+                            // Passer tous les menuItems disponibles pour calculer le prix total
+                            List<MenuItem> availableItems = menuItems.stream()
+                                    .filter(MenuItem::getAvailable)
+                                    .toList();
+                            PublicMenuResponse.MenuItemResponse itemResponse = mapMenuItemToResponse(firstAvailableItem, availableItems);
                             category.getItems().add(itemResponse);
-                            
-                            if (Boolean.TRUE.equals(menuItem.getIsSpecial())) {
+
+                            if (Boolean.TRUE.equals(firstAvailableItem.getIsSpecial())) {
                                 popularItems.add(itemResponse);
                             }
                         }
@@ -167,38 +177,67 @@ public class PublicMenuService {
         return menus;
     }
 
-    private PublicMenuResponse.MenuItemResponse mapMenuItemToResponse(MenuItem menuItem) {
-        // Déterminer le prix
-        long price = menuItem.getPriceOverride() != null 
-                ? menuItem.getPriceOverride() 
-                : (menuItem.getBundlePrice() != null ? menuItem.getBundlePrice() : 0L);
+    private PublicMenuResponse.MenuItemResponse mapMenuItemToResponse(MenuItem menuItem, List<MenuItem> allMenuItems) {
+        Menu menu = menuItem.getMenu();
 
-        // Récupérer le premier produit pour l'image et le nom
-        String itemName = menuItem.getMenu().getName();
+        // Calculer le prix total
+        long price;
+
+        // 1. Priorité au bundlePrice du Menu (prix fixe pour le combo)
+        if (menu.getBundlePrice() != null && menu.getBundlePrice() > 0) {
+            price = menu.getBundlePrice();
+        }
+        // 2. Sinon, additionner les prix de tous les MenuItem disponibles
+        else {
+            price = allMenuItems.stream()
+                    .mapToLong(mi -> {
+                        // Utiliser priceOverride si défini, sinon le prix du premier produit
+                        if (mi.getPriceOverride() != null) {
+                            return mi.getPriceOverride();
+                        } else if (mi.getBundlePrice() != null) {
+                            return mi.getBundlePrice();
+                        } else if (mi.getProducts() != null && !mi.getProducts().isEmpty()) {
+                            return mi.getProducts().stream().findFirst().map(com.follysitou.sellia_backend.model.Product::getPrice).orElse(0L);
+                        }
+                        return 0L;
+                    })
+                    .sum();
+        }
+
+        // Utiliser le nom du Menu (pas du produit) pour l'affichage
+        String itemName = menu.getName();
         String imageUrl = null;
-        
+        String categoryName = null;
+        Long categoryId = null;
+
+        // Récupérer l'image et la catégorie du premier produit
         if (menuItem.getProducts() != null && !menuItem.getProducts().isEmpty()) {
             com.follysitou.sellia_backend.model.Product firstProduct = menuItem.getProducts().stream().findFirst().orElse(null);
             if (firstProduct != null) {
-                itemName = firstProduct.getName();
+                // Garder le nom du menu, mais prendre l'image du produit
                 imageUrl = firstProduct.getImageUrl();
-                // Si aucun prix override, utiliser le prix du produit
-                if (menuItem.getPriceOverride() == null && menuItem.getBundlePrice() == null) {
-                    price = firstProduct.getPrice();
+
+                // Récupérer la catégorie du produit (seulement si active)
+                if (firstProduct.getCategory() != null && Boolean.TRUE.equals(firstProduct.getCategory().getAvailable())) {
+                    categoryName = firstProduct.getCategory().getName();
+                    categoryId = firstProduct.getCategory().getId();
                 }
             }
         }
 
         return PublicMenuResponse.MenuItemResponse.builder()
                 .publicId(menuItem.getPublicId())
-                .menuName(menuItem.getMenu().getName())
+                .menuName(menu.getName())
                 .itemName(itemName)
                 .price(price)
-                .description(menuItem.getMenu().getDescription())
+                .description(menu.getDescription())
                 .imageUrl(imageUrl)
                 .preparationTime(15) // Valeur par défaut
                 .isSpecial(menuItem.getIsSpecial())
                 .specialDescription(menuItem.getSpecialDescription())
+                .categoryName(categoryName)
+                .categoryId(categoryId)
+                .productCount(allMenuItems.size()) // Nombre total de MenuItem disponibles
                 .build();
     }
 

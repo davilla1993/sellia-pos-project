@@ -15,15 +15,28 @@
 
       <!-- Barre de recherche -->
       <div class="search-bar">
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          (keyup)="filterAndPaginate()" 
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keyup)="filterItems()"
           placeholder="Rechercher un plat..."
           class="search-input">
       </div>
     </div>
   </header>
+
+  <!-- Category Filters -->
+  <div *ngIf="!loading && categories.length > 0" class="category-filters">
+    <div class="category-filters-container">
+      <button
+        *ngFor="let category of categories"
+        (click)="selectCategory(category.id)"
+        [class.active]="selectedCategory === category.id"
+        class="category-btn">
+        {{ category.name }} <span class="category-count">({{ category.count }})</span>
+      </button>
+    </div>
+  </div>
 
   <!-- Alerts & Loading -->
   <div *ngIf="error" class="alert alert-error">
@@ -44,7 +57,7 @@
   <div *ngIf="!loading && !orderSuccess" class="main-content">
     <div class="menu-grid">
       <!-- Items affichés -->
-      <div *ngFor="let item of paginatedItems" class="product-card">
+      <div *ngFor="let item of filteredItems" class="product-card">
         <div class="product-image-container" *ngIf="item.imagePath">
           <img [src]="item.imagePath" [alt]="item.itemName" class="product-image">
           <span *ngIf="item.isSpecial" class="special-badge">⭐ Spécialité</span>
@@ -66,22 +79,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div *ngIf="totalPages > 1" class="pagination">
-      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 0">← Précédent</button>
-      
-      <div class="pagination-numbers">
-        <button 
-          *ngFor="let page of [].constructor(totalPages); let i = index"
-          [class.active]="i === currentPage"
-          (click)="goToPage(i)"
-          class="page-number">
-          {{ i + 1 }}
-        </button>
-      </div>
-
-      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">Suivant →</button>
-    </div>
   </div>
 
   <!-- Floating Cart Button -->
