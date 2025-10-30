@@ -19,8 +19,9 @@ import { AudioNotificationControlComponent } from '../../shared/components/audio
         <div class="p-6 border-b border-neutral-700 space-y-4">
           <div>
             <h1 class="text-2xl font-bold text-white">
-              <span *ngIf="!isInKitchenContext()">🛒 Caisse</span>
+              <span *ngIf="!isInKitchenContext() && !isInBarContext()">🛒 Caisse</span>
               <span *ngIf="isInKitchenContext()">👨‍🍳 Cuisine</span>
+              <span *ngIf="isInBarContext()">🍹 Bar</span>
             </h1>
             <p class="text-xs text-neutral-400 mt-2">{{ getCurrentUserInfo() }}</p>
           </div>
@@ -32,7 +33,7 @@ import { AudioNotificationControlComponent } from '../../shared/components/audio
         <!-- Menu Buttons -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
           <!-- Caissier Menu (for cashiers or admin in cashier context) -->
-          <ng-container *ngIf="!isInKitchenContext()">
+          <ng-container *ngIf="!isInKitchenContext() && !isInBarContext()">
             <button (click)="navigate('/pos/order-entry')"
               [class.bg-primary]="isActive('/pos/order-entry')"
               [class.bg-neutral-700]="!isActive('/pos/order-entry')"
@@ -75,26 +76,30 @@ import { AudioNotificationControlComponent } from '../../shared/components/audio
             </button>
           </ng-container>
 
-          <!-- Kitchen Menu (for kitchen staff or admin in kitchen context) -->
-          <ng-container *ngIf="isInKitchenContext()">
-            <button (click)="navigate('/pos/kitchen')"
+          <!-- Cuisine & Bar Menu (only in kitchen/bar context) -->
+          <ng-container *ngIf="(isInKitchenContext() || isInBarContext()) && (navigationService.isAdmin() || navigationService.isCuisine() || navigationService.isBar())">
+            <!-- Cuisine button: visible to ADMIN and CUISINE -->
+            <button *ngIf="navigationService.isAdmin() || navigationService.isCuisine()"
+              (click)="navigate('/pos/kitchen')"
               [class.bg-primary]="isActive('/pos/kitchen')"
               [class.bg-neutral-700]="!isActive('/pos/kitchen')"
               class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
               [class.text-white]="isActive('/pos/kitchen')"
               [class.text-neutral-300]="!isActive('/pos/kitchen')">
               <span class="text-xl">👨‍🍳</span>
-              <span>Cuisine Kanban</span>
+              <span>Cuisine</span>
             </button>
 
-            <button (click)="navigate('/pos/kitchen/list')"
-              [class.bg-primary]="isActive('/pos/kitchen/list')"
-              [class.bg-neutral-700]="!isActive('/pos/kitchen/list')"
+            <!-- Bar button: visible to ADMIN and BAR -->
+            <button *ngIf="navigationService.isAdmin() || navigationService.isBar()"
+              (click)="navigate('/pos/bar')"
+              [class.bg-primary]="isActive('/pos/bar')"
+              [class.bg-neutral-700]="!isActive('/pos/bar')"
               class="w-full p-4 rounded-lg font-semibold transition-colors text-left flex items-center gap-3"
-              [class.text-white]="isActive('/pos/kitchen/list')"
-              [class.text-neutral-300]="!isActive('/pos/kitchen/list')">
-              <span class="text-xl">📋</span>
-              <span>Historique Cuisine</span>
+              [class.text-white]="isActive('/pos/bar')"
+              [class.text-neutral-300]="!isActive('/pos/bar')">
+              <span class="text-xl">🍹</span>
+              <span>Bar</span>
             </button>
           </ng-container>
         </nav>
@@ -173,19 +178,17 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   isActive(route: string): boolean {
     const currentRoute = this.currentRoute();
     // Exact match or match with trailing slash
-    if (currentRoute === route || currentRoute === route + '/') {
-      return true;
-    }
-    // For /pos/kitchen, don't match /pos/kitchen/list
-    if (route === '/pos/kitchen' && currentRoute.includes('/pos/kitchen/list')) {
-      return false;
-    }
-    return currentRoute.startsWith(route + '/');
+    return currentRoute === route || currentRoute === route + '/';
   }
 
   isInKitchenContext(): boolean {
     const route = this.currentRoute();
     return route.includes('/pos/kitchen');
+  }
+
+  isInBarContext(): boolean {
+    const route = this.currentRoute();
+    return route.includes('/pos/bar');
   }
 
   getCurrentUserInfo(): string {

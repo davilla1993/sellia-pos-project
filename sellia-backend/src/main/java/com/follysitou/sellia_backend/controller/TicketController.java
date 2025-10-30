@@ -27,16 +27,6 @@ public class TicketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tickets);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
-    @PostMapping("/session/{customerSessionPublicId}/generate/unified")
-    public ResponseEntity<Ticket> generateUnifiedTicket(
-            @PathVariable String customerSessionPublicId) {
-        Ticket ticket = ticketService.generateUnifiedTicket(customerSessionPublicId);
-        return ticket != null ? 
-            ResponseEntity.status(HttpStatus.CREATED).body(ticket) :
-            ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PreAuthorize("hasAnyRole('ADMIN', 'CUISINE', 'BAR')")
     @GetMapping("/station/{station}/active")
     public ResponseEntity<List<Ticket>> getActiveTicketsByStation(
@@ -50,6 +40,14 @@ public class TicketController {
     public ResponseEntity<Void> printTicket(
             @PathVariable String ticketPublicId) {
         ticketService.markTicketAsPrinted(ticketPublicId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUISINE', 'BAR')")
+    @PutMapping("/{ticketPublicId}/preparing")
+    public ResponseEntity<Void> markTicketAsPreparing(
+            @PathVariable String ticketPublicId) {
+        ticketService.markTicketAsPreparing(ticketPublicId);
         return ResponseEntity.noContent().build();
     }
 

@@ -4,6 +4,12 @@ import { ApiService } from '@core/services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+interface ComboProductDetail {
+  name: string;
+  imageUrl: string;
+  price: number;
+}
+
 interface MenuItem {
   publicId: string;
   menuName: string;
@@ -17,6 +23,7 @@ interface MenuItem {
   categoryName?: string;
   categoryId?: number;
   productCount?: number;
+  comboProducts?: ComboProductDetail[];
 }
 
 interface CategoryFilter {
@@ -72,6 +79,9 @@ export class PublicMenuComponent implements OnInit {
   submitting: boolean = false;
   orderSuccess: boolean = false;
   orderNumber: string = '';
+
+  showComboModal: boolean = false;
+  selectedCombo: MenuItem | null = null;
   
   constructor(
     private route: ActivatedRoute,
@@ -138,6 +148,13 @@ export class PublicMenuComponent implements OnInit {
     response.categories.forEach((menu: any) => {
       if (menu.items && Array.isArray(menu.items)) {
         menu.items.forEach((item: any) => {
+          // Mapper les produits du combo avec leurs images
+          const comboProducts = item.comboProducts ? item.comboProducts.map((product: any) => ({
+            name: product.name,
+            imageUrl: this.buildImageUrl(product.imageUrl),
+            price: product.price
+          })) : undefined;
+
           items.push({
             publicId: item.publicId,
             menuName: item.menuName || '',
@@ -150,7 +167,8 @@ export class PublicMenuComponent implements OnInit {
             imagePath: this.buildImageUrl(item.imageUrl),
             categoryName: item.categoryName,
             categoryId: item.categoryId,
-            productCount: item.productCount || 0
+            productCount: item.productCount || 0,
+            comboProducts: comboProducts
           });
         });
       }
@@ -378,5 +396,15 @@ export class PublicMenuComponent implements OnInit {
 
   get isTableVip(): string {
     return this.isVip ? 'VIP' : 'Standard';
+  }
+
+  openComboModal(item: MenuItem): void {
+    this.selectedCombo = item;
+    this.showComboModal = true;
+  }
+
+  closeComboModal(): void {
+    this.showComboModal = false;
+    this.selectedCombo = null;
   }
 }

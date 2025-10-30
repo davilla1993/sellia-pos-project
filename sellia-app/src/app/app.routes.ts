@@ -13,7 +13,7 @@ import { ProductsListComponent } from './features/admin/products/products-list.c
 import { ProductFormComponent } from './features/admin/products/product-form.component';
 import { OrderEntryComponent } from './features/pos/order-entry.component';
 import { KitchenComponent } from './features/pos/kitchen.component';
-import { KitchenListComponent } from './features/pos/kitchen-list.component';
+import { BarComponent } from './features/pos/bar.component';
 import { PendingOrdersComponent } from './features/pos/pending-orders.component';
 import { MyOrdersComponent } from './features/pos/my-orders.component';
 import { CheckoutComponent } from './features/pos/checkout.component';
@@ -151,7 +151,7 @@ export const routes: Routes = [
       // POS Routes (with Sidebar Layout)
       {
         path: 'pos',
-        canActivate: [roleGuard(['CAISSE', 'ADMIN', 'CUISINE'])],
+        canActivate: [roleGuard(['CAISSE', 'ADMIN', 'CUISINE', 'BAR'])],
         component: PosLayoutComponent,
         children: [
           {
@@ -172,10 +172,13 @@ export const routes: Routes = [
           },
           {
             path: 'kitchen',
-            children: [
-              { path: '', component: KitchenComponent },
-              { path: 'list', component: KitchenListComponent }
-            ]
+            canActivate: [roleGuard(['CUISINE', 'BAR', 'ADMIN'])],
+            component: KitchenComponent
+          },
+          {
+            path: 'bar',
+            canActivate: [roleGuard(['CUISINE', 'BAR', 'ADMIN'])],
+            component: BarComponent
           },
           { path: '', redirectTo: 'order-entry', pathMatch: 'full' }
         ]

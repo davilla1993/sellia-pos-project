@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum RoleName {
     ADMIN("Administrateur"),
     CAISSE("Caisse"),
-    CUISINE("Cuisine");
+    CUISINE("Cuisine"),
+    BAR("Bar");
 
     private final String displayName;
 

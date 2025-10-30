@@ -34,6 +34,10 @@ public class OrderItem extends BaseEntity {
     private MenuItem menuItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id", nullable = true)
+    private Menu menu;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
@@ -63,7 +67,7 @@ public class OrderItem extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private WorkStation workStation = WorkStation.KITCHEN;
+    private WorkStation workStation = WorkStation.CUISINE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

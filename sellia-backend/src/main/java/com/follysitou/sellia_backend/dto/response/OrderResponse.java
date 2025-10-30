@@ -94,6 +94,7 @@ public class OrderResponse {
         private Long unitPrice;
         private Long totalPrice;
         private String notes;
+        private String workStation;
     }
 
     @Data
@@ -102,6 +103,7 @@ public class OrderResponse {
         private String menuName;
         private Long priceOverride;
         private Long bundlePrice;
+        private List<ProductSimpleResponse> products;
     }
 
     @Data
@@ -110,5 +112,6 @@ public class OrderResponse {
         private String name;
         private String imageUrl;
         private Integer preparationTime;
+        private String workStation;
     }
 }

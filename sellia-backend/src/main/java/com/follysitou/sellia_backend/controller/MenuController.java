@@ -219,15 +219,4 @@ public class MenuController {
                 .toList();
         return ResponseEntity.ok(types);
     }
-
-    @PostMapping("/generate-individual-products")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> generateIndividualProductMenuItems() {
-        int created = menuService.generateIndividualProductMenuItems();
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "Génération des MenuItems individuels terminée",
-            "itemsCreated", created
-        ));
-    }
 }

@@ -124,7 +124,7 @@ public class TicketService {
         if (stationPriority == 1 && items.size() > 0) {
             // Il y a d'autres stations après Bar
             ticket.setMessage("⚠️ SERVIR EN PREMIER - Les plats arrivent après");
-        } else if (stationPriority > 1 && station == WorkStation.KITCHEN) {
+        } else if (stationPriority > 1 && station == WorkStation.CUISINE) {
             ticket.setMessage("ℹ️ Attendre que le Bar soit prêt (boissons en priorité)");
         }
 
@@ -181,6 +181,19 @@ public class TicketService {
     }
 
     /**
+     * Marque un ticket comme en préparation
+     */
+    public void markTicketAsPreparing(String ticketPublicId) {
+        Ticket ticket = ticketRepository.findByPublicId(ticketPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+
+        ticket.setStatus(TicketStatus.PREPARING);
+
+        ticketRepository.save(ticket);
+        log.info("Ticket marqué comme en préparation: {}", ticketPublicId);
+    }
+
+    /**
      * Marque un ticket comme prêt (tous les items préparés)
      */
     public void markTicketAsReady(String ticketPublicId) {
@@ -220,52 +233,6 @@ public class TicketService {
         ticket.setDeletedBy(SecurityUtil.getCurrentUsername());
         ticketRepository.save(ticket);
         log.info("Ticket supprimé: {}", ticketPublicId);
-    }
-
-    /**
-     * Génère UN SEUL ticket UNIFIÉ pour une CustomerSession
-     * Tous les items dans un seul ticket, groupés par WorkStation
-     */
-    public Ticket generateUnifiedTicket(String customerSessionPublicId) {
-        CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
-
-        List<OrderItem> orderItems = orderItemRepository.findAll().stream()
-                .filter(oi -> oi.getOrder().getCustomerSession() != null &&
-                        oi.getOrder().getCustomerSession().getPublicId().equals(customerSessionPublicId) &&
-                        oi.getTicket() == null)
-                .collect(Collectors.toList());
-
-        if (orderItems.isEmpty()) {
-            log.info("Aucun OrderItem pour la session: {}", customerSessionPublicId);
-            return null;
-        }
-
-        Ticket unifiedTicket = Ticket.builder()
-                .customerSession(session)
-                .workStation(WorkStation.CHECKOUT)
-                .status(TicketStatus.PENDING)
-                .priority(0)
-                .items(orderItems)
-                .ticketNumber(generateUnifiedTicketNumber())
-                .message("TICKET COMPLET - Cuisine & Bar")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        for (OrderItem item : orderItems) {
-            item.setTicket(unifiedTicket);
-        }
-
-        Ticket savedTicket = ticketRepository.save(unifiedTicket);
-        log.info("Ticket unifié créé - Session: {}", customerSessionPublicId);
-        return savedTicket;
-    }
-
-    private String generateUnifiedTicketNumber() {
-        long count = ticketRepository.findAll().stream()
-                .filter(t -> t.getWorkStation() == WorkStation.CHECKOUT && !t.getDeleted())
-                .count();
-        return String.format("RECEIPT-%03d", count + 1);
     }
 
     /**

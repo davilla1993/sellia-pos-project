@@ -148,32 +148,15 @@ public class PublicMenuService {
     }
 
     private List<Menu> getApplicableMenus(Boolean isVip) {
-        List<Menu> menus = new ArrayList<>();
-        
-        if (Boolean.TRUE.equals(isVip)) {
-            // Menus VIP et Menu du Jour
-            List<Menu> vipMenus = menuRepository.findByMenuTypeAndActive(MenuType.VIP, true);
-            log.debug("Found {} VIP menus", vipMenus.size());
-            menus.addAll(vipMenus);
-            
-            List<Menu> dailyMenus = menuRepository.findByMenuTypeAndActive(MenuType.MENU_DU_JOUR, true);
-            log.debug("Found {} MENU_DU_JOUR menus", dailyMenus.size());
-            menus.addAll(dailyMenus);
-        } else {
-            // Menus standard et menu du jour (pas VIP)
-            List<Menu> standardMenus = menuRepository.findByMenuTypeAndActive(MenuType.STANDARD, true);
-            log.debug("Found {} STANDARD menus", standardMenus.size());
-            menus.addAll(standardMenus);
-            
-            List<Menu> dailyMenus = menuRepository.findByMenuTypeAndActive(MenuType.MENU_DU_JOUR, true);
-            log.debug("Found {} MENU_DU_JOUR menus", dailyMenus.size());
-            menus.addAll(dailyMenus);
-        }
-        
+        MenuType menuType = Boolean.TRUE.equals(isVip) ? MenuType.VIP : MenuType.STANDARD;
+        List<Menu> menus = menuRepository.findByMenuTypeAndActive(menuType, true);
+
+        log.debug("Found {} {} menus for table (VIP={})", menus.size(), menuType, isVip);
+
         if (menus.isEmpty()) {
-            log.warn("No applicable menus found for VIP={}", isVip);
+            log.warn("No applicable menus found for type {} (VIP={})", menuType, isVip);
         }
-        
+
         return menus;
     }
 
@@ -225,6 +208,38 @@ public class PublicMenuService {
             }
         }
 
+        // Construire la liste des produits du combo (si c'est un combo)
+        List<PublicMenuResponse.ComboProductDetail> comboProducts = null;
+        if (allMenuItems.size() > 1) {
+            comboProducts = allMenuItems.stream()
+                    .map(mi -> {
+                        // Pour chaque MenuItem, récupérer les infos du produit
+                        if (mi.getProducts() != null && !mi.getProducts().isEmpty()) {
+                            com.follysitou.sellia_backend.model.Product product = mi.getProducts().stream().findFirst().orElse(null);
+                            if (product != null) {
+                                // Calculer le prix du produit (priceOverride, bundlePrice ou prix du produit)
+                                long productPrice = 0L;
+                                if (mi.getPriceOverride() != null) {
+                                    productPrice = mi.getPriceOverride();
+                                } else if (mi.getBundlePrice() != null) {
+                                    productPrice = mi.getBundlePrice();
+                                } else {
+                                    productPrice = product.getPrice();
+                                }
+
+                                return PublicMenuResponse.ComboProductDetail.builder()
+                                        .name(product.getName())
+                                        .imageUrl(product.getImageUrl())
+                                        .price(productPrice)
+                                        .build();
+                            }
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+
         return PublicMenuResponse.MenuItemResponse.builder()
                 .publicId(menuItem.getPublicId())
                 .menuName(menu.getName())
@@ -238,6 +253,7 @@ public class PublicMenuService {
                 .categoryName(categoryName)
                 .categoryId(categoryId)
                 .productCount(allMenuItems.size()) // Nombre total de MenuItem disponibles
+                .comboProducts(comboProducts)
                 .build();
     }
 

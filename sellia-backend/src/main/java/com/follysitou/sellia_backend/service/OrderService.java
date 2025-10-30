@@ -136,9 +136,13 @@ public class OrderService {
             Product product = null;
             long unitPrice = 0;
             if (itemRequest.getMenuPublicId() != null && !itemRequest.getMenuPublicId().isBlank()) {
-                // Load complete Menu with MenuItems and Products (new POS flow)
-                com.follysitou.sellia_backend.model.Menu menu = menuRepository.findByPublicIdWithProducts(itemRequest.getMenuPublicId())
+                // Load complete Menu with MenuItems and Products (new POS flow) - 2 step approach
+                com.follysitou.sellia_backend.model.Menu menu = menuRepository.findByPublicIdWithMenuItems(itemRequest.getMenuPublicId())
                         .orElseThrow(() -> new ResourceNotFoundException("Menu not found: " + itemRequest.getMenuPublicId()));
+
+                // Fetch all products for all menuItems in a second query
+                menu = menuRepository.fetchMenuItemProducts(menu);
+
                 unitPrice = menu.getBundlePrice() != null ? menu.getBundlePrice() : 0L;
                 
                 // Find first MenuItem with products
@@ -152,8 +156,8 @@ public class OrderService {
                     }
                 }
             } else {
-                // Load MenuItem (legacy flow)
-                menuItem = menuItemRepository.findByPublicId(itemRequest.getMenuItemPublicId())
+                // Load MenuItem with products (legacy flow)
+                menuItem = menuItemRepository.findByPublicIdWithProducts(itemRequest.getMenuItemPublicId())
                         .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found: " + itemRequest.getMenuItemPublicId()));
                 // Calculate unit price from MenuItem
                 unitPrice = menuItem.getPriceOverride() != null ? menuItem.getPriceOverride() : 
@@ -186,6 +190,16 @@ public class OrderService {
             orderItem.setUnitPrice(unitPrice);
             orderItem.setTotalPrice(itemTotal);
             orderItem.setWorkStation(product.getWorkStation());
+
+            // Store the Menu reference if this item is from a menu
+            if (itemRequest.getMenuPublicId() != null && !itemRequest.getMenuPublicId().isBlank()) {
+                Menu menu = menuRepository.findByPublicIdWithMenuItems(itemRequest.getMenuPublicId()).orElse(null);
+                if (menu != null) {
+                    // Load all products for all menu items
+                    menu = menuRepository.fetchMenuItemProducts(menu);
+                    orderItem.setMenu(menu);
+                }
+            }
 
             items.add(orderItem);
             totalAmount += itemTotal;
@@ -256,6 +270,34 @@ public class OrderService {
 
     public PagedResponse<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
         Page<Order> orders = orderRepository.findByStatus(status, pageable);
+
+        // Force load Menu and MenuItem products to avoid LAZY loading issues
+        if (!orders.getContent().isEmpty()) {
+            for (Order order : orders.getContent()) {
+                if (order.getItems() != null) {
+                    for (OrderItem item : order.getItems()) {
+                        // Force load Menu if present
+                        if (item.getMenu() != null) {
+                            item.getMenu().getName(); // Force initialization
+                            if (item.getMenu().getMenuItems() != null) {
+                                item.getMenu().getMenuItems().size(); // Force initialization
+                                // Force load products for all menu items
+                                for (MenuItem mi : item.getMenu().getMenuItems()) {
+                                    if (mi.getProducts() != null) {
+                                        mi.getProducts().size();
+                                    }
+                                }
+                            }
+                        }
+                        // Also force MenuItem products if present
+                        if (item.getMenuItem() != null && item.getMenuItem().getProducts() != null) {
+                            item.getMenuItem().getProducts().size();
+                        }
+                    }
+                }
+            }
+        }
+
         return PagedResponse.of(orders.map(orderMapper::toResponse));
     }
 
@@ -377,6 +419,34 @@ public class OrderService {
 
     public List<OrderResponse> getActiveKitchenOrders() {
         List<Order> orders = orderRepository.findActiveKitchenOrders();
+
+        // Force load Menu and MenuItem products to avoid LAZY loading issues
+        if (!orders.isEmpty()) {
+            for (Order order : orders) {
+                if (order.getItems() != null) {
+                    for (OrderItem item : order.getItems()) {
+                        // Force load Menu if present
+                        if (item.getMenu() != null) {
+                            item.getMenu().getName(); // Force initialization
+                            if (item.getMenu().getMenuItems() != null) {
+                                item.getMenu().getMenuItems().size(); // Force initialization
+                                // Force load products for all menu items
+                                for (MenuItem mi : item.getMenu().getMenuItems()) {
+                                    if (mi.getProducts() != null) {
+                                        mi.getProducts().size();
+                                    }
+                                }
+                            }
+                        }
+                        // Also force MenuItem products if present
+                        if (item.getMenuItem() != null && item.getMenuItem().getProducts() != null) {
+                            item.getMenuItem().getProducts().size();
+                        }
+                    }
+                }
+            }
+        }
+
         return orders.stream()
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());

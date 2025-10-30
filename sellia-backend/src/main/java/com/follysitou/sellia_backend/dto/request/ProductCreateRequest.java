@@ -41,5 +41,5 @@ public class ProductCreateRequest {
 
     private Integer displayOrder = 0;
 
-    private WorkStation workStation = WorkStation.KITCHEN;
+    private WorkStation workStation = WorkStation.CUISINE;
 }

@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { NavigationService } from '../../core/services/navigation.service';
-import { CancelOrderDialogComponent } from './cancel-order-dialog.component';
 
-interface KitchenOrder {
+interface BarOrder {
   publicId: string;
   orderNumber: string;
   table?: {
@@ -17,19 +16,20 @@ interface KitchenOrder {
   totalAmount: number;
   createdAt: string;
   notes?: string;
+  isMixed?: boolean; // Indique si la commande contient des items CUISINE + BAR
 }
 
 @Component({
-  selector: 'app-kitchen',
+  selector: 'app-bar',
   standalone: true,
-  imports: [CommonModule, CancelOrderDialogComponent],
+  imports: [CommonModule],
   template: `
     <div class="h-full flex flex-col bg-neutral-900 p-6 overflow-hidden">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h1 class="text-3xl font-bold text-white">👨‍🍳 Interface Cuisine</h1>
-          <p class="text-neutral-400 text-sm">Gestion des commandes en temps réel</p>
+          <h1 class="text-3xl font-bold text-white">🍹 Interface Bar</h1>
+          <p class="text-neutral-400 text-sm">Gestion des commandes bar en temps réel</p>
         </div>
         <div class="flex items-center gap-3">
           <button (click)="refreshOrders()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
@@ -43,7 +43,7 @@ interface KitchenOrder {
 
       <!-- Kanban Board - 4 Columns -->
       <div class="flex-1 grid grid-cols-4 gap-4 overflow-hidden">
-        
+
         <!-- Column 1: Nouvelles commandes (ACCEPTEE) -->
         <div class="flex flex-col bg-orange-50 rounded-lg border-2 border-orange-400 overflow-hidden">
           <div class="bg-orange-300 px-4 py-3 border-b-2 border-orange-400">
@@ -63,7 +63,7 @@ interface KitchenOrder {
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
                     <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
+                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
                     </div>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
@@ -75,16 +75,13 @@ interface KitchenOrder {
                 <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
                 <p class="text-xs text-red-800">{{ order.notes }}</p>
               </div>
-              <button 
+              <button
                 (click)="updateOrderStatus(order.publicId, 'EN_PREPARATION')"
-                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 text-xs rounded transition-colors mb-1">
-                Commencer
-              </button>
-              <button 
-                *ngIf="!navigationService.isCuisine()"
-                (click)="showCancelDialog(order)"
-                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 text-xs rounded transition-colors">
-                Annuler
+                [disabled]="order.isMixed"
+                [class.opacity-50]="order.isMixed"
+                [class.cursor-not-allowed]="order.isMixed"
+                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 text-xs rounded transition-colors">
+                {{ order.isMixed ? 'Cuisine contrôle' : 'Commencer' }}
               </button>
             </div>
           </div>
@@ -94,7 +91,7 @@ interface KitchenOrder {
         <div class="flex flex-col bg-yellow-50 rounded-lg border-2 border-yellow-400 overflow-hidden">
           <div class="bg-yellow-300 px-4 py-3 border-b-2 border-yellow-400">
             <div class="flex items-center justify-between">
-              <h2 class="font-bold text-yellow-900 text-sm">👨‍🍳 En préparation</h2>
+              <h2 class="font-bold text-yellow-900 text-sm">🍸 En préparation</h2>
               <span class="bg-yellow-600 text-white rounded-full px-2 py-1 font-bold text-xs">
                 {{ ordersbyStatus('EN_PREPARATION').length }}
               </span>
@@ -109,7 +106,7 @@ interface KitchenOrder {
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
                     <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
+                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
                     </div>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
@@ -121,10 +118,13 @@ interface KitchenOrder {
                 <p class="text-xs font-semibold text-red-900 mb-1">📝 Notes spéciales:</p>
                 <p class="text-xs text-red-800">{{ order.notes }}</p>
               </div>
-              <button 
+              <button
                 (click)="updateOrderStatus(order.publicId, 'PRETE')"
+                [disabled]="order.isMixed"
+                [class.opacity-50]="order.isMixed"
+                [class.cursor-not-allowed]="order.isMixed"
                 class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 text-xs rounded transition-colors">
-                Marquer prêt
+                {{ order.isMixed ? 'Cuisine contrôle' : 'Marquer prêt' }}
               </button>
             </div>
           </div>
@@ -153,7 +153,7 @@ interface KitchenOrder {
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
                     <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
+                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
                     </div>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
@@ -161,10 +161,13 @@ interface KitchenOrder {
                   </div>
                 </div>
               </div>
-              <button 
+              <button
                 (click)="updateOrderStatus(order.publicId, 'LIVREE')"
+                [disabled]="order.isMixed"
+                [class.opacity-50]="order.isMixed"
+                [class.cursor-not-allowed]="order.isMixed"
                 class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 text-xs rounded transition-colors mt-2">
-                Livrée
+                {{ order.isMixed ? 'Cuisine contrôle' : 'Livrée' }}
               </button>
             </div>
           </div>
@@ -193,7 +196,7 @@ interface KitchenOrder {
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
                     <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
+                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
                     </div>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
@@ -206,26 +209,17 @@ interface KitchenOrder {
         </div>
       </div>
 
-      <!-- Cancel Dialog -->
-      <app-cancel-order-dialog 
-        *ngIf="showCancelDialogFlag()"
-        [orderNumber]="orderToCancel()?.orderNumber || ''"
-        (onConfirmClick)="confirmCancelOrder($event)"
-        (onCancelClick)="hideCancelDialog()">
-      </app-cancel-order-dialog>
     </div>
   `,
   styles: []
 })
-export class KitchenComponent implements OnInit {
+export class BarComponent implements OnInit {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
   navigationService = inject(NavigationService);
 
-  orders = signal<KitchenOrder[]>([]);
+  orders = signal<BarOrder[]>([]);
   isLoading = signal(false);
-  showCancelDialogFlag = signal(false);
-  orderToCancel = signal<KitchenOrder | null>(null);
 
   ngOnInit(): void {
     this.loadOrders();
@@ -235,68 +229,70 @@ export class KitchenComponent implements OnInit {
   loadOrders(): void {
     this.isLoading.set(true);
     const statuses = ['ACCEPTEE', 'EN_PREPARATION', 'PRETE', 'LIVREE'];
-    let loadedOrders: KitchenOrder[] = [];
+    let loadedOrders: BarOrder[] = [];
     let completed = 0;
 
     statuses.forEach(status => {
-      // Load more items for LIVREE status to keep history visible
       const pageSize = status === 'LIVREE' ? 100 : 10;
       this.apiService.getOrdersByStatus(status, 0, pageSize).subscribe({
         next: (response) => {
           const statusOrders = Array.isArray(response) ? response : response.content || [];
 
-          // Debug log
-          if (statusOrders.length > 0) {
-            console.log('Kitchen - Orders received:', statusOrders);
-            statusOrders.forEach((order: any) => {
-              if (order.items) {
-                order.items.forEach((item: any) => {
-                  console.log('Item:', {
-                    product: item.product?.name,
-                    workStation: item.workStation,
-                    menuItem: item.menuItem,
-                    menuProducts: item.menuItem?.products
-                  });
-                });
-              }
-            });
-          }
-
-          // Filtrer pour ne garder que les commandes qui contiennent des items de la CUISINE
-          const kitchenOrders = statusOrders.filter((order: KitchenOrder) => {
+          // Filtrer pour ne garder que les commandes qui contiennent des items du Bar
+          const barOrders = statusOrders.filter((order: BarOrder) => {
             if (!order.items || order.items.length === 0) return false;
 
-            // Vérifier si au moins un item est de la cuisine (direct ou via menuItem products)
+            // Vérifier si au moins un item est du bar (direct ou via menuItem products)
             return order.items.some(item => {
               // Check direct workStation
-              if (item.workStation && item.workStation === 'CUISINE') return true;
+              if (item.workStation && item.workStation === 'BAR') return true;
 
               // Check menuItem products
               if (item.menuItem && item.menuItem.products && item.menuItem.products.length > 0) {
-                return item.menuItem.products.some((product: any) => product.workStation === 'CUISINE');
+                return item.menuItem.products.some((product: any) => product.workStation === 'BAR');
               }
 
               return false;
             });
-          }).map((order: KitchenOrder) => {
-            // Ne garder que les items de la CUISINE dans chaque commande
+          }).map((order: BarOrder) => {
+            // Détecter si la commande est mixte (contient BAR + CUISINE)
+            const hasBarItems = order.items.some(item => {
+              if (item.workStation === 'BAR') return true;
+              if (item.menuItem && item.menuItem.products) {
+                return item.menuItem.products.some((p: any) => p.workStation === 'BAR');
+              }
+              return false;
+            });
+
+            const hasCuisineItems = order.items.some(item => {
+              if (item.workStation === 'CUISINE') return true;
+              if (item.menuItem && item.menuItem.products) {
+                return item.menuItem.products.some((p: any) => p.workStation === 'CUISINE');
+              }
+              return false;
+            });
+
+            const isMixed = hasBarItems && hasCuisineItems;
+
+            // Ne garder que les items du Bar dans chaque commande
             return {
               ...order,
               items: order.items.filter(item => {
-                // Keep if direct workStation is CUISINE
-                if (item.workStation && item.workStation === 'CUISINE') return true;
+                // Keep if direct workStation is BAR
+                if (item.workStation && item.workStation === 'BAR') return true;
 
-                // Keep if menuItem has CUISINE products
+                // Keep if menuItem has BAR products
                 if (item.menuItem && item.menuItem.products && item.menuItem.products.length > 0) {
-                  return item.menuItem.products.some((p: any) => p.workStation === 'CUISINE');
+                  return item.menuItem.products.some((p: any) => p.workStation === 'BAR');
                 }
 
                 return false;
-              })
+              }),
+              isMixed: isMixed
             };
           });
 
-          loadedOrders = [...loadedOrders, ...kitchenOrders];
+          loadedOrders = [...loadedOrders, ...barOrders];
           completed++;
 
           if (completed === statuses.length) {
@@ -319,7 +315,7 @@ export class KitchenComponent implements OnInit {
     this.toast.info('Commandes rafraîchies', 2000);
   }
 
-  ordersbyStatus(status: string): KitchenOrder[] {
+  ordersbyStatus(status: string): BarOrder[] {
     return this.orders().filter(o => o.status === status);
   }
 
@@ -340,47 +336,15 @@ export class KitchenComponent implements OnInit {
     });
   }
 
-  getKitchenProducts(item: any): any[] {
+  getBarProducts(item: any): any[] {
     if (!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0) {
       return [];
     }
-    // Filter only CUISINE products from the menu
-    return item.menuItem.products.filter((p: any) => p.workStation === 'CUISINE');
+    // Filter only BAR products from the menu
+    return item.menuItem.products.filter((p: any) => p.workStation === 'BAR');
   }
 
-  showCancelDialog(order: KitchenOrder): void {
-    // Can only cancel EN_ATTENTE and ACCEPTEE orders
-    if (!['EN_ATTENTE', 'ACCEPTEE'].includes(order.status)) {
-      this.toast.warning('Impossible d\'annuler une commande en préparation');
-      return;
-    }
-    this.orderToCancel.set(order);
-    this.showCancelDialogFlag.set(true);
-  }
-
-  hideCancelDialog(): void {
-    this.showCancelDialogFlag.set(false);
-    this.orderToCancel.set(null);
-  }
-
-  confirmCancelOrder(reason: string): void {
-    const order = this.orderToCancel();
-    if (!order) return;
-
-    this.apiService.updateOrderStatus(order.publicId, 'ANNULEE').subscribe({
-      next: () => {
-        this.toast.success('✓ Commande annulée');
-        this.hideCancelDialog();
-        this.loadOrders();
-      },
-      error: (err) => {
-        console.error('Erreur:', err);
-        this.toast.error('Erreur lors de l\'annulation');
-      }
-    });
-  }
-
-  isUrgent(order: KitchenOrder): boolean {
+  isUrgent(order: BarOrder): boolean {
     return order.notes?.toUpperCase().includes('URGENT') ?? false;
   }
 
@@ -388,7 +352,7 @@ export class KitchenComponent implements OnInit {
     const date = new Date(createdAt);
     const now = new Date();
     const minutes = Math.floor((now.getTime() - date.getTime()) / 60000);
-    
+
     if (minutes === 0) return '< 1 min';
     if (minutes === 1) return '1 min';
     return `${minutes} min`;

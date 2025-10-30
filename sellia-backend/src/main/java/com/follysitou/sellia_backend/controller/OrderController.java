@@ -103,7 +103,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE', 'BAR')")
     @PutMapping("/{publicId}/status/{status}")
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable String publicId,
@@ -137,7 +137,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE', 'CUISINE', 'BAR')")
     @GetMapping("/kitchen/active")
     public ResponseEntity<List<OrderResponse>> getActiveKitchenOrders() {
         List<OrderResponse> response = orderService.getActiveKitchenOrders();

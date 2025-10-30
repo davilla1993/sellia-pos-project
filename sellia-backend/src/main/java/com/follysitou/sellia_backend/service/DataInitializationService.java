@@ -61,6 +61,18 @@ public class DataInitializationService {
             log.info("✓ CUISINE role already exists");
         }
 
+        if (roleRepository.findByName(RoleName.BAR).isEmpty()) {
+            Role barRole = Role.builder()
+                    .name(RoleName.BAR)
+                    .description("Consulte et met à jour le statut des commandes du bar.")
+                    .active(true)
+                    .build();
+            roleRepository.save(barRole);
+            log.info("✓ BAR role created");
+        } else {
+            log.info("✓ BAR role already exists");
+        }
+
         log.info("Default roles initialization completed");
     }
 }

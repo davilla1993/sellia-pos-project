@@ -1,5 +1,8 @@
 package com.follysitou.sellia_backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum TicketMode {
     SEPARATED("Tickets séparés par station"),
     UNIFIED("Ticket unifié avec tous les items");
@@ -10,7 +13,4 @@ public enum TicketMode {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

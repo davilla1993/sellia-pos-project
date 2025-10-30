@@ -43,7 +43,12 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT DISTINCT m FROM Menu m " +
            "LEFT JOIN FETCH m.menuItems mi " +
-           "LEFT JOIN FETCH mi.products " +
            "WHERE m.publicId = :publicId AND m.deleted = false")
-    Optional<Menu> findByPublicIdWithProducts(@Param("publicId") String publicId);
+    Optional<Menu> findByPublicIdWithMenuItems(@Param("publicId") String publicId);
+
+    @Query("SELECT DISTINCT m FROM Menu m " +
+           "LEFT JOIN FETCH m.menuItems mi " +
+           "LEFT JOIN FETCH mi.products " +
+           "WHERE m = :menu")
+    Menu fetchMenuItemProducts(@Param("menu") Menu menu);
 }

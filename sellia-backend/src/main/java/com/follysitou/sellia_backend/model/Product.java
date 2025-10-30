@@ -64,5 +64,5 @@ public class Product extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private WorkStation workStation = WorkStation.KITCHEN;
+    private WorkStation workStation = WorkStation.CUISINE;
 }

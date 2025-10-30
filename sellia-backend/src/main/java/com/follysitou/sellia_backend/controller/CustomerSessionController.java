@@ -2,10 +2,12 @@ package com.follysitou.sellia_backend.controller;
 
 import com.follysitou.sellia_backend.dto.request.CustomerSessionCreateRequest;
 import com.follysitou.sellia_backend.dto.response.CustomerSessionResponse;
+import com.follysitou.sellia_backend.dto.response.InvoiceDetailResponse;
 import com.follysitou.sellia_backend.dto.response.OrderResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.mapper.OrderMapper;
 import com.follysitou.sellia_backend.service.CustomerSessionService;
+import com.follysitou.sellia_backend.service.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +27,7 @@ public class CustomerSessionController {
 
     private final CustomerSessionService customerSessionService;
     private final OrderMapper orderMapper;
+    private final InvoiceService invoiceService;
 
     @PostMapping
     public ResponseEntity<CustomerSessionResponse> startOrResumeSession(
@@ -78,5 +81,14 @@ public class CustomerSessionController {
     public ResponseEntity<CustomerSessionResponse> getActiveSessionByTable(@PathVariable String tablePublicId) {
         CustomerSessionResponse response = customerSessionService.getActiveSessionByTable(tablePublicId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Récupère la facture détaillée d'une session avec les items séparés par WorkStation (CUISINE & BAR)
+     */
+    @GetMapping("/{sessionPublicId}/invoice")
+    public ResponseEntity<InvoiceDetailResponse> getSessionInvoiceDetail(@PathVariable String sessionPublicId) {
+        InvoiceDetailResponse invoice = invoiceService.getInvoiceDetailBySession(sessionPublicId);
+        return ResponseEntity.ok(invoice);
     }
 }

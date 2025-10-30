@@ -355,6 +355,12 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/customer-sessions/${sessionPublicId}/finalize`, {});
   }
 
+  checkoutSession(sessionPublicId: string, paymentMethod: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/orders/session/${sessionPublicId}/checkout`, {}, {
+      params: { paymentMethod }
+    });
+  }
+
   // Tables
   getTables(page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
@@ -619,10 +625,6 @@ export class ApiService {
 
   getMenuTypes(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/menus/types/all`);
-  }
-
-  generateIndividualProductMenuItems(): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/menus/generate-individual-products`, {});
   }
 
   // Menu Items

@@ -90,7 +90,7 @@ public class OrderMapper {
                 .unitPrice(0L) // Will be set when MenuItem is attached
                 .totalPrice(0L) // Will be calculated
                 .status(com.follysitou.sellia_backend.enums.OrderItemStatus.PENDING)
-                .workStation(com.follysitou.sellia_backend.enums.WorkStation.KITCHEN)
+                .workStation(com.follysitou.sellia_backend.enums.WorkStation.CUISINE)
                 .isPrepared(false)
                 .build();
         // Note: MenuItem and Product will be set in service layer
@@ -151,34 +151,57 @@ public class OrderMapper {
     private OrderResponse.OrderItemResponse toOrderItemResponse(OrderItem item) {
         OrderResponse.OrderItemResponse response = new OrderResponse.OrderItemResponse();
         response.setPublicId(item.getPublicId());
-        response.setMenuItem(toMenuItemResponse(item.getMenuItem()));
+        response.setMenuItem(toMenuItemResponse(item.getMenuItem(), item.getMenu()));
         response.setProduct(toProductSimpleResponse(item.getProduct()));
         response.setQuantity(item.getQuantity());
         response.setUnitPrice(item.getUnitPrice());
         response.setTotalPrice(item.getTotalPrice());
         response.setNotes(item.getSpecialInstructions());
+        response.setWorkStation(item.getWorkStation() != null ? item.getWorkStation().toString() : null);
         return response;
     }
 
-    private OrderResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem) {
+    private OrderResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem, com.follysitou.sellia_backend.model.Menu menu) {
         if (menuItem == null) return null;
-        
+
         OrderResponse.MenuItemResponse response = new OrderResponse.MenuItemResponse();
         response.setPublicId(menuItem.getPublicId());
         response.setMenuName(menuItem.getMenu() != null ? menuItem.getMenu().getName() : "Unknown");
         response.setPriceOverride(menuItem.getPriceOverride());
         response.setBundlePrice(menuItem.getBundlePrice());
+
+        // If a Menu is provided, collect ALL products from ALL menu items
+        if (menu != null && menu.getMenuItems() != null && !menu.getMenuItems().isEmpty()) {
+            java.util.List<OrderResponse.ProductSimpleResponse> allProducts = new java.util.ArrayList<>();
+            for (MenuItem mi : menu.getMenuItems()) {
+                if (mi.getProducts() != null) {
+                    for (Product product : mi.getProducts()) {
+                        allProducts.add(toProductSimpleResponse(product));
+                    }
+                }
+            }
+            response.setProducts(allProducts);
+        } else {
+            // Fallback to MenuItem's own products
+            if (menuItem.getProducts() != null && !menuItem.getProducts().isEmpty()) {
+                response.setProducts(menuItem.getProducts().stream()
+                        .map(this::toProductSimpleResponse)
+                        .collect(Collectors.toList()));
+            }
+        }
+
         return response;
     }
 
     private OrderResponse.ProductSimpleResponse toProductSimpleResponse(Product product) {
         if (product == null) return null;
-        
+
         OrderResponse.ProductSimpleResponse response = new OrderResponse.ProductSimpleResponse();
         response.setPublicId(product.getPublicId());
         response.setName(product.getName());
         response.setImageUrl(product.getImageUrl());
         response.setPreparationTime(product.getPreparationTime());
+        response.setWorkStation(product.getWorkStation() != null ? product.getWorkStation().toString() : null);
         return response;
     }
 

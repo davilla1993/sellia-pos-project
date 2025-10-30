@@ -24,6 +24,11 @@ export class NavigationService {
     return user?.role === 'CUISINE';
   }
 
+  isBar(): boolean {
+    const user = this.authService.getCurrentUser();
+    return user?.role === 'BAR';
+  }
+
   getBackNavigationPath(): string {
     if (this.isAdmin()) {
       return '/admin/dashboard';

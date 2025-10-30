@@ -198,7 +198,8 @@ import { CurrencyService } from '../../shared/services/currency.service';
             <p class="font-bold">{{ restaurantInfo().name }}</p>
             <p class="text-xs text-gray-600 mb-1">{{ restaurantInfo().address }}</p>
             <p class="text-xs text-gray-600 mb-2">{{ restaurantInfo().phoneNumber }}</p>
-            <p class="font-bold text-lg">TICKET DE CAISSE</p>
+            <p class="font-bold text-lg">FACTURE</p>
+            <p class="text-xs font-bold">N° {{ invoiceNumber() }}</p>
             <p class="text-xs">{{ receiptDate() }}</p>
           </div>
           
@@ -290,6 +291,7 @@ export class CheckoutComponent implements OnInit {
   discountAmount = signal(0);
   isProcessing = signal(false);
   errorMessage = signal('');
+  invoiceNumber = signal('N/A');
 
   ngOnInit(): void {
     this.loadRestaurantInfo();
@@ -441,34 +443,36 @@ export class CheckoutComponent implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
-    // Mark all orders as paid
     const paymentMethod = 'ESPECES';
-    
-    Promise.all(
-      this.sessionOrders().map(order =>
-        new Promise((resolve, reject) => {
-          this.apiService.markOrderAsPaid(order.publicId, paymentMethod).subscribe({
-            next: () => resolve(true),
-            error: () => reject()
-          });
-        })
-      )
-    ).then(() => {
-      // Finalize session
-      this.apiService.finalizeSession(this.selectedSession().publicId).subscribe({
-        next: () => {
-          this.isProcessing.set(false);
-          this.printReceipt();
-          this.resetCheckout();
-        },
-        error: () => {
-          this.errorMessage.set('Erreur lors de la finalisation');
-          this.isProcessing.set(false);
+
+    // Use the checkout session endpoint which handles payment and returns invoice
+    this.apiService.checkoutSession(this.selectedSession().publicId, paymentMethod).subscribe({
+      next: (response: any) => {
+        // Extract invoice number from the response
+        if (response?.invoice?.invoiceNumber) {
+          this.invoiceNumber.set(response.invoice.invoiceNumber);
+        } else {
+          this.invoiceNumber.set('N/A');
         }
-      });
-    }).catch(() => {
-      this.errorMessage.set('Erreur lors de l\'encaissement');
-      this.isProcessing.set(false);
+
+        // Finalize the session
+        this.apiService.finalizeSession(this.selectedSession().publicId).subscribe({
+          next: () => {
+            this.isProcessing.set(false);
+            this.printReceipt();
+            this.resetCheckout();
+          },
+          error: () => {
+            this.errorMessage.set('Erreur lors de la finalisation');
+            this.isProcessing.set(false);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Checkout error:', error);
+        this.errorMessage.set('Erreur lors de l\'encaissement');
+        this.isProcessing.set(false);
+      }
     });
   }
 
@@ -509,8 +513,9 @@ export class CheckoutComponent implements OnInit {
             </div>
             
             <div class="header">TICKET DE CAISSE</div>
+            <div style="font-weight: bold; margin: 5px 0;">Facture N°: ${this.invoiceNumber().replace('INV-', '')}</div>
             <div>${this.receiptDate()}</div>
-            
+
             <div class="section">
               <div>Table: <strong>${tableNumber}</strong></div>
               <div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>

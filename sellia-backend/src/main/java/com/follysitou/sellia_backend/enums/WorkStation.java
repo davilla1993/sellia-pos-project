@@ -4,10 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum WorkStation {
-    KITCHEN("Cuisine"),
-    BAR("Bar"),
-    PASTRY("Pâtisserie"),
-    CHECKOUT("Caisse");
+    CUISINE("Cuisine"),
+    BAR("Bar");
 
     private final String displayName;
 

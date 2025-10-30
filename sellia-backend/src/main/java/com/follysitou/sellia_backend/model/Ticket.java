@@ -57,11 +57,14 @@ public class Ticket extends BaseEntity {
     private LocalDateTime servedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean deleted = false;
 }

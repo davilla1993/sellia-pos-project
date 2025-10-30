@@ -16,18 +16,9 @@ import { ToastService } from '../../../shared/services/toast.service';
           <h1 class="text-3xl font-bold text-white mb-2">Gestion des Menus</h1>
           <p class="text-neutral-400">Créez et gérez vos menus</p>
         </div>
-        <div class="flex gap-2">
-          <button 
-            (click)="generateIndividualProducts()" 
-            [disabled]="isGenerating()"
-            title="Génère automatiquement un MenuItem pour chaque produit"
-            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
-            ✨ {{ isGenerating() ? 'Génération...' : 'Produits Individuels' }}
-          </button>
-          <button (click)="openCreateMenuModal()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
-            + Nouveau Menu
-          </button>
-        </div>
+        <button (click)="openCreateMenuModal()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+          + Nouveau Menu
+        </button>
       </div>
 
       <!-- Tabs -->
@@ -54,12 +45,43 @@ import { ToastService } from '../../../shared/services/toast.service';
 
       <!-- Menus Tab -->
       <div *ngIf="activeTab() === 'menus'" class="space-y-4">
+        <!-- Type Filter -->
+        <div class="flex gap-2 flex-wrap">
+          <button
+            (click)="selectMenuType('all')"
+            [class.bg-orange-500]="selectedMenuType() === 'all'"
+            [class.bg-neutral-700]="selectedMenuType() !== 'all'"
+            [class.hover:bg-orange-600]="selectedMenuType() === 'all'"
+            [class.hover:bg-neutral-600]="selectedMenuType() !== 'all'"
+            class="px-4 py-2 text-white rounded-lg font-semibold transition-colors">
+            Tous ({{ menus().length }})
+          </button>
+          <button
+            (click)="selectMenuType('STANDARD')"
+            [class.bg-orange-500]="selectedMenuType() === 'STANDARD'"
+            [class.bg-neutral-700]="selectedMenuType() !== 'STANDARD'"
+            [class.hover:bg-orange-600]="selectedMenuType() === 'STANDARD'"
+            [class.hover:bg-neutral-600]="selectedMenuType() !== 'STANDARD'"
+            class="px-4 py-2 text-white rounded-lg font-semibold transition-colors">
+            Standard ({{ getStandardCount() }})
+          </button>
+          <button
+            (click)="selectMenuType('VIP')"
+            [class.bg-orange-500]="selectedMenuType() === 'VIP'"
+            [class.bg-neutral-700]="selectedMenuType() !== 'VIP'"
+            [class.hover:bg-orange-600]="selectedMenuType() === 'VIP'"
+            [class.hover:bg-neutral-600]="selectedMenuType() !== 'VIP'"
+            class="px-4 py-2 text-white rounded-lg font-semibold transition-colors">
+            VIP ({{ getVipCount() }})
+          </button>
+        </div>
+
         <div *ngIf="isLoading()" class="flex justify-center py-12">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         </div>
 
-        <div *ngIf="!isLoading() && menus().length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-          <div *ngFor="let menu of menus()" class="bg-neutral-800 rounded border border-neutral-700 p-2 hover:border-neutral-600 transition flex flex-col">
+        <div *ngIf="!isLoading() && filteredMenus().length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div *ngFor="let menu of filteredMenus()" class="bg-neutral-800 rounded border border-neutral-700 p-2 hover:border-neutral-600 transition flex flex-col">
             <div class="w-full h-20 rounded bg-neutral-700 mb-1 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img 
                 *ngIf="getImageUrl(menu)" 
@@ -107,8 +129,10 @@ import { ToastService } from '../../../shared/services/toast.service';
           </div>
         </div>
 
-        <div *ngIf="!isLoading() && menus().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
-          <p class="text-neutral-400">Aucun menu créé</p>
+        <div *ngIf="!isLoading() && filteredMenus().length === 0" class="text-center py-12 bg-neutral-800 rounded-lg border border-neutral-700">
+          <p class="text-neutral-400">
+            {{ menus().length === 0 ? 'Aucun menu créé' : 'Aucun menu de ce type' }}
+          </p>
         </div>
       </div>
 
@@ -332,6 +356,8 @@ export class MenusComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   menus = signal<any[]>([]);
+  filteredMenus = signal<any[]>([]);
+  selectedMenuType = signal<string>('all');
   menuItems = signal<any[]>([]);
   menuTypes = signal<string[]>([]);
   availableProducts = signal<any[]>([]);
@@ -339,7 +365,6 @@ export class MenusComponent implements OnInit {
   searchTerm = signal<string>('');
   isLoading = signal(false);
   isSaving = signal(false);
-  isGenerating = signal(false);
   error = signal<string | null>(null);
   imageFile = signal<File | null>(null);
   imagePreview = signal<string | null>(null);
@@ -395,6 +420,7 @@ export class MenusComponent implements OnInit {
     this.apiService.getAllMenus(0, 100).subscribe({
       next: (data) => {
         this.menus.set(data);
+        this.filterMenus();
         this.loadMenuImages(data);
         this.isLoading.set(false);
       },
@@ -403,6 +429,29 @@ export class MenusComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  filterMenus(): void {
+    const selectedType = this.selectedMenuType();
+    if (selectedType === 'all') {
+      this.filteredMenus.set(this.menus());
+    } else {
+      const filtered = this.menus().filter(menu => menu.menuType === selectedType);
+      this.filteredMenus.set(filtered);
+    }
+  }
+
+  selectMenuType(type: string): void {
+    this.selectedMenuType.set(type);
+    this.filterMenus();
+  }
+
+  getStandardCount(): number {
+    return this.menus().filter(m => m.menuType === 'STANDARD').length;
+  }
+
+  getVipCount(): number {
+    return this.menus().filter(m => m.menuType === 'VIP').length;
   }
 
   loadMenuImages(menus: any[]): void {
@@ -587,25 +636,6 @@ export class MenusComponent implements OnInit {
       error: (err) => {
         const errorMsg = err.error?.message || 'Erreur lors de la suppression';
         this.error.set(errorMsg);
-      }
-    });
-  }
-
-  generateIndividualProducts(): void {
-    if (!confirm('Cela va générer automatiquement un MenuItem pour chaque produit disponible.\n\nContinuer ?')) return;
-    
-    this.isGenerating.set(true);
-    this.apiService.generateIndividualProductMenuItems().subscribe({
-      next: (response) => {
-        this.isGenerating.set(false);
-        this.toast.success(`✨ ${response.itemsCreated} MenuItems créés`);
-        this.loadMenus();
-      },
-      error: (err) => {
-        this.isGenerating.set(false);
-        const errorMsg = err.error?.message || 'Erreur lors de la génération';
-        this.error.set(errorMsg);
-        this.toast.error(errorMsg);
       }
     });
   }

@@ -1,5 +1,8 @@
 package com.follysitou.sellia_backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum OrderType {
     TABLE("Table"),
     TAKEAWAY("À Emporter");
@@ -10,7 +13,4 @@ public enum OrderType {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

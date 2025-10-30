@@ -178,7 +178,8 @@ export class UserFormComponent implements OnInit {
         this.roles.set([
           { id: 1, name: 'ADMIN', description: 'Administrateur' },
           { id: 2, name: 'CAISSE', description: 'Caissier' },
-          { id: 3, name: 'CUISINE', description: 'Cuisinier' }
+          { id: 3, name: 'CUISINE', description: 'Cuisinier' },
+          { id: 4, name: 'BAR', description: 'Barman' }
         ]);
         if (callback) callback();
       }

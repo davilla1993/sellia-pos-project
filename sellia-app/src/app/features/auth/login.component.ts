@@ -153,7 +153,8 @@ export class LoginComponent {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/admin/dashboard',
       'CAISSE': '/pos/order-entry',
-      'CUISINE': '/pos/kitchen'
+      'CUISINE': '/pos/kitchen',
+      'BAR': '/pos/bar'
     };
 
     const route = roleRoutes[role] || '/admin/dashboard';

@@ -1,5 +1,8 @@
 package com.follysitou.sellia_backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum TicketStatus {
     PENDING("En attente"),              // Pas encore imprimé
     PRINTING("En impression"),          // Imprimante active
@@ -14,7 +17,4 @@ public enum TicketStatus {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }
