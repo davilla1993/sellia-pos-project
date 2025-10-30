@@ -62,9 +62,11 @@ interface KitchenOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getKitchenProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -108,9 +110,11 @@ interface KitchenOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getKitchenProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -152,9 +156,11 @@ interface KitchenOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getKitchenProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -192,9 +198,11 @@ interface KitchenOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getKitchenProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getKitchenProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -207,12 +215,30 @@ interface KitchenOrder {
       </div>
 
       <!-- Cancel Dialog -->
-      <app-cancel-order-dialog 
+      <app-cancel-order-dialog
         *ngIf="showCancelDialogFlag()"
         [orderNumber]="orderToCancel()?.orderNumber || ''"
         (onConfirmClick)="confirmCancelOrder($event)"
         (onCancelClick)="hideCancelDialog()">
       </app-cancel-order-dialog>
+
+      <!-- Combo Details Modal -->
+      <div *ngIf="showComboModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeComboModal()">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4" (click)="$event.stopPropagation()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Détails du combo - Cuisine</h3>
+            <button (click)="closeComboModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let product of getKitchenProducts(selectedComboItem())" class="flex items-center p-3 bg-gray-50 rounded">
+              <div class="flex-1">
+                <p class="font-semibold text-gray-900">{{ product.name }}</p>
+                <p class="text-xs text-gray-600">Station: {{ product.workStation }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: []
@@ -226,6 +252,10 @@ export class KitchenComponent implements OnInit {
   isLoading = signal(false);
   showCancelDialogFlag = signal(false);
   orderToCancel = signal<KitchenOrder | null>(null);
+
+  // Modal pour afficher les détails des combos
+  showComboModal = signal(false);
+  selectedComboItem = signal<any>(null);
 
   ngOnInit(): void {
     this.loadOrders();
@@ -244,23 +274,6 @@ export class KitchenComponent implements OnInit {
       this.apiService.getOrdersByStatus(status, 0, pageSize).subscribe({
         next: (response) => {
           const statusOrders = Array.isArray(response) ? response : response.content || [];
-
-          // Debug log
-          if (statusOrders.length > 0) {
-            console.log('Kitchen - Orders received:', statusOrders);
-            statusOrders.forEach((order: any) => {
-              if (order.items) {
-                order.items.forEach((item: any) => {
-                  console.log('Item:', {
-                    product: item.product?.name,
-                    workStation: item.workStation,
-                    menuItem: item.menuItem,
-                    menuProducts: item.menuItem?.products
-                  });
-                });
-              }
-            });
-          }
 
           // Filtrer pour ne garder que les commandes qui contiennent des items de la CUISINE
           const kitchenOrders = statusOrders.filter((order: KitchenOrder) => {
@@ -341,11 +354,21 @@ export class KitchenComponent implements OnInit {
   }
 
   getKitchenProducts(item: any): any[] {
-    if (!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0) {
+    if (!item || !item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0) {
       return [];
     }
     // Filter only CUISINE products from the menu
     return item.menuItem.products.filter((p: any) => p.workStation === 'CUISINE');
+  }
+
+  openComboModal(item: any): void {
+    this.selectedComboItem.set(item);
+    this.showComboModal.set(true);
+  }
+
+  closeComboModal(): void {
+    this.showComboModal.set(false);
+    this.selectedComboItem.set(null);
   }
 
   showCancelDialog(order: KitchenOrder): void {

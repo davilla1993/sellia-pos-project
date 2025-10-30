@@ -62,9 +62,11 @@ interface BarOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getBarProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -105,9 +107,11 @@ interface BarOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getBarProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -152,9 +156,11 @@ interface BarOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getBarProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
@@ -195,15 +201,41 @@ interface BarOrder {
                 <div *ngFor="let item of order.items">
                   <div *ngIf="item.menuItem && item.menuItem.products && item.menuItem.products.length > 0" class="mb-1">
                     <strong>{{ item.quantity }}x {{ item.menuItem.menuName }}</strong>
-                    <div class="ml-3 text-gray-600">
-                      <div *ngFor="let product of getBarProducts(item)">• {{ product.name }}</div>
-                    </div>
+                    <button
+                      (click)="openComboModal(item)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                      ({{ getBarProducts(item).length }} produits)
+                    </button>
                   </div>
                   <div *ngIf="!item.menuItem || !item.menuItem.products || item.menuItem.products.length === 0">
                     {{ item.quantity }}x {{ item.product?.name }}
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Combo -->
+      <div *ngIf="showComboModal()"
+           (click)="closeComboModal()"
+           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div (click)="$event.stopPropagation()"
+             class="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Détails du combo - Bar</h3>
+            <button (click)="closeComboModal()"
+                    class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let product of getBarProducts(selectedComboItem())"
+                 class="border-b border-gray-200 pb-3 last:border-0">
+              <p class="font-semibold text-gray-900">{{ product.name }}</p>
+              <p class="text-xs text-gray-600">Station: {{ product.workStation }}</p>
+              <p *ngIf="product.preparationTime" class="text-xs text-gray-500">
+                Temps de préparation: {{ product.preparationTime }} min
+              </p>
             </div>
           </div>
         </div>
@@ -220,6 +252,8 @@ export class BarComponent implements OnInit {
 
   orders = signal<BarOrder[]>([]);
   isLoading = signal(false);
+  showComboModal = signal(false);
+  selectedComboItem = signal<any>(null);
 
   ngOnInit(): void {
     this.loadOrders();
@@ -356,5 +390,15 @@ export class BarComponent implements OnInit {
     if (minutes === 0) return '< 1 min';
     if (minutes === 1) return '1 min';
     return `${minutes} min`;
+  }
+
+  openComboModal(item: any): void {
+    this.selectedComboItem.set(item);
+    this.showComboModal.set(true);
+  }
+
+  closeComboModal(): void {
+    this.showComboModal.set(false);
+    this.selectedComboItem.set(null);
   }
 }

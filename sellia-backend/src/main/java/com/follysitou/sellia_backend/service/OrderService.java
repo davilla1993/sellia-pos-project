@@ -191,16 +191,6 @@ public class OrderService {
             orderItem.setTotalPrice(itemTotal);
             orderItem.setWorkStation(product.getWorkStation());
 
-            // Store the Menu reference if this item is from a menu
-            if (itemRequest.getMenuPublicId() != null && !itemRequest.getMenuPublicId().isBlank()) {
-                Menu menu = menuRepository.findByPublicIdWithMenuItems(itemRequest.getMenuPublicId()).orElse(null);
-                if (menu != null) {
-                    // Load all products for all menu items
-                    menu = menuRepository.fetchMenuItemProducts(menu);
-                    orderItem.setMenu(menu);
-                }
-            }
-
             items.add(orderItem);
             totalAmount += itemTotal;
         }
@@ -270,34 +260,6 @@ public class OrderService {
 
     public PagedResponse<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
         Page<Order> orders = orderRepository.findByStatus(status, pageable);
-
-        // Force load Menu and MenuItem products to avoid LAZY loading issues
-        if (!orders.getContent().isEmpty()) {
-            for (Order order : orders.getContent()) {
-                if (order.getItems() != null) {
-                    for (OrderItem item : order.getItems()) {
-                        // Force load Menu if present
-                        if (item.getMenu() != null) {
-                            item.getMenu().getName(); // Force initialization
-                            if (item.getMenu().getMenuItems() != null) {
-                                item.getMenu().getMenuItems().size(); // Force initialization
-                                // Force load products for all menu items
-                                for (MenuItem mi : item.getMenu().getMenuItems()) {
-                                    if (mi.getProducts() != null) {
-                                        mi.getProducts().size();
-                                    }
-                                }
-                            }
-                        }
-                        // Also force MenuItem products if present
-                        if (item.getMenuItem() != null && item.getMenuItem().getProducts() != null) {
-                            item.getMenuItem().getProducts().size();
-                        }
-                    }
-                }
-            }
-        }
-
         return PagedResponse.of(orders.map(orderMapper::toResponse));
     }
 
@@ -419,34 +381,6 @@ public class OrderService {
 
     public List<OrderResponse> getActiveKitchenOrders() {
         List<Order> orders = orderRepository.findActiveKitchenOrders();
-
-        // Force load Menu and MenuItem products to avoid LAZY loading issues
-        if (!orders.isEmpty()) {
-            for (Order order : orders) {
-                if (order.getItems() != null) {
-                    for (OrderItem item : order.getItems()) {
-                        // Force load Menu if present
-                        if (item.getMenu() != null) {
-                            item.getMenu().getName(); // Force initialization
-                            if (item.getMenu().getMenuItems() != null) {
-                                item.getMenu().getMenuItems().size(); // Force initialization
-                                // Force load products for all menu items
-                                for (MenuItem mi : item.getMenu().getMenuItems()) {
-                                    if (mi.getProducts() != null) {
-                                        mi.getProducts().size();
-                                    }
-                                }
-                            }
-                        }
-                        // Also force MenuItem products if present
-                        if (item.getMenuItem() != null && item.getMenuItem().getProducts() != null) {
-                            item.getMenuItem().getProducts().size();
-                        }
-                    }
-                }
-            }
-        }
-
         return orders.stream()
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());

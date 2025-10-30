@@ -8,6 +8,7 @@ import com.follysitou.sellia_backend.model.Cashier;
 import com.follysitou.sellia_backend.model.CashierSession;
 import com.follysitou.sellia_backend.model.User;
 import com.follysitou.sellia_backend.enums.OrderStatus;
+import com.follysitou.sellia_backend.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class OrderMapper {
+
+    private final MenuRepository menuRepository;
 
     public Order toEntity(OrderCreateRequest request) {
         Order order = Order.builder()
@@ -151,7 +154,7 @@ public class OrderMapper {
     private OrderResponse.OrderItemResponse toOrderItemResponse(OrderItem item) {
         OrderResponse.OrderItemResponse response = new OrderResponse.OrderItemResponse();
         response.setPublicId(item.getPublicId());
-        response.setMenuItem(toMenuItemResponse(item.getMenuItem(), item.getMenu()));
+        response.setMenuItem(toMenuItemResponse(item.getMenuItem()));
         response.setProduct(toProductSimpleResponse(item.getProduct()));
         response.setQuantity(item.getQuantity());
         response.setUnitPrice(item.getUnitPrice());
@@ -161,7 +164,7 @@ public class OrderMapper {
         return response;
     }
 
-    private OrderResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem, com.follysitou.sellia_backend.model.Menu menu) {
+    private OrderResponse.MenuItemResponse toMenuItemResponse(MenuItem menuItem) {
         if (menuItem == null) return null;
 
         OrderResponse.MenuItemResponse response = new OrderResponse.MenuItemResponse();
@@ -170,24 +173,42 @@ public class OrderMapper {
         response.setPriceOverride(menuItem.getPriceOverride());
         response.setBundlePrice(menuItem.getBundlePrice());
 
-        // If a Menu is provided, collect ALL products from ALL menu items
-        if (menu != null && menu.getMenuItems() != null && !menu.getMenuItems().isEmpty()) {
-            java.util.List<OrderResponse.ProductSimpleResponse> allProducts = new java.util.ArrayList<>();
-            for (MenuItem mi : menu.getMenuItems()) {
-                if (mi.getProducts() != null) {
-                    for (Product product : mi.getProducts()) {
-                        allProducts.add(toProductSimpleResponse(product));
+        // If this MenuItem belongs to a Menu (combo), load ALL products from ALL MenuItems of the Menu
+        if (menuItem.getMenu() != null) {
+            try {
+                String menuPublicId = menuItem.getMenu().getPublicId();
+                if (menuPublicId != null) {
+                    // Load complete Menu with all MenuItems
+                    Menu fullMenu = menuRepository.findByPublicIdWithMenuItems(menuPublicId).orElse(null);
+                    if (fullMenu != null) {
+                        // Load all products for all menu items
+                        fullMenu = menuRepository.fetchMenuItemProducts(fullMenu);
+
+                        // Collect ALL products from ALL MenuItems in the Menu
+                        java.util.List<OrderResponse.ProductSimpleResponse> allProducts = new java.util.ArrayList<>();
+                        if (fullMenu.getMenuItems() != null) {
+                            for (MenuItem mi : fullMenu.getMenuItems()) {
+                                if (mi.getProducts() != null) {
+                                    for (Product product : mi.getProducts()) {
+                                        allProducts.add(toProductSimpleResponse(product));
+                                    }
+                                }
+                            }
+                        }
+                        response.setProducts(allProducts);
+                        return response;
                     }
                 }
+            } catch (Exception e) {
+                // Fallback to MenuItem's own products if Menu loading fails
             }
-            response.setProducts(allProducts);
-        } else {
-            // Fallback to MenuItem's own products
-            if (menuItem.getProducts() != null && !menuItem.getProducts().isEmpty()) {
-                response.setProducts(menuItem.getProducts().stream()
-                        .map(this::toProductSimpleResponse)
-                        .collect(Collectors.toList()));
-            }
+        }
+
+        // Fallback: Get products from MenuItem only
+        if (menuItem.getProducts() != null && !menuItem.getProducts().isEmpty()) {
+            response.setProducts(menuItem.getProducts().stream()
+                    .map(this::toProductSimpleResponse)
+                    .collect(Collectors.toList()));
         }
 
         return response;
