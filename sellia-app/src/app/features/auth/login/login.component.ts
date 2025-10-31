@@ -66,7 +66,7 @@ export class LoginComponent {
   private navigateByRole(role: string): void {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/admin/dashboard',
-      'CAISSE': '/pos/order-entry',
+      'CAISSE': '/auth/cashier-pin',  // Redirect to PIN validation for cashiers
       'CUISINE': '/pos/kitchen',
       'BAR': '/pos/bar'
     };

@@ -61,6 +61,11 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
+    public User getUserEntityByPublicId(String publicId) {
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", publicId));
+    }
+
     public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));

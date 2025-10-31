@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   firstLogin?: boolean;
   active?: boolean;
+  lastLogin?: string | Date;
 }
 
 export interface AuthResponse {

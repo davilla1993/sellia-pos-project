@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LayoutSimpleComponent } from './shared/components/layout-simple/layout-simple.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { ChangePasswordComponent } from './features/auth/change-password/change-password.component';
+import { CashierPinComponent } from './features/auth/cashier-pin/cashier-pin.component';
 import { CheckoutSimpleComponent } from './features/customer/checkout-simple/checkout-simple.component';
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanning/qr-scanner.component';
@@ -25,6 +26,7 @@ import { SettingsComponent } from './features/admin/settings.component';
 import { GlobalSessionComponent } from './features/admin/global-session/global-session.component';
 import { CashiersComponent } from './features/admin/cashiers/cashiers.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
+import { cashierSessionGuard } from './core/guards/cashier-session.guard';
 
 export const routes: Routes = [
   // Public Routes (No Auth Required)
@@ -47,6 +49,7 @@ export const routes: Routes = [
     children: [
       { path: 'login', component: LoginComponent },
       { path: 'change-password', component: ChangePasswordComponent },
+      { path: 'cashier-pin', component: CashierPinComponent, canActivate: [authGuard, roleGuard(['CAISSE'])] },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
@@ -151,7 +154,7 @@ export const routes: Routes = [
       // POS Routes (with Sidebar Layout)
       {
         path: 'pos',
-        canActivate: [roleGuard(['CAISSE', 'ADMIN', 'CUISINE', 'BAR'])],
+        canActivate: [roleGuard(['CAISSE', 'ADMIN', 'CUISINE', 'BAR']), cashierSessionGuard],
         component: PosLayoutComponent,
         children: [
           {

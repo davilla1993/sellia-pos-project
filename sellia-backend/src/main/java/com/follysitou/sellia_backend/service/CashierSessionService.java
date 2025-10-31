@@ -33,6 +33,7 @@ public class CashierSessionService {
     private final CashierSessionMapper cashierSessionMapper;
     private final GlobalSessionRepository globalSessionRepository;
     private final CashierService cashierService;
+    private final com.follysitou.sellia_backend.repository.UserRepository userRepository;
 
     @Transactional
     public CashierSessionResponse openSession(CashierSessionOpenRequest request) {
@@ -236,7 +237,11 @@ public class CashierSessionService {
     }
 
     private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return (User) auth.getPrincipal();
+        String userId = com.follysitou.sellia_backend.util.SecurityUtil.getCurrentUserId();
+        if (userId == null) {
+            throw new com.follysitou.sellia_backend.exception.UnauthorizedException("User is not authenticated");
+        }
+        return userRepository.findByPublicId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userId));
     }
 }

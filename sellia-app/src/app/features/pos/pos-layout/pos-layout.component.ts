@@ -5,6 +5,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationService } from '@core/services/navigation.service';
 import { ApiService } from '@core/services/api.service';
 import { OrderNotificationService } from '@core/services/order-notification.service';
+import { CashierSessionService } from '@core/services/cashier-session.service';
 import { AudioNotificationControlComponent } from '@shared/components/audio-notification-control/audio-notification-control.component';
 
 @Component({
@@ -18,10 +19,12 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private apiService = inject(ApiService);
   private orderNotificationService = inject(OrderNotificationService);
+  private cashierSessionService = inject(CashierSessionService);
   navigationService = inject(NavigationService);
 
   currentRoute = signal('');
   pendingOrdersCount = signal(0);
+  currentCashierSession = signal<any>(null);
 
   constructor() {
     effect(() => {
@@ -35,9 +38,14 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     this.currentRoute.set(this.router.url);
     this.loadPendingOrdersCount();
     setInterval(() => this.loadPendingOrdersCount(), 5000);
-    
+
     // Start monitoring order changes for notifications
     this.orderNotificationService.startMonitoring();
+
+    // Subscribe to cashier session updates
+    this.cashierSessionService.currentSession$.subscribe(session => {
+      this.currentCashierSession.set(session);
+    });
   }
 
   ngOnDestroy(): void {
@@ -80,6 +88,18 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
 
   getCurrentUserInfo(): string {
     return `${this.navigationService.getCurrentUserName()} • ${this.navigationService.getCurrentUserRole()}`;
+  }
+
+  getCashierInfo(): string {
+    const session = this.currentCashierSession();
+    if (session?.cashier) {
+      return session.cashier.name || `Caisse ${session.cashier.cashierNumber}`;
+    }
+    return '';
+  }
+
+  hasCashierSession(): boolean {
+    return this.currentCashierSession() !== null;
   }
 
   goToDashboard(): void {

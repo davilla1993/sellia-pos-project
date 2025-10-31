@@ -24,21 +24,21 @@ public class CashierSessionController {
     private final CashierSessionService cashierSessionService;
 
     @PostMapping("/open")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> openSession(@Valid @RequestBody CashierSessionOpenRequest request) {
         CashierSessionResponse response = cashierSessionService.openSession(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/{publicId}/lock")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> lockSession(@PathVariable String publicId) {
         CashierSessionResponse response = cashierSessionService.lockSession(publicId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{publicId}/unlock")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> unlockSession(
             @PathVariable String publicId,
             @Valid @RequestBody CashierSessionPinUnlockRequest request) {
@@ -47,7 +47,7 @@ public class CashierSessionController {
     }
 
     @PostMapping("/{publicId}/close")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> closeSession(
             @PathVariable String publicId,
             @Valid @RequestBody CashierSessionCloseRequest request) {
@@ -63,7 +63,7 @@ public class CashierSessionController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> getCurrentSession() {
         CashierSessionResponse response = cashierSessionService.getCurrentSession();
         return ResponseEntity.ok(response);
@@ -112,7 +112,7 @@ public class CashierSessionController {
     }
 
     @PostMapping("/{publicId}/activity")
-    @PreAuthorize("hasRole('CAISSIER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<Void> updateLastActivity(@PathVariable String publicId) {
         cashierSessionService.updateLastActivity(publicId);
         return ResponseEntity.noContent().build();

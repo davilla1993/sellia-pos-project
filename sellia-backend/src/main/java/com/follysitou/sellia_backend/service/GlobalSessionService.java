@@ -26,7 +26,7 @@ public class GlobalSessionService {
 
     private final GlobalSessionRepository globalSessionRepository;
     private final GlobalSessionMapper globalSessionMapper;
-    private final UserService userService;
+    private final com.follysitou.sellia_backend.repository.UserRepository userRepository;
 
     @Transactional
     public GlobalSessionResponse openSession(GlobalSessionOpenRequest request) {
@@ -101,8 +101,11 @@ public class GlobalSessionService {
     }
 
     private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        return (User) auth.getPrincipal();
+        String userId = com.follysitou.sellia_backend.util.SecurityUtil.getCurrentUserId();
+        if (userId == null) {
+            throw new com.follysitou.sellia_backend.exception.UnauthorizedException("User is not authenticated");
+        }
+        return userRepository.findByPublicId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userId));
     }
 }

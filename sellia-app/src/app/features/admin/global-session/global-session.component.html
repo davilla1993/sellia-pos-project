@@ -4,16 +4,21 @@
 
       <div class="status-panel">
         <div *ngIf="currentSession" class="session-info">
-          <h2>Session Active</h2>
+          <h2>{{ currentSession.status === 'OPEN' ? 'Session Active' : 'Session Fermée' }}</h2>
           <p>Statut: <strong [class.open]="currentSession.status === 'OPEN'" [class.closed]="currentSession.status === 'CLOSED'">
             {{ currentSession.status }}
           </strong></p>
           <p>Ouvert par: {{ currentSession.openedBy?.firstName }} {{ currentSession.openedBy?.lastName }}</p>
           <p>Depuis: {{ currentSession.openedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          <p *ngIf="currentSession.status === 'CLOSED' && currentSession.closedAt">Fermée le: {{ currentSession.closedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
           <p>Ventes: {{ formatCurrency(currentSession.totalSales) }}</p>
           <button *ngIf="currentSession.status === 'OPEN'" (click)="openCloseModal()" class="btn btn-danger">
             🔒 Fermer Session
           </button>
+          <div *ngIf="currentSession.status === 'CLOSED'" class="closed-indicator">
+            <span class="lock-icon">🔒</span>
+            <span>Session fermée</span>
+          </div>
         </div>
 
         <div *ngIf="!currentSession" class="no-session">

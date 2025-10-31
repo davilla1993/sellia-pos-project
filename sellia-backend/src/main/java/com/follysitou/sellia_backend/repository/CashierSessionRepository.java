@@ -24,7 +24,7 @@ public interface CashierSessionRepository extends JpaRepository<CashierSession, 
     @Query("SELECT cs FROM CashierSession cs WHERE cs.cashier.publicId = :cashierId AND cs.globalSession = :globalSession AND (cs.status = 'OPEN' OR cs.status = 'LOCKED') AND cs.deleted = false")
     Optional<CashierSession> findActiveByCashierAndGlobalSession(@Param("cashierId") String cashierId, @Param("globalSession") GlobalSession globalSession);
 
-    @Query("SELECT cs FROM CashierSession cs WHERE cs.user.publicId = :userId AND (cs.status = 'OPEN' OR cs.status = 'LOCKED') AND cs.deleted = false")
+    @Query("SELECT cs FROM CashierSession cs WHERE cs.user.publicId = :userId AND cs.globalSession.status = 'OPEN' AND (cs.status = 'OPEN' OR cs.status = 'LOCKED') AND cs.deleted = false ORDER BY cs.openedAt DESC")
     Optional<CashierSession> findCurrentSessionByUser(@Param("userId") String userId);
 
     @Query("SELECT cs FROM CashierSession cs WHERE cs.globalSession = :globalSession AND (cs.status = 'OPEN' OR cs.status = 'LOCKED') AND cs.deleted = false")

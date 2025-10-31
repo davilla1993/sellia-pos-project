@@ -50,7 +50,7 @@ public class CashierController {
     }
 
     @GetMapping("/my-cashiers")
-    @PreAuthorize("hasRole('CAISSIER')")
+    @PreAuthorize("hasRole('CAISSE')")
     public ResponseEntity<PagedResponse<CashierResponse>> getMyCashiers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {

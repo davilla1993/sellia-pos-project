@@ -33,6 +33,10 @@ public class AuthService {
             throw new UnauthorizedException(ErrorMessages.CREDENTIALS_INVALID);
         }
 
+        // Update last login timestamp
+        user.setLastLogin(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
         String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), user.getPublicId(), user.getRole().getName().name());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername(), user.getPublicId());
 

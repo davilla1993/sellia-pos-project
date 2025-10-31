@@ -96,15 +96,15 @@ public class OrderService {
 
         // Get current cashier session for CAISSIER/ADMIN users
         com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
-        String currentUsername = SecurityUtil.getCurrentUsername();
-        if (!currentUsername.equals("SYSTEM") && !currentUsername.equals("anonymousUser")) {
+        String currentUserId = SecurityUtil.getCurrentUserId();
+        if (currentUserId != null) {
             try {
-                var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUsername);
+                var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUserId);
                 if (optionalSession.isPresent()) {
                     cashierSession = optionalSession.get();
                 }
             } catch (Exception e) {
-                log.warn("Could not get cashier session for user: {}", currentUsername, e);
+                log.warn("Could not get cashier session for user: {}", currentUserId, e);
             }
         }
 
@@ -122,8 +122,8 @@ public class OrderService {
         // Set cashier ID from current user or cashier session
         if (cashierSession != null && cashierSession.getUser() != null) {
             order.setCashierId(cashierSession.getUser().getPublicId());
-        } else if (!currentUsername.equals("SYSTEM") && !currentUsername.equals("anonymousUser")) {
-            order.setCashierId(currentUsername);
+        } else if (currentUserId != null) {
+            order.setCashierId(currentUserId);
         }
 
         // Create order items (via MenuItems, not Products directly)
