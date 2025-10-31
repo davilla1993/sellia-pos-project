@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node test-migration.js:*)",
+      "Bash(node migrate-components.js:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,29 +1,29 @@
 import { Routes } from '@angular/router';
-import { LayoutSimpleComponent } from './shared/components/layout-simple.component';
-import { LoginComponent } from './features/auth/login.component';
-import { ChangePasswordComponent } from './features/auth/change-password.component';
-import { CheckoutSimpleComponent } from './features/customer/checkout-simple.component';
-import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple.component';
-import { QrScannerComponent } from './features/customer/qr-scanner.component';
+import { LayoutSimpleComponent } from './shared/components/layout-simple/layout-simple.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { ChangePasswordComponent } from './features/auth/change-password/change-password.component';
+import { CheckoutSimpleComponent } from './features/customer/checkout-simple/checkout-simple.component';
+import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple/order-tracking-simple.component';
+import { QrScannerComponent } from './features/customer/qr-scanning/qr-scanner.component';
 import { PublicMenuComponent } from './features/public/public-menu.component';
-import { DashboardComponent } from './features/admin/dashboard.component';
-import { UsersListComponent } from './features/admin/users/users-list.component';
-import { UserFormComponent } from './features/admin/users/user-form.component';
+import { DashboardComponent } from './features/admin/admin-dashboard/dashboard.component';
+import { UsersListComponent } from './features/admin/users/user-list/users-list.component';
+import { UserFormComponent } from './features/admin/users/user-form/user-form.component';
 import { ProductsListComponent } from './features/admin/products/product-list/products-list.component';
 import { ProductFormComponent } from './features/admin/products/product-form/product-form.component';
-import { OrderEntryComponent } from './features/pos/order-entry.component';
-import { KitchenComponent } from './features/pos/kitchen.component';
-import { BarComponent } from './features/pos/bar.component';
-import { PendingOrdersComponent } from './features/pos/pending-orders.component';
-import { MyOrdersComponent } from './features/pos/my-orders.component';
-import { CheckoutComponent } from './features/pos/checkout.component';
-import { PosLayoutComponent } from './features/pos/pos-layout.component';
-import { InventoryComponent } from './features/admin/inventory.component';
+import { OrderEntryComponent } from './features/pos/order-entry/order-entry.component';
+import { KitchenComponent } from './features/pos/kitchen/kitchen.component';
+import { BarComponent } from './features/pos/bar/bar.component';
+import { PendingOrdersComponent } from './features/pos/pending-orders/pending-orders.component';
+import { MyOrdersComponent } from './features/pos/my-orders/my-orders.component';
+import { CheckoutComponent } from './features/pos/checkout/checkout.component';
+import { PosLayoutComponent } from './features/pos/pos-layout/pos-layout.component';
+import { InventoryComponent } from './features/admin/inventory/inventory.component';
 
-import { ReportsComponent } from './features/admin/reports.component';
+import { ReportsComponent } from './features/admin/reports/reports.component';
 import { SettingsComponent } from './features/admin/settings.component';
-import { GlobalSessionComponent } from './features/admin/global-session.component';
-import { CashiersComponent } from './features/admin/cashiers.component';
+import { GlobalSessionComponent } from './features/admin/global-session/global-session.component';
+import { CashiersComponent } from './features/admin/cashiers/cashiers.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -55,7 +55,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard(['ADMIN'])],
-    loadComponent: () => import('./features/admin/admin-layout.component').then(m => m.AdminLayoutComponent),
+    loadComponent: () => import('./features/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { path: 'dashboard', component: DashboardComponent },
       {
@@ -90,13 +90,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/tables/tables.component').then(m => m.TablesComponent)
       },
       { path: 'global-session', component: GlobalSessionComponent },
-      { 
+      {
         path: 'cashiers',
         children: [
           { path: '', component: CashiersComponent },
-          { 
-            path: 'assignment', 
-            loadComponent: () => import('./features/admin/cashiers/cashier-assignment.component').then(m => m.CashierAssignmentComponent)
+          {
+            path: 'assignment',
+            loadComponent: () => import('./features/admin/cashiers/cashier-assignment/cashier-assignment.component').then(m => m.CashierAssignmentComponent)
           }
         ]
       },

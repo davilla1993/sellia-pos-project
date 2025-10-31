@@ -1,973 +1,1020 @@
 
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] NG1010: template must be a string
+    src/app/features/admin/users/user-form/user-form.component.ts:128:16:
+      128 │         error: (err) => this.handleError(err)
+          ╵                 ~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:4:27:
+      4 │ import { ApiService } from '../../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:30:4:
+      30 │     this.apiService.getUsers(0, 50).subscribe({
+         ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'data' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:31:13:
+      31 │       next: (data) => {
+         ╵              ~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:35:14:
+      35 │       error: (err) => {
+         ╵               ~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:44:6:
+      44 │       this.apiService.deactivateUser(publicId).subscribe({
+         ╵       ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/admin/users/user-list/users-list.component.ts:53:6:
+      53 │       this.apiService.activateUser(publicId).subscribe({
+         ╵       ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../core/services/auth.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/auth/login/login.component.ts:5:28:
+      5 │ import { AuthService } from '../../core/services/auth.service';
+        ╵                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG2003: No suitable injection token for parameter 'authService' of class 'LoginComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/features/auth/login/login.component.ts:22:12:
+      22 │     private authService: AuthService,
+         ╵             ~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/features/auth/login/login.component.ts:22:25:
+      22 │     private authService: AuthService,
+         ╵                          ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/auth/login/login.component.ts:45:13:
+      45 │       next: (response) => {
+         ╵              ~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/auth/login/login.component.ts:57:14:
+      57 │       error: (err) => {
+         ╵               ~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/customer/checkout/checkout.component.ts:5:27:
+      5 │ import { ApiService } from '../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../shared/models/types' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/customer/checkout/checkout.component.ts:6:22:
+      6 │ import { Order } from '../../shared/models/types';
+        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG2003: No suitable injection token for parameter 'apiService' of class 'CheckoutComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/features/customer/checkout/checkout.component.ts:27:12:
+      27 │     private apiService: ApiService,
+         ╵             ~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/features/customer/checkout/checkout.component.ts:27:24:
+      27 │     private apiService: ApiService,
+         ╵                         ~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'createdOrder' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/customer/checkout/checkout.component.ts:61:13:
+      61 │       next: (createdOrder) => {
+         ╵              ~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/customer/checkout/checkout.component.ts:65:14:
+      65 │       error: (err) => {
+         ╵               ~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../shared/components/audio-notification-control.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:4:50:
+      4 │ ...ent } from '../../shared/components/audio-notification-control.c...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../core/services/order-notification.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:5:41:
+      5 │ ...ionService } from '../../core/services/order-notification.service';
+        ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
   Value could not be determined statically. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:10:40:
+      10 │ ...: [CommonModule, RouterOutlet, AudioNotificationControlComponent],
+         ╵                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Unable to evaluate this expression statically.
+  Unknown reference.
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Unable to evaluate an invalid expression.
-
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:10:40:
+      10 │ ...: [CommonModule, RouterOutlet, AudioNotificationControlComponent],
+         ╵                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
-
-
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:60:
-      32 │ ...ont-semibold text-primary">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:19:4:
+      19 │     this.orderNotificationService.startMonitoring();
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:32:61:
-      32 │ ...t-semibold text-primary">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:74:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                                      ~~~~
+    src/app/features/pos/cashier-layout/cashier-layout.component.ts:23:4:
+      23 │     this.orderNotificationService.stopMonitoring();
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:58:36:
-      58 │                 <span>${{ subtotal().toFixed(2) }}</span>
-         ╵                                     ^
+    src/app/features/pos/checkout/checkout.component.html:108:41:
+      108 │ ...  <span>{{ currencyService.formatPrice(item.totalPrice) }}</span>
+          ╵                               ~~~~~~~~~~~
 
+  Error occurs in the template of component CheckoutComponent.
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:62:31:
-      62 │                 <span>${{ tax().toFixed(2) }}</span>
-         ╵                                ^
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:66:37:
-      66 │                 <span>-${{ discount().toFixed(2) }}</span>
-         ╵                                      ^
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:72:52:
-      72 │ ...       <span class="text-primary">${{ total().toFixed(2) }}</span>
-         ╵                                                 ^
+    src/app/features/pos/checkout/checkout.component.html:112:62:
+      112 │ ...imary">{{ currencyService.formatPrice(order.totalAmount) }}</s...
+          ╵                              ~~~~~~~~~~~
 
+  Error occurs in the template of component CheckoutComponent.
 
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
-
-  Unable to evaluate this expression statically.
-
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ary font-bold">${{ (item.price * item.quantity).toFixed(2) }}</...
-         ╵                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Unable to evaluate an invalid expression.
-
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+    src/app/features/pos/checkout/checkout.component.html:132:39:
+      132 │ ...   <span>{{ currencyService.formatPrice(sessionTotal()) }}</span>
+          ╵                                ~~~~~~~~~~~
 
+  Error occurs in the template of component CheckoutComponent.
 
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:57:
-      77 │ ...s="text-primary font-bold">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:58:
-      77 │ ..."text-primary font-bold">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
+    src/app/features/pos/checkout/checkout.component.html:136:64:
+      136 │ ...-400">-{{ currencyService.formatPrice(discountAmount()) }}</span>
+          ╵                              ~~~~~~~~~~~
 
+  Error occurs in the template of component CheckoutComponent.
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:71:
-      77 │ ...y font-bold">${{ (item.price * item.quantity).toFixed(2) }}</span>
-         ╵                                   ~~~~
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:52:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                   ~~
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS18004: No value exists in scope for the shorthand property 'totalAmount'. Either declare one or provide an initializer. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:115:54:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
+    src/app/features/pos/checkout/checkout.component.html:140:79:
+      140 │ ...t-primary">{{ currencyService.formatPrice(finalTotal()) }}</span>
+          ╵                                  ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:153:37:
+      153 │                   {{ currencyService.formatPrice(changeAmount()) }}
+          ╵                                      ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:157:63:
+      157 │ ...manque {{ currencyService.formatPrice(finalTotal() - amountPai...
+          ╵                              ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:206:41:
+      206 │ ...  <span>{{ currencyService.formatPrice(item.totalPrice) }}</span>
+          ╵                               ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:214:39:
+      214 │ ...   <span>{{ currencyService.formatPrice(sessionTotal()) }}</span>
+          ╵                                ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:218:40:
+      218 │ ...<span>-{{ currencyService.formatPrice(discountAmount()) }}</span>
+          ╵                              ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:222:39:
+      222 │ ...     <span>{{ currencyService.formatPrice(finalTotal()) }}</span>
+          ╵                                  ~~~~~~~~~~~
+
+  Error occurs in the template of component CheckoutComponent.
+
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.html:227:49:
+      227 │ ...ontant remis: {{ currencyService.formatPrice(amountPaid()) }}</p>
           ╵                                     ~~~~~~~~~~~
 
+  Error occurs in the template of component CheckoutComponent.
 
-X [ERROR] TS1005: ',' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:65:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                                ^
-
-
-X [ERROR] TS2769: No overload matches this call.
-  Overload 1 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>'.
-  Overload 2 of 3, '(obj: null | undefined): null', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'null | undefined'.
-  Overload 3 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined'. [plugin angular-compiler]
-
-    src/app/shared/components/layout.component.ts:13:26:
-      13 │       <app-navbar *ngIf="(isAuthenticated$ | async)"></app-navbar>
-         ╵                           ~~~~~~~~~~~~~~~~
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/shared/components/layout.component.ts:31:26:
-      31 │   isAuthenticated$ = this.authService.isAuthenticated$;
-         ╵                           ~~~~~~~~~~~
+    src/app/features/pos/checkout/checkout.component.html:228:41:
+      228 │ ...  <p>Rendu: {{ currencyService.formatPrice(changeAmount()) }}</p>
+          ╵                                   ~~~~~~~~~~~
 
-  'authService' is declared here.
+  Error occurs in the template of component CheckoutComponent.
 
-    src/app/shared/components/layout.component.ts:29:14:
-      29 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/pos/checkout/checkout.component.ts:11:15:
+      11 │   templateUrl: './checkout.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
+X [ERROR] TS2307: Cannot find module '../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
 
-    src/app/shared/components/navbar.component.ts:53:31:
-      53 │   @Input() currentUser$ = this.authService.currentUser$;
+    src/app/features/pos/checkout/checkout.component.ts:4:27:
+      4 │ import { ApiService } from '../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../shared/services/currency.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:5:32:
+      5 │ ... { CurrencyService } from '../../shared/services/currency.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:58:4:
+      58 │     this.apiService.getRestaurant().subscribe({
+         ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:68:14:
+      68 │       error: (err) => {
+         ╵               ~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:84:4:
+      84 │     this.apiService.getTables().subscribe({
+         ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:85:13:
+      85 │       next: (response) => {
+         ╵              ~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:95:10:
+      95 │           this.apiService.getActiveSessionByTable(table.publicId)....
+         ╵           ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:116:14:
+      116 │       error: (err) => {
+          ╵               ~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:139:4:
+      139 │     this.apiService.getActiveSessionByTable(tablePublicId).subscr...
+          ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'session' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:140:13:
+      140 │       next: (session) => {
+          ╵              ~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:144:14:
+      144 │       error: (err) => {
+          ╵               ~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:152:4:
+      152 │     this.apiService.getSessionOrders(sessionPublicId).subscribe({
+          ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:205:4:
+      205 │     this.apiService.checkoutSession(this.selectedSession().public...
+          ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:215:8:
+      215 │         this.apiService.finalizeSession(this.selectedSession().pu...
+          ╵         ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'error' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:227:14:
+      227 │       error: (error) => {
+          ╵               ~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:286:28:
+      286 │ ...             <span>${this.currencyService.formatPrice(item.tot...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:295:24:
+      295 │                 <span>${this.currencyService.formatPrice(this.ses...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:300:27:
+      300 │ ...            <span>-${this.currencyService.formatPrice(this.dis...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:305:24:
+      305 │                 <span>${this.currencyService.formatPrice(this.fin...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:312:24:
+      312 │                 <span>${this.currencyService.formatPrice(this.amo...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:316:24:
+      316 │                 <span>${this.currencyService.formatPrice(this.cha...
+          ╵                         ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:356:46:
+      356 │ ...r et Imprimer Reçu - ${this.currencyService.formatPrice(this....
+          ╵                        ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:395:4:
+      395 │     this.apiService.generateTableQrCode(table.publicId).subscribe({
+          ╵     ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:396:13:
+      396 │       next: (response) => {
+          ╵              ~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/features/pos/checkout/checkout.component.ts:405:14:
+      405 │       error: (err) => {
+          ╵               ~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../shared/components/audio-notification-control.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:4:50:
+      4 │ ...ent } from '../../shared/components/audio-notification-control.c...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../core/services/order-notification.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:5:41:
+      5 │ ...ionService } from '../../core/services/order-notification.service';
+        ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically. [plugin angular-compiler]
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:10:40:
+      10 │ ...: [CommonModule, RouterOutlet, AudioNotificationControlComponent],
+         ╵                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Unknown reference.
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:10:40:
+      10 │ ...: [CommonModule, RouterOutlet, AudioNotificationControlComponent],
+         ╵                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:19:4:
+      19 │     this.orderNotificationService.startMonitoring();
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/kitchen-layout/kitchen-layout.component.ts:23:4:
+      23 │     this.orderNotificationService.stopMonitoring();
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
+
+    src/app/features/pos/my-orders/my-orders.component.html:70:64:
+      70 │ ...ral-400">{{ currencyService.formatPrice(item.totalPrice) }}</span>
          ╵                                ~~~~~~~~~~~
 
-  'authService' is declared here.
+  Error occurs in the template of component MyOrdersComponent.
 
-    src/app/shared/components/navbar.component.ts:55:14:
-      55 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/pos/my-orders/my-orders.component.ts:11:15:
+      11 │   templateUrl: './my-orders.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] Expected identifier but found ":"
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:111:42:
-      111 │                 <span>${{ subtotal() { }, : .toFixed(2) }}</span>
-          ╵                                           ^
+    src/app/features/pos/my-orders/my-orders.component.html:77:76:
+      77 │ ...imary">{{ currencyService.formatPrice(order.totalAmount) }}</span>
+         ╵                              ~~~~~~~~~~~
 
+  Error occurs in the template of component MyOrdersComponent.
 
-X [ERROR] Expected identifier but found ":"
+    src/app/features/pos/my-orders/my-orders.component.ts:11:15:
+      11 │   templateUrl: './my-orders.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/features/customer/order-tracking.component.ts:180:71:
-      180 │ ...xt-primary">${{ order() { }, totalAmount, : .toFixed(2) }}</span>
-          ╵                                              ^
 
+X [ERROR] TS2307: Cannot find module '../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
 
-X [ERROR] You cannot `@apply` the `animate-fade-in` utility here because it creates a circular dependency. [plugin angular-sass]
+    src/app/features/pos/my-orders/my-orders.component.ts:4:27:
+      4 │ import { ApiService } from '../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/styles.scss:73:1:
-      73 │   .animate-fade-in {
-         ╵  ^
 
-  The plugin "angular-sass" was triggered by this import
+X [ERROR] TS2307: Cannot find module '../../shared/services/currency.service' or its corresponding type declarations. [plugin angular-compiler]
 
-    angular:styles/global:styles:1:8:
-      1 │ @import 'src/styles.scss';
-        ╵         ~~~~~~~~~~~~~~~~~
+    src/app/features/pos/my-orders/my-orders.component.ts:5:32:
+      5 │ ... { CurrencyService } from '../../shared/services/currency.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Watch mode enabled. Watching for file changes...
-Application bundle generation failed. [0.489 seconds] - 2025-10-17T14:14:50.605Z
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-▲ [WARNING] NG8113: RouterLink is not used within the template of MenuSimpleComponent [plugin angular-compiler]
+    src/app/features/pos/my-orders/my-orders.component.ts:97:6:
+      97 │       this.apiService.getOrdersByStatus(status).subscribe({
+         ╵       ~~~~~~~~~~~~~~~
 
-    src/app/features/customer/menu-simple.component.ts:10:26:
-      10 │   imports: [CommonModule, RouterLink],
-         ╵                           ~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] You cannot `@apply` the `animate-fade-in` utility here because it creates a circular dependency. [plugin angular-sass]
+    src/app/features/pos/my-orders/my-orders.component.ts:115:4:
+      115 │     this.apiService.updateOrderStatus(publicId, newStatus).subscr...
+          ╵     ~~~~~~~~~~~~~~~
 
-    src/styles.scss:73:1:
-      73 │   .animate-fade-in {
-         ╵  ^
 
-  The plugin "angular-sass" was triggered by this import
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    angular:styles/global:styles:1:8:
-      1 │ @import 'src/styles.scss';
-        ╵         ~~~~~~~~~~~~~~~~~
+    src/app/features/pos/my-orders/my-orders.component.ts:143:4:
+      143 │     this.apiService.updateOrderStatus(publicId, 'ANNULEE').subscr...
+          ╵     ~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'LayoutComponent'. [plugin angular-compiler]
+X [ERROR] TS2307: Cannot find module '../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
 
-    src/app/app.routes.ts:31:15:
-      31 │     component: LayoutComponent,
-         ╵                ~~~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:5:27:
+      5 │ import { ApiService } from '../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+X [ERROR] TS2307: Cannot find module '../../shared/services/toast.service' or its corresponding type declarations. [plugin angular-compiler]
 
-    src/app/app.routes.ts:38:37:
-      38 │           { path: 'menu', component: MenuComponent },
-         ╵                                      ~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:6:29:
+      6 │ import { ToastService } from '../../shared/services/toast.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'CheckoutComponent'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/app.routes.ts:39:41:
-      39 │           { path: 'checkout', component: CheckoutComponent },
-         ╵                                          ~~~~~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:54:4:
+      54 │     this.apiService.getAvailableTables().subscribe({
+         ╵     ~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2552: Cannot find name 'OrderTrackingComponent'. Did you mean 'OrderTrackingSimpleComponent'? [plugin angular-compiler]
+X [ERROR] TS7006: Parameter 'tables' implicitly has an 'any' type. [plugin angular-compiler]
 
-    src/app/app.routes.ts:40:51:
-      40 │ ... { path: 'order-tracking/:id', component: OrderTrackingComponent }
-         ╵                                              ~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:55:13:
+      55 │       next: (tables) => {
+         ╵              ~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/app.routes.ts:48:19:
-      48 │         component: MenuComponent // Temporary - will be replaced w...
-         ╵                    ~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:60:10:
+      60 │           this.toast.warning('Aucune table disponible');
+         ╵           ~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-    src/app/app.routes.ts:53:19:
-      53 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:63:14:
+      63 │       error: (err) => {
+         ╵               ~~~
 
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/app.routes.ts:58:19:
-      58 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:65:8:
+      65 │         this.toast.error('Impossible de charger les tables');
+         ╵         ~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/app.routes.ts:63:19:
-      63 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:76:4:
+      76 │     this.apiService.getAllMenus(0, 100).subscribe({
+         ╵     ~~~~~~~~~~~~~~~
 
 
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
+X [ERROR] TS7006: Parameter 'menus' implicitly has an 'any' type. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
+    src/app/features/pos/order-entry/order-entry.component.ts:77:13:
+      77 │       next: (menus) => {
+         ╵              ~~~~~
 
-  Unable to evaluate this expression statically.
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-  Unable to evaluate an invalid expression.
+    src/app/features/pos/order-entry/order-entry.component.ts:100:10:
+      100 │           this.toast.warning('Aucun menu disponible');
+          ╵           ~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
 
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:103:14:
+      103 │       error: (err) => {
+          ╵               ~~~
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:105:8:
+      105 │         this.toast.error('Impossible de charger les menus');
+          ╵         ~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:32:60:
-      32 │ ...ont-semibold text-primary">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:113:4:
+      113 │     this.apiService.getProducts().subscribe({
+          ╵     ~~~~~~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:32:61:
-      32 │ ...t-semibold text-primary">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
 
+X [ERROR] TS7006: Parameter 'products' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:114:13:
+      114 │       next: (products) => {
+          ╵              ~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:32:74:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                                      ~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:121:10:
+      121 │           this.toast.warning('Aucun produit disponible');
+          ╵           ~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:58:36:
-      58 │                 <span>${{ subtotal().toFixed(2) }}</span>
-         ╵                                     ^
 
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:124:14:
+      124 │       error: (err) => {
+          ╵               ~~~
 
-    src/app/features/customer/checkout.component.ts:62:31:
-      62 │                 <span>${{ tax().toFixed(2) }}</span>
-         ╵                                ^
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:126:8:
+      126 │         this.toast.error('Impossible de charger les produits');
+          ╵         ~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:66:37:
-      66 │                 <span>-${{ discount().toFixed(2) }}</span>
-         ╵                                      ^
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:136:8:
+      136 │         this.apiService.getImageAsDataUrl(menu.imageUrl).subscribe({
+          ╵         ~~~~~~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:72:52:
-      72 │ ...       <span class="text-primary">${{ total().toFixed(2) }}</span>
-         ╵                                                 ^
 
+X [ERROR] TS7006: Parameter 'url' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:137:17:
+      137 │           next: (url) => {
+          ╵                  ~~~
 
-    src/app/features/customer/order-tracking.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
 
-  Unable to evaluate this expression statically.
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ary font-bold">${{ (item.price * item.quantity).toFixed(2) }}</...
-         ╵                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:154:4:
+      154 │     this.apiService.getCategories().subscribe({
+          ╵     ~~~~~~~~~~~~~~~
 
-  Unable to evaluate an invalid expression.
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+X [ERROR] TS7006: Parameter 'categories' implicitly has an 'any' type. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:155:13:
+      155 │       next: (categories) => {
+          ╵              ~~~~~~~~~~
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:160:14:
+      160 │       error: (err) => {
+          ╵               ~~~
 
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:57:
-      77 │ ...s="text-primary font-bold">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:162:8:
+      162 │         this.toast.error('Impossible de charger les catégories');
+          ╵         ~~~~~~~~~~
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:58:
-      77 │ ..."text-primary font-bold">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:209:4:
+      209 │     this.toast.info(`${product.name} ajouté au panier`, 2000);
+          ╵     ~~~~~~~~~~
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:77:71:
-      77 │ ...y font-bold">${{ (item.price * item.quantity).toFixed(2) }}</span>
-         ╵                                   ~~~~
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:237:6:
+      237 │       this.toast.warning('Veuillez remplir tous les champs requis');
+          ╵       ~~~~~~~~~~
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:115:52:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                   ~~
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:254:4:
+      254 │     this.apiService.createCustomerSession(sessionRequest).subscri...
+          ╵     ~~~~~~~~~~~~~~~
 
-X [ERROR] TS18004: No value exists in scope for the shorthand property 'totalAmount'. Either declare one or provide an initializer. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:115:54:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                     ~~~~~~~~~~~
+X [ERROR] TS7006: Parameter 'session' implicitly has an 'any' type. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:255:13:
+      255 │       next: (session) => {
+          ╵              ~~~~~~~
 
-X [ERROR] TS1005: ',' expected. [plugin angular-compiler]
 
-    src/app/features/customer/order-tracking.component.ts:115:65:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                                ^
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:287:8:
+      287 │         this.apiService.createOrder(orderRequest).subscribe({
+          ╵         ~~~~~~~~~~~~~~~
 
-X [ERROR] TS2769: No overload matches this call.
-  Overload 1 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>'.
-  Overload 2 of 3, '(obj: null | undefined): null', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'null | undefined'.
-  Overload 3 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined'. [plugin angular-compiler]
 
-    src/app/shared/components/layout.component.ts:13:26:
-      13 │       <app-navbar *ngIf="(isAuthenticated$ | async)"></app-navbar>
-         ╵                           ~~~~~~~~~~~~~~~~
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
+    src/app/features/pos/order-entry/order-entry.component.ts:290:12:
+      290 │             this.toast.success('✓ Commande enregistrée avec su...
+          ╵             ~~~~~~~~~~
 
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
 
-    src/app/shared/components/layout.component.ts:31:26:
-      31 │   isAuthenticated$ = this.authService.isAuthenticated$;
-         ╵                           ~~~~~~~~~~~
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-  'authService' is declared here.
+    src/app/features/pos/order-entry/order-entry.component.ts:300:18:
+      300 │           error: (err) => {
+          ╵                   ~~~
 
-    src/app/shared/components/layout.component.ts:29:14:
-      29 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:304:12:
+      304 │             this.toast.error(errorMsg);
+          ╵             ~~~~~~~~~~
 
-    src/app/shared/components/navbar.component.ts:53:31:
-      53 │   @Input() currentUser$ = this.authService.currentUser$;
-         ╵                                ~~~~~~~~~~~
 
-  'authService' is declared here.
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-    src/app/shared/components/navbar.component.ts:55:14:
-      55 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/pos/order-entry/order-entry.component.ts:308:14:
+      308 │       error: (err) => {
+          ╵               ~~~
 
 
-Application bundle generation failed. [0.124 seconds] - 2025-10-17T14:14:56.601Z
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-▲ [WARNING] NG8113: RouterLink is not used within the template of MenuSimpleComponent [plugin angular-compiler]
+    src/app/features/pos/order-entry/order-entry.component.ts:312:8:
+      312 │         this.toast.error(errorMsg);
+          ╵         ~~~~~~~~~~
 
-    src/app/features/customer/menu-simple.component.ts:10:26:
-      10 │   imports: [CommonModule, RouterLink],
-         ╵                           ~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] You cannot `@apply` the `animate-fade-in` utility here because it creates a circular dependency. [plugin angular-sass]
+    src/app/features/pos/pending-orders/pending-orders.component.html:51:76:
+      51 │ ...imary">{{ currencyService.formatPrice(order.totalAmount) }}</span>
+         ╵                              ~~~~~~~~~~~
 
-    src/styles.scss:73:1:
-      73 │   .animate-fade-in {
-         ╵  ^
+  Error occurs in the template of component PendingOrdersComponent.
 
-  The plugin "angular-sass" was triggered by this import
+    src/app/features/pos/pending-orders/pending-orders.component.ts:10:15:
+      10 │   templateUrl: './pending-orders.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    angular:styles/global:styles:1:8:
-      1 │ @import 'src/styles.scss';
-        ╵         ~~~~~~~~~~~~~~~~~
 
+X [ERROR] TS2307: Cannot find module '../../core/services/api.service' or its corresponding type declarations. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:3:27:
+      3 │ import { ApiService } from '../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/app.routes.ts:38:37:
-      38 │           { path: 'menu', component: MenuComponent },
-         ╵                                      ~~~~~~~~~~~~~
 
+X [ERROR] TS2307: Cannot find module '../../shared/services/currency.service' or its corresponding type declarations. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'CheckoutComponent'. [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:4:32:
+      4 │ ... { CurrencyService } from '../../shared/services/currency.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/app.routes.ts:39:41:
-      39 │           { path: 'checkout', component: CheckoutComponent },
-         ╵                                          ~~~~~~~~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS2552: Cannot find name 'OrderTrackingComponent'. Did you mean 'OrderTrackingSimpleComponent'? [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:32:4:
+      32 │     this.apiService.getOrdersByStatus('EN_ATTENTE').subscribe({
+         ╵     ~~~~~~~~~~~~~~~
 
-    src/app/app.routes.ts:40:51:
-      40 │ ... { path: 'order-tracking/:id', component: OrderTrackingComponent }
-         ╵                                              ~~~~~~~~~~~~~~~~~~~~~~
 
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:39:14:
+      39 │       error: (err) => {
+         ╵               ~~~
 
-    src/app/app.routes.ts:48:19:
-      48 │         component: MenuComponent // Temporary - will be replaced w...
-         ╵                    ~~~~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:50:4:
+      50 │     this.apiService.updateOrderStatus(publicId, 'ACCEPTEE').subscr...
+         ╵     ~~~~~~~~~~~~~~~
 
-    src/app/app.routes.ts:53:19:
-      53 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
 
+X [ERROR] TS7006: Parameter 'err' implicitly has an 'any' type. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+    src/app/features/pos/pending-orders/pending-orders.component.ts:55:14:
+      55 │       error: (err) => {
+         ╵               ~~~
 
-    src/app/app.routes.ts:58:19:
-      58 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
 
+X [ERROR] TS2571: Object is of type 'unknown'. [plugin angular-compiler]
 
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
+    src/app/shared/components/admin-header/admin-header.component.html:9:33:
+      9 │         *ngIf="navigationService.isAdmin()"
+        ╵                                  ~~~~~~~
 
-    src/app/app.routes.ts:63:19:
-      63 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
+  Error occurs in the template of component AdminHeaderComponent.
 
+    src/app/shared/components/admin-header/admin-header.component.ts:10:15:
+      10 │   templateUrl: './admin-header.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
+X [ERROR] TS2307: Cannot find module '../../core/services/navigation.service' or its corresponding type declarations. [plugin angular-compiler]
 
-  Unable to evaluate this expression statically.
+    src/app/shared/components/admin-header/admin-header.component.ts:4:34:
+      4 │ ... NavigationService } from '../../core/services/navigation.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Unable to evaluate an invalid expression.
+X [ERROR] NG2008: Could not find stylesheet file './navbar-simple.component.css'. [plugin angular-compiler]
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+    src/app/shared/components/navbar-simple/navbar-simple.component.ts:10:14:
+      10 │   styleUrls: ['./navbar-simple.component.css']
+         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
+X [ERROR] Could not resolve "./features/auth/login.component"
 
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
+    src/app/app.routes.ts:2:31:
+      2 │ import { LoginComponent } from './features/auth/login.component';
+        ╵                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
+X [ERROR] Could not resolve "./features/pos/order-entry.component"
 
-    src/app/features/customer/checkout.component.ts:32:60:
-      32 │ ...ont-semibold text-primary">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
+    src/app/app.routes.ts:13:36:
+      13 │ ...OrderEntryComponent } from './features/pos/order-entry.component';
+         ╵                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+X [ERROR] Could not resolve "./features/pos/pending-orders.component"
 
-    src/app/features/customer/checkout.component.ts:32:61:
-      32 │ ...t-semibold text-primary">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
+    src/app/app.routes.ts:16:39:
+      16 │ ...gOrdersComponent } from './features/pos/pending-orders.component';
+         ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
+X [ERROR] Could not resolve "./features/pos/my-orders.component"
 
-    src/app/features/customer/checkout.component.ts:32:74:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                                      ~~~~
+    src/app/app.routes.ts:17:34:
+      17 │ ...t { MyOrdersComponent } from './features/pos/my-orders.component';
+         ╵                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] Could not resolve "./features/pos/checkout.component"
 
-    src/app/features/customer/checkout.component.ts:58:36:
-      58 │                 <span>${{ subtotal().toFixed(2) }}</span>
-         ╵                                     ^
+    src/app/app.routes.ts:18:34:
+      18 │ ...rt { CheckoutComponent } from './features/pos/checkout.component';
+         ╵                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] Could not resolve "../../core/services/auth.service"
 
-    src/app/features/customer/checkout.component.ts:62:31:
-      62 │                 <span>${{ tax().toFixed(2) }}</span>
-         ╵                                ^
+    src/app/features/admin/admin-navbar/admin-navbar.component.ts:4:28:
+      4 │ import { AuthService } from '../../core/services/auth.service';
+        ╵                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] Could not resolve "../../core/services/theme.service"
 
-    src/app/features/customer/checkout.component.ts:66:37:
-      66 │                 <span>-${{ discount().toFixed(2) }}</span>
-         ╵                                      ^
+    src/app/features/admin/admin-navbar/admin-navbar.component.ts:5:29:
+      5 │ import { ThemeService } from '../../core/services/theme.service';
+        ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
+X [ERROR] Could not resolve "../../../core/services/api.service"
 
-    src/app/features/customer/checkout.component.ts:72:52:
-      72 │ ...       <span class="text-primary">${{ total().toFixed(2) }}</span>
-         ╵                                                 ^
+    src/app/features/admin/cashiers/cashier-assignment/cashier-assignment.component.ts:4:27:
+      4 │ import { ApiService } from '../../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
+X [ERROR] Could not resolve "../../../core/services/api.service"
 
-    src/app/features/customer/order-tracking.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
+    src/app/features/admin/users/user-form/user-form.component.ts:5:27:
+      5 │ import { ApiService } from '../../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Unable to evaluate this expression statically.
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ary font-bold">${{ (item.price * item.quantity).toFixed(2) }}</...
-         ╵                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+X [ERROR] Could not resolve "../../../core/validators/password.validator"
 
-  Unable to evaluate an invalid expression.
+    src/app/features/admin/users/user-form/user-form.component.ts:6:34:
+      6 │ ...wordValidator } from '../../../core/validators/password.validator';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
 
+X [ERROR] Could not resolve "../../../core/validators/phone.validator"
 
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
+    src/app/features/admin/users/user-form/user-form.component.ts:7:31:
+      7 │ ...{ PhoneValidator } from '../../../core/validators/phone.validator';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
 
+X [ERROR] Could not resolve "../../../core/utils/text-transform"
 
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
+    src/app/features/admin/users/user-form/user-form.component.ts:8:30:
+      8 │ import { TextTransform } from '../../../core/utils/text-transform';
+        ╵                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    src/app/features/customer/order-tracking.component.ts:77:57:
-      77 │ ...s="text-primary font-bold">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
 
+X [ERROR] Could not resolve "../../../core/services/api.service"
 
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:58:
-      77 │ ..."text-primary font-bold">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:71:
-      77 │ ...y font-bold">${{ (item.price * item.quantity).toFixed(2) }}</span>
-         ╵                                   ~~~~
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:52:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                   ~~
-
-
-X [ERROR] TS18004: No value exists in scope for the shorthand property 'totalAmount'. Either declare one or provide an initializer. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:54:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                     ~~~~~~~~~~~
-
-
-X [ERROR] TS1005: ',' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:65:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                                ^
-
-
-X [ERROR] TS2769: No overload matches this call.
-  Overload 1 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>'.
-  Overload 2 of 3, '(obj: null | undefined): null', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'null | undefined'.
-  Overload 3 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined'. [plugin angular-compiler]
-
-    src/app/shared/components/layout.component.ts:13:26:
-      13 │       <app-navbar *ngIf="(isAuthenticated$ | async)"></app-navbar>
-         ╵                           ~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
-
-    src/app/shared/components/layout.component.ts:31:26:
-      31 │   isAuthenticated$ = this.authService.isAuthenticated$;
-         ╵                           ~~~~~~~~~~~
-
-  'authService' is declared here.
-
-    src/app/shared/components/layout.component.ts:29:14:
-      29 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
-
-    src/app/shared/components/navbar.component.ts:53:31:
-      53 │   @Input() currentUser$ = this.authService.currentUser$;
-         ╵                                ~~~~~~~~~~~
-
-  'authService' is declared here.
-
-    src/app/shared/components/navbar.component.ts:55:14:
-      55 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Application bundle generation failed. [0.062 seconds] - 2025-10-17T14:15:02.801Z
-
-▲ [WARNING] NG8113: RouterLink is not used within the template of MenuSimpleComponent [plugin angular-compiler]
-
-    src/app/features/customer/menu-simple.component.ts:10:26:
-      10 │   imports: [CommonModule, RouterLink],
-         ╵                           ~~~~~~~~~~
-
-
-X [ERROR] You cannot `@apply` the `animate-fade-in` utility here because it creates a circular dependency. [plugin angular-sass]
-
-    src/styles.scss:73:1:
-      73 │   .animate-fade-in {
-         ╵  ^
-
-  The plugin "angular-sass" was triggered by this import
-
-    angular:styles/global:styles:1:8:
-      1 │ @import 'src/styles.scss';
-        ╵         ~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
-
-    src/app/app.routes.ts:48:19:
-      48 │         component: MenuComponent // Temporary - will be replaced w...
-         ╵                    ~~~~~~~~~~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
-
-    src/app/app.routes.ts:53:19:
-      53 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
-
-    src/app/app.routes.ts:58:19:
-      58 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'MenuComponent'. [plugin angular-compiler]
-
-    src/app/app.routes.ts:63:19:
-      63 │         component: MenuComponent // Temporary - will be replaced
-         ╵                    ~~~~~~~~~~~~~
-
-
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
-
-  Unable to evaluate this expression statically.
-
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Unable to evaluate an invalid expression.
-
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
-
-
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:58:
-      32 │ ..."font-semibold text-primary">${{ (item.price * item.quantity).t...
-         ╵                                   ^
-
-
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:60:
-      32 │ ...ont-semibold text-primary">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:61:
-      32 │ ...t-semibold text-primary">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:32:74:
-      32 │ ...d text-primary">${{ (item.price * item.quantity).toFixed(2) }}</p>
-         ╵                                      ~~~~
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:58:36:
-      58 │                 <span>${{ subtotal().toFixed(2) }}</span>
-         ╵                                     ^
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:62:31:
-      62 │                 <span>${{ tax().toFixed(2) }}</span>
-         ╵                                ^
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:66:37:
-      66 │                 <span>-${{ discount().toFixed(2) }}</span>
-         ╵                                      ^
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/checkout.component.ts:72:52:
-      72 │ ...       <span class="text-primary">${{ total().toFixed(2) }}</span>
-         ╵                                                 ^
-
-
-X [ERROR] NG1010: template must be a string
-  Value could not be determined statically. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:12:12:
-      12 │   template: `
-         ╵             ^
-
-  Unable to evaluate this expression statically.
-
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ary font-bold">${{ (item.price * item.quantity).toFixed(2) }}</...
-         ╵                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Unable to evaluate an invalid expression.
-
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
-
-
-X [ERROR] TS2349: This expression is not callable.
-  Type '{}' has no call signatures. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:55:
-      77 │ ...ass="text-primary font-bold">${{ (item.price * item.quantity).t...
-         ╵                                   ^
-
-
-X [ERROR] TS1136: Property assignment expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:57:
-      77 │ ...s="text-primary font-bold">${{ (item.price * item.quantity).toF...
-         ╵                                   ^
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:58:
-      77 │ ..."text-primary font-bold">${{ (item.price * item.quantity).toFix...
-         ╵                                  ~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'item'. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:77:71:
-      77 │ ...y font-bold">${{ (item.price * item.quantity).toFixed(2) }}</span>
-         ╵                                   ~~~~
-
-
-X [ERROR] TS1005: '{' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:52:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                   ~~
-
-
-X [ERROR] TS18004: No value exists in scope for the shorthand property 'totalAmount'. Either declare one or provide an initializer. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:54:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                     ~~~~~~~~~~~
-
-
-X [ERROR] TS1005: ',' expected. [plugin angular-compiler]
-
-    src/app/features/customer/order-tracking.component.ts:115:65:
-      115 │ ...lass="text-primary">${{ order()?.totalAmount.toFixed(2) }}</span>
-          ╵                                                ^
-
-
-X [ERROR] TS2769: No overload matches this call.
-  Overload 1 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown>'.
-  Overload 2 of 3, '(obj: null | undefined): null', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'null | undefined'.
-  Overload 3 of 3, '(obj: Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined): unknown', gave the following error.
-    Argument of type 'Signal<boolean>' is not assignable to parameter of type 'Observable<unknown> | Subscribable<unknown> | PromiseLike<unknown> | null | undefined'. [plugin angular-compiler]
-
-    src/app/shared/components/layout.component.ts:13:26:
-      13 │       <app-navbar *ngIf="(isAuthenticated$ | async)"></app-navbar>
-         ╵                           ~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
-
-    src/app/shared/components/layout.component.ts:31:26:
-      31 │   isAuthenticated$ = this.authService.isAuthenticated$;
-         ╵                           ~~~~~~~~~~~
-
-  'authService' is declared here.
-
-    src/app/shared/components/layout.component.ts:29:14:
-      29 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2729: Property 'authService' is used before its initialization. [plugin angular-compiler]
-
-    src/app/shared/components/navbar.component.ts:53:31:
-      53 │   @Input() currentUser$ = this.authService.currentUser$;
-         ╵                                ~~~~~~~~~~~
-
-  'authService' is declared here.
-
-    src/app/shared/components/navbar.component.ts:55:14:
-      55 │   constructor(private authService: AuthService) {}
-         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/features/admin/users/user-list/users-list.component.ts:4:27:
+      4 │ import { ApiService } from '../../../core/services/api.service';
+        ╵                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../../core/services/api.service';
-import { ToastService } from '../../../shared/services/toast.service';
+import { ApiService } from '@core/services/api.service';
+import { ToastService } from '@shared/services/toast.service';
 
 @Component({
   selector: 'app-categories-list',

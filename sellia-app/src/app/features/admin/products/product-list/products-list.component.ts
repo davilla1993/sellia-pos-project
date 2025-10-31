@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../../../core/services/api.service';
+import { ApiService } from '@core/services/api.service';
 
 @Component({
   selector: 'app-products-list',

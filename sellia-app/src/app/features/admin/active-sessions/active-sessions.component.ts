@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { CurrencyService } from '../../../shared/services/currency.service';
+import { ApiService } from '@core/services/api.service';
+import { ToastService } from '@shared/services/toast.service';
+import { CurrencyService } from '@shared/services/currency.service';
 import { interval, Subscription } from 'rxjs';
 
 @Component({

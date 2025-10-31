@@ -1,9 +1,9 @@
 import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../../core/services/api.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { WebSocketService } from '../../../core/services/websocket.service';
+import { ApiService } from '@core/services/api.service';
+import { ToastService } from '@shared/services/toast.service';
+import { WebSocketService } from '@core/services/websocket.service';
 import { AnalyticsChartsComponent } from './analytics-charts/analytics-charts.component';
 
 @Component({
