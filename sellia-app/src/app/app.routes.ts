@@ -9,8 +9,8 @@ import { PublicMenuComponent } from './features/public/public-menu.component';
 import { DashboardComponent } from './features/admin/dashboard.component';
 import { UsersListComponent } from './features/admin/users/users-list.component';
 import { UserFormComponent } from './features/admin/users/user-form.component';
-import { ProductsListComponent } from './features/admin/products/products-list.component';
-import { ProductFormComponent } from './features/admin/products/product-form.component';
+import { ProductsListComponent } from './features/admin/products/product-list/products-list.component';
+import { ProductFormComponent } from './features/admin/products/product-form/product-form.component';
 import { OrderEntryComponent } from './features/pos/order-entry.component';
 import { KitchenComponent } from './features/pos/kitchen.component';
 import { BarComponent } from './features/pos/bar.component';
@@ -79,7 +79,7 @@ export const routes: Routes = [
           },
           {
             path: 'categories',
-            loadComponent: () => import('./features/admin/products/categories-list.component').then(m => m.CategoriesListComponent)
+            loadComponent: () => import('./features/admin/categories/categories-list.component').then(m => m.CategoriesListComponent)
           },
           { path: '', redirectTo: 'catalog', pathMatch: 'full' }
         ]

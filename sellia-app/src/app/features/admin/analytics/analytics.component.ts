@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { WebSocketService } from '../../../core/services/websocket.service';
-import { AnalyticsChartsComponent } from './analytics-charts.component';
+import { AnalyticsChartsComponent } from './analytics-charts/analytics-charts.component';
 
 @Component({
   selector: 'app-analytics',

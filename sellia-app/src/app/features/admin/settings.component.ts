@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RestaurantSettingsComponent } from './settings/restaurant-settings.component';
-import { PaymentSettingsComponent } from './settings/payment-settings.component';
-import { NotificationSettingsComponent } from './settings/notification-settings.component';
-import { SecuritySettingsComponent } from './settings/security-settings.component';
+import { RestaurantSettingsComponent } from './settings/restaurant/restaurant-settings.component';
+import { PaymentSettingsComponent } from './settings/payment/payment-settings.component';
+import { NotificationSettingsComponent } from './settings/notification/notification-settings.component';
+import { SecuritySettingsComponent } from './settings/security/security-settings.component';
 
 @Component({
   selector: 'app-settings',
