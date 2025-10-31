@@ -1,0 +1,8 @@
+
+    :host ::ng-deep #receipt {
+      width: 80mm;
+      font-family: 'Courier New', monospace;
+      font-size: 10pt;
+      line-height: 1.4;
+    }
+  

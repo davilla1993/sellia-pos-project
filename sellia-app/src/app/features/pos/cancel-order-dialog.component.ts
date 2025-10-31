@@ -6,46 +6,8 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-cancel-order-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-neutral-800 rounded-lg border-2 border-neutral-600 w-96 shadow-2xl">
-        <!-- Header -->
-        <div class="bg-red-600 px-6 py-4 border-b border-neutral-600">
-          <h2 class="text-xl font-bold text-white">⚠️ Annuler la Commande</h2>
-          <p class="text-sm text-red-100">Commande: {{ orderNumber() }}</p>
-        </div>
-
-        <!-- Body -->
-        <div class="p-6 space-y-4">
-          <div>
-            <label class="block text-white font-semibold mb-2">Motif d'annulation *</label>
-            <textarea 
-              [(ngModel)]="reason"
-              placeholder="Ex: Ingrédient manquant, erreur de commande, demande client..."
-              class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-red-600 placeholder-neutral-500"
-              rows="4"></textarea>
-            <p *ngIf="!reason" class="text-red-400 text-sm mt-1">Le motif est obligatoire</p>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="bg-neutral-700 px-6 py-4 border-t border-neutral-600 flex gap-3 justify-end">
-          <button 
-            (click)="onCancel()"
-            class="px-4 py-2 bg-neutral-600 hover:bg-neutral-500 text-white rounded-lg font-semibold transition-colors">
-            ✕ Garder
-          </button>
-          <button 
-            (click)="onConfirm()"
-            [disabled]="!reason"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
-            ✓ Confirmer l'annulation
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: []
+  templateUrl: './cancel-order-dialog.component.html',
+  styleUrls: ['./cancel-order-dialog.component.css']
 })
 export class CancelOrderDialogComponent {
   orderNumber = input.required<string>();

@@ -1,0 +1,67 @@
+
+    <div class="cashier-selection-container">
+      <div class="card">
+        <h1>Sélectionner votre caisse</h1>
+
+        <!-- No Global Session -->
+        <div *ngIf="!globalSessionOpen" class="alert alert-danger">
+          <p>La session globale n'est pas ouverte. Veuillez contacter l'administrateur.</p>
+        </div>
+
+        <!-- Cashier Selection Form -->
+        <form [formGroup]="selectionForm" *ngIf="globalSessionOpen" (ngSubmit)="onSelectCashier()">
+          <div class="form-group">
+            <label>Caisse</label>
+            <select formControlName="cashier" class="form-control">
+              <option value="">-- Sélectionner une caisse --</option>
+              <option *ngFor="let c of myCashiers" [value]="c.publicId">
+                {{ c.name }} ({{ c.cashierNumber }})
+              </option>
+            </select>
+            <small *ngIf="selectionForm.get('cashier')?.invalid && selectionForm.get('cashier')?.touched" class="text-danger">
+              Veuillez sélectionner une caisse
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="!selectionForm.valid || loading">
+            {{ loading ? 'Chargement...' : 'Suivant' }}
+          </button>
+        </form>
+
+        <!-- PIN Entry Form -->
+        <form [formGroup]="pinForm" *ngIf="showPinForm" (ngSubmit)="onSubmitPin()">
+          <h3>Entrez votre code PIN</h3>
+          <div class="form-group">
+            <input
+              type="password"
+              formControlName="pin"
+              class="form-control pin-input"
+              placeholder="0000"
+              maxlength="4"
+              [readonly]="loading"
+            />
+            <small *ngIf="pinError" class="text-danger">{{ pinError }}</small>
+          </div>
+
+          <div class="button-group">
+            <button type="button" class="btn btn-secondary" (click)="cancelPin()" [disabled]="loading">
+              Annuler
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="!pinForm.valid || loading">
+              {{ loading ? 'Vérification...' : 'Valider' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Success Message -->
+        <div *ngIf="sessionOpened" class="alert alert-success">
+          <p>Session ouverte avec succès! Redirection...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="alert alert-danger">
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  

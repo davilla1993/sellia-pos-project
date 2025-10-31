@@ -1,0 +1,77 @@
+
+    <div class="caisse-container">
+      <div class="header">
+        <h1>💰 CAISSE - Reçu Complet</h1>
+        <p class="subtitle">Aperçu de la commande complète</p>
+      </div>
+
+      <div *ngIf="!unifiedTicket" class="no-ticket">
+        <p>Aucun reçu en attente</p>
+      </div>
+
+      <div *ngIf="unifiedTicket" class="receipt-container">
+        <div class="receipt">
+          <div class="receipt-header">
+            <h2>REÇU #{{ unifiedTicket.ticketNumber }}</h2>
+            <p>Table: {{ unifiedTicket.tableNumber }}</p>
+            <p>Client: {{ unifiedTicket.customerName }}</p>
+          </div>
+
+          <!-- BAR SECTION -->
+          <div *ngIf="unifiedTicket.itemsByStation?.['BAR']" class="section bar-section">
+            <h3>🍹 BAR</h3>
+            <div class="items">
+              <div *ngFor="let item of unifiedTicket.itemsByStation['BAR']" class="item">
+                <span class="qty">{{ item.quantity }}x</span>
+                <span class="name">{{ item.itemName }}</span>
+                <span *ngIf="item.notes" class="notes">{{ item.notes }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KITCHEN SECTION -->
+          <div *ngIf="unifiedTicket.itemsByStation?.['KITCHEN']" class="section kitchen-section">
+            <h3>👨‍🍳 CUISINE</h3>
+            <div class="items">
+              <div *ngFor="let item of unifiedTicket.itemsByStation['KITCHEN']" class="item">
+                <span class="qty">{{ item.quantity }}x</span>
+                <span class="name">{{ item.itemName }}</span>
+                <span *ngIf="item.notes" class="notes">{{ item.notes }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASTRY SECTION -->
+          <div *ngIf="unifiedTicket.itemsByStation?.['PASTRY']" class="section pastry-section">
+            <h3>🍰 PÂTISSERIE</h3>
+            <div class="items">
+              <div *ngFor="let item of unifiedTicket.itemsByStation['PASTRY']" class="item">
+                <span class="qty">{{ item.quantity }}x</span>
+                <span class="name">{{ item.itemName }}</span>
+                <span *ngIf="item.notes" class="notes">{{ item.notes }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="receipt-footer">
+            <p>Total items: {{ unifiedTicket.totalItems }}</p>
+            <p>Stations: {{ unifiedTicket.totalStations }}</p>
+          </div>
+        </div>
+
+        <div class="status-bar" [class.ready]="unifiedTicket.status === 'READY'">
+          <span class="status">Status: {{ unifiedTicket.status }}</span>
+          <span class="time">{{ unifiedTicket.createdAt | date: 'HH:mm:ss' }}</span>
+        </div>
+
+        <div class="actions">
+          <button (click)="printReceipt()" class="btn btn-print">
+            🖨 Imprimer Reçu
+          </button>
+          <button (click)="markServed()" class="btn btn-served">
+            ✓ Servir
+          </button>
+        </div>
+      </div>
+    </div>
+  

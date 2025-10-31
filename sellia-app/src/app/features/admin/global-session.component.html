@@ -1,0 +1,68 @@
+
+    <div class="admin-panel">
+      <h1>Gestion Session Globale</h1>
+
+      <div class="status-panel">
+        <div *ngIf="currentSession" class="session-info">
+          <h2>Session Active</h2>
+          <p>Statut: <strong [class.open]="currentSession.status === 'OPEN'" [class.closed]="currentSession.status === 'CLOSED'">
+            {{ currentSession.status }}
+          </strong></p>
+          <p>Ouvert par: {{ currentSession.openedBy?.firstName }} {{ currentSession.openedBy?.lastName }}</p>
+          <p>Depuis: {{ currentSession.openedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          <p>Ventes: {{ formatCurrency(currentSession.totalSales) }}</p>
+          <button *ngIf="currentSession.status === 'OPEN'" (click)="openCloseModal()" class="btn btn-danger">
+            🔒 Fermer Session
+          </button>
+        </div>
+
+        <div *ngIf="!currentSession" class="no-session">
+          <p>Aucune session active</p>
+          <button (click)="openOpenModal()" class="btn btn-primary">
+            🔓 Ouvrir Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Open Modal -->
+      <div *ngIf="showOpenModal" class="modal">
+        <div class="modal-content">
+          <h2>Ouvrir Nouvelle Session</h2>
+          <div class="form-group">
+            <label>Montant Initial</label>
+            <input type="number" [(ngModel)]="initialAmount" placeholder="0">
+          </div>
+          <div class="modal-actions">
+            <button (click)="closeModal()" class="btn btn-secondary">Annuler</button>
+            <button (click)="openSession()" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? 'Ouverture...' : 'Ouvrir' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Close Modal -->
+      <div *ngIf="showCloseModal" class="modal">
+        <div class="modal-content">
+          <h2>Fermer Session</h2>
+          <div class="form-group">
+            <label>Montant Final</label>
+            <input type="number" [(ngModel)]="finalAmount" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Notes de Réconciliation</label>
+            <textarea [(ngModel)]="reconciliationNotes" placeholder="Notes optionnelles"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button (click)="closeModal()" class="btn btn-secondary">Annuler</button>
+            <button (click)="closeSession()" class="btn btn-danger" [disabled]="loading">
+              {{ loading ? 'Fermeture...' : 'Fermer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+      <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+    </div>
+  

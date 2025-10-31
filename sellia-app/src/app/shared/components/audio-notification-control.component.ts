@@ -7,46 +7,8 @@ import { AudioNotificationService } from '../../core/services/audio-notification
   selector: 'app-audio-notification-control',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="flex items-center gap-3 bg-neutral-800 rounded-lg p-3 border border-neutral-700">
-      <!-- Toggle Button -->
-      <button 
-        (click)="audioService.toggleNotifications()"
-        [class.bg-green-600]="audioService.notificationsEnabled()"
-        [class.bg-red-600]="!audioService.notificationsEnabled()"
-        class="px-3 py-2 text-white rounded font-semibold text-sm transition-colors flex items-center gap-2">
-        <span *ngIf="audioService.notificationsEnabled()">🔊</span>
-        <span *ngIf="!audioService.notificationsEnabled()">🔇</span>
-        {{ audioService.notificationsEnabled() ? 'Actif' : 'Désactivé' }}
-      </button>
-
-      <!-- Volume Control -->
-      <div *ngIf="audioService.notificationsEnabled()" class="flex items-center gap-2">
-        <span class="text-neutral-400 text-xs">🔇</span>
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          [value]="audioService.volume() * 100"
-          (change)="handleVolumeChange($any($event).target.value)"
-          class="w-24 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-orange-500">
-        <span class="text-neutral-400 text-xs">🔊</span>
-      </div>
-
-      <!-- Test Button -->
-      <button 
-        *ngIf="audioService.notificationsEnabled()"
-        (click)="testSound()"
-        class="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded font-semibold text-sm transition-colors">
-        🎵 Test
-      </button>
-    </div>
-  `,
-  styles: [`
-    input[type="range"] {
-      -webkit-appearance: slider-horizontal;
-    }
-  `]
+  templateUrl: './audio-notification-control.component.html',
+  styleUrls: ['./audio-notification-control.component.css']
 })
 export class AudioNotificationControlComponent {
   audioService = inject(AudioNotificationService);

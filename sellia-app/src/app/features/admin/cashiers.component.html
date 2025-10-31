@@ -1,0 +1,64 @@
+
+    <div class="admin-panel">
+      <div class="header">
+        <h1>Gestion des Caisses</h1>
+        <button (click)="openCreateModal()" class="btn btn-primary">+ Nouvelle Caisse</button>
+      </div>
+
+      <div class="cashiers-grid">
+        <div *ngFor="let cashier of cashiers" class="cashier-card">
+          <div class="card-header">
+            <h3>{{ cashier.name }}</h3>
+            <span class="badge" [class.active]="cashier.status === 'ACTIVE'">{{ cashier.status }}</span>
+          </div>
+          <p class="number">Caisse: {{ cashier.cashierNumber }}</p>
+          <p>Utilisateurs: {{ cashier.assignedUsers?.length || 0 }}</p>
+          <div class="card-actions">
+            <button (click)="changeCashierPin(cashier)" class="btn btn-sm">🔐 PIN</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Modal -->
+      <div *ngIf="showModal" class="modal">
+        <div class="modal-content">
+          <h2>Nouvelle Caisse</h2>
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" [(ngModel)]="formData.name" placeholder="ex: Caisse 1">
+          </div>
+          <div class="form-group">
+            <label>Numéro</label>
+            <input type="text" [(ngModel)]="formData.cashierNumber" placeholder="ex: CAISSE_001">
+          </div>
+          <div class="form-group">
+            <label>Code PIN (4 chiffres)</label>
+            <input type="password" [(ngModel)]="formData.pin" placeholder="0000" maxlength="4">
+          </div>
+          <div class="modal-actions">
+            <button (click)="closeModal()" class="btn btn-secondary">Annuler</button>
+            <button (click)="saveCashier()" class="btn btn-primary" [disabled]="loading">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change PIN Modal -->
+      <div *ngIf="showPinModal" class="modal">
+        <div class="modal-content">
+          <h2>Changer le Code PIN</h2>
+          <p class="info">Caisse: {{ editingCashier?.name }}</p>
+          <div class="form-group">
+            <label>Nouveau Code PIN (4 chiffres)</label>
+            <input type="password" [(ngModel)]="newPin" placeholder="0000" maxlength="4">
+          </div>
+          <div class="modal-actions">
+            <button (click)="closePinModal()" class="btn btn-secondary">Annuler</button>
+            <button (click)="savePin()" class="btn btn-primary" [disabled]="loading">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+      <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+    </div>
+  

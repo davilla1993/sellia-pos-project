@@ -1,0 +1,55 @@
+
+    <aside class="fixed left-0 top-0 h-screen bg-dark border-r border-neutral-800 transition-all duration-300" [class.w-56]="!collapsed()" [class.w-20]="collapsed()">
+      <!-- Logo Section -->
+      <div class="flex items-center justify-between h-20 px-4 border-b border-neutral-800">
+        <div *ngIf="!collapsed()" class="flex items-center space-x-2">
+          <img src="/assets/logo.jpg" alt="Logo" class="w-8 h-8 rounded">
+          <span class="text-white font-bold text-sm">Sellia</span>
+        </div>
+        <button (click)="toggleCollapse()" class="text-neutral-400 hover:text-primary transition-colors">
+          <svg *ngIf="!collapsed()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <svg *ngIf="collapsed()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-2">
+        <div *ngFor="let item of menuItems" class="group">
+          <!-- Section Header -->
+          <div *ngIf="item.isSection && !collapsed()" class="px-4 py-3 mt-4 mb-2">
+            <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider">{{ item.label }}</p>
+          </div>
+
+          <!-- Menu Item with potential children -->
+          <div *ngIf="!item.isSection && item.children && item.children.length > 0">
+            <button (click)="toggleMenu(item)" class="w-full flex items-center justify-between px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200 group-hover:text-primary">
+              <div class="flex items-center space-x-3 min-w-0">
+                <svg *ngIf="item.icon" class="w-5 h-5 flex-shrink-0" [innerHTML]="getSafeIcon(item.icon)" fill="currentColor"></svg>
+                <span *ngIf="!collapsed()" class="text-sm font-medium truncate">{{ item.label }}</span>
+              </div>
+              <svg *ngIf="!collapsed()" class="w-4 h-4 flex-shrink-0 transition-transform" [class.rotate-90]="item.expanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+
+            <!-- Submenu -->
+            <div *ngIf="item.expanded && !collapsed()" class="ml-3 mt-1 space-y-1 pl-3 border-l border-neutral-700">
+              <a *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="text-primary bg-neutral-800/50" class="block px-3 py-2 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-800/30 rounded transition-colors">
+                {{ child.label }}
+              </a>
+            </div>
+          </div>
+
+          <!-- Simple Menu Item -->
+          <a *ngIf="!item.isSection && (!item.children || item.children.length === 0)" [routerLink]="item.route" routerLinkActive="text-primary bg-neutral-800/50" class="flex items-center space-x-3 px-4 py-2 text-neutral-400 hover:text-primary hover:bg-neutral-800/50 rounded transition-all duration-200">
+            <svg *ngIf="item.icon" class="w-5 h-5 flex-shrink-0" [innerHTML]="getSafeIcon(item.icon)" fill="currentColor"></svg>
+            <span *ngIf="!collapsed()" class="text-sm font-medium truncate">{{ item.label }}</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+  

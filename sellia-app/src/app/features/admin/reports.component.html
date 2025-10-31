@@ -1,0 +1,251 @@
+
+    <div class="reports-container">
+      <h1>Rapports</h1>
+
+      <!-- Filter Form -->
+      <div class="filter-panel">
+        <form [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+          <div class="form-group">
+            <label>Type de Rapport</label>
+            <select formControlName="reportType" class="form-control" (change)="onReportTypeChange()">
+              <option value="">-- Sélectionner un rapport --</option>
+              <option value="global-session">Session Globale</option>
+              <option value="cashier">Caisse</option>
+              <option value="user">Utilisateur</option>
+            </select>
+          </div>
+
+          <div *ngIf="reportType === 'global-session'" class="form-group">
+            <label>Session Globale</label>
+            <input type="text" formControlName="globalSessionId" class="form-control" placeholder="ID Session" />
+          </div>
+
+          <div *ngIf="reportType === 'cashier'" class="form-group">
+            <label>Caisse</label>
+            <input type="text" formControlName="cashierId" class="form-control" placeholder="ID Caisse" />
+          </div>
+
+          <div *ngIf="reportType === 'user'" class="form-group">
+            <label>Utilisateur</label>
+            <input type="text" formControlName="userId" class="form-control" placeholder="ID Utilisateur" />
+          </div>
+
+          <div *ngIf="reportType !== 'global-session'" class="form-row">
+            <div class="form-group">
+              <label>Date Début</label>
+              <input type="datetime-local" formControlName="startDate" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Date Fin</label>
+              <input type="datetime-local" formControlName="endDate" class="form-control" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="!filterForm.valid || loading">
+            {{ loading ? 'Chargement...' : 'Afficher Rapport' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Report Display -->
+      <div *ngIf="reportData" class="report-panel">
+        <div class="report-actions">
+          <button (click)="downloadPdf()" class="btn btn-success" [disabled]="loading">
+            📥 Télécharger PDF
+          </button>
+        </div>
+
+        <!-- Global Session Report -->
+        <div *ngIf="reportType === 'global-session'" class="report-content">
+          <h2>Rapport Session Globale</h2>
+          <div class="report-summary">
+            <div class="summary-item">
+              <span>Total Ventes:</span>
+              <strong>{{ formatCurrency(reportData.totalSales) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Commandes:</span>
+              <strong>{{ reportData.totalOrders }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Remises:</span>
+              <strong>{{ formatCurrency(reportData.totalDiscounts) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Montant Initial:</span>
+              <strong>{{ formatCurrency(reportData.initialAmount) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Montant Final:</span>
+              <strong>{{ formatCurrency(reportData.finalAmount) }}</strong>
+            </div>
+          </div>
+
+          <h3>Sessions Caisses</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Caisse</th>
+                <th>Utilisateur</th>
+                <th>Ventes</th>
+                <th>Commandes</th>
+                <th>Durée</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let session of reportData.cashierSessions">
+                <td>{{ session.cashierName }}</td>
+                <td>{{ session.userName }}</td>
+                <td>{{ formatCurrency(session.totalSales) }}</td>
+                <td>{{ session.orderCount }}</td>
+                <td>{{ calculateDuration(session.openedAt, session.closedAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Top 10 Produits</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of reportData.topProducts">
+                <td>{{ product.productName }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ formatCurrency(product.totalAmount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Cashier Report -->
+        <div *ngIf="reportType === 'cashier'" class="report-content">
+          <h2>Rapport Caisse: {{ reportData.cashierName }}</h2>
+          <div class="report-summary">
+            <div class="summary-item">
+              <span>Total Ventes:</span>
+              <strong>{{ formatCurrency(reportData.totalSales) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Commandes:</span>
+              <strong>{{ reportData.totalOrders }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Moyenne par Commande:</span>
+              <strong>{{ formatCurrency(reportData.averageOrderValue) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Remises:</span>
+              <strong>{{ formatCurrency(reportData.totalDiscounts) }}</strong>
+            </div>
+          </div>
+
+          <h3>Utilisateurs</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Commandes</th>
+                <th>Ventes</th>
+                <th>Moyenne</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of reportData.users">
+                <td>{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.orderCount }}</td>
+                <td>{{ formatCurrency(user.totalSales) }}</td>
+                <td>{{ formatCurrency(user.orderCount > 0 ? user.totalSales / user.orderCount : 0) }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Top 10 Produits</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of reportData.topProducts">
+                <td>{{ product.productName }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ formatCurrency(product.totalAmount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- User Report -->
+        <div *ngIf="reportType === 'user'" class="report-content">
+          <h2>Rapport Utilisateur: {{ reportData.firstName }} {{ reportData.lastName }}</h2>
+          <div class="report-summary">
+            <div class="summary-item">
+              <span>Total Ventes:</span>
+              <strong>{{ formatCurrency(reportData.totalSales) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Commandes:</span>
+              <strong>{{ reportData.totalOrders }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Moyenne par Commande:</span>
+              <strong>{{ formatCurrency(reportData.averageOrderValue) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Remises:</span>
+              <strong>{{ formatCurrency(reportData.totalDiscounts) }}</strong>
+            </div>
+          </div>
+
+          <h3>Caisses Utilisées</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Caisse</th>
+                <th>Commandes</th>
+                <th>Ventes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cashier of reportData.cashiers">
+                <td>{{ cashier.cashierName }}</td>
+                <td>{{ cashier.orderCount }}</td>
+                <td>{{ formatCurrency(cashier.totalSales) }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Top 10 Produits</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of reportData.topProducts">
+                <td>{{ product.productName }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ formatCurrency(product.totalAmount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+    </div>
+  

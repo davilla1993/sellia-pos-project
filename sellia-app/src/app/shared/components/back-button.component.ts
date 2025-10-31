@@ -7,19 +7,8 @@ import { NavigationService } from '../../core/services/navigation.service';
   selector: 'app-back-button',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="flex items-center justify-between mb-6 bg-neutral-800 rounded-lg p-4 border border-neutral-700">
-      <h1 class="text-2xl lg:text-3xl font-bold text-white">{{ title }}</h1>
-      <button 
-        *ngIf="navigationService.isAdmin()"
-        (click)="goToDashboard()"
-        class="flex items-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-primary text-white rounded-lg transition-colors text-sm lg:text-base font-semibold">
-        <span>📊</span>
-        <span class="hidden sm:inline">Dashboard</span>
-      </button>
-    </div>
-  `,
-  styles: []
+  templateUrl: './back-button.component.html',
+  styleUrls: ['./back-button.component.css']
 })
 export class BackButtonComponent {
   @Input() title = 'Page';
