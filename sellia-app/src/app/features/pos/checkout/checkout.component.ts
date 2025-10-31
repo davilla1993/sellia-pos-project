@@ -43,7 +43,7 @@ export class CheckoutComponent implements OnInit {
   amountPaidInput = signal('');
   amountPaid = signal(0);
   changeAmount = signal(0);
-  discountPercent = signal(0);
+  discountPercent = signal(0); // Contient le montant de réduction en FCFA (mal nommé historiquement)
   discountAmount = signal(0);
   isProcessing = signal(false);
   errorMessage = signal('');
@@ -185,8 +185,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   applyDiscount(): void {
-    const subtotal = this.sessionTotal();
-    this.discountAmount.set(Math.round(subtotal * this.discountPercent() / 100));
+    // discountPercent contient directement le montant en FCFA (pas un pourcentage)
+    this.discountAmount.set(Math.round(this.discountPercent()));
   }
 
   canProcessPayment(): boolean {
