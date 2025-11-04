@@ -90,12 +90,10 @@ export class OrderTrackingComponent implements OnInit {
 
   formatItemTotal(price: number, quantity: number): string {
     const total = price * quantity;
-    const amountInFcfa = Math.round(total / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(total).toLocaleString('fr-FR') + ' FCFA';
   }
 
   formatTotalPrice(totalAmount: number): string {
-    const amountInFcfa = Math.round(totalAmount / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(totalAmount).toLocaleString('fr-FR') + ' FCFA';
   }
 }

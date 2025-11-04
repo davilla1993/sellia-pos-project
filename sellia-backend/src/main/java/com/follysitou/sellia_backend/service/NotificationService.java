@@ -21,19 +21,21 @@ public class NotificationService {
         OrderStatusMessage message = OrderStatusMessage.builder()
                 .orderPublicId(order.getPublicId())
                 .orderNumber(order.getOrderNumber())
-                .tablePublicId(order.getTable().getPublicId())
-                .tableNumber(order.getTable().getNumber())
+                .tablePublicId(order.getTable() != null ? order.getTable().getPublicId() : null)
+                .tableNumber(order.getTable() != null ? order.getTable().getNumber() : "TAKEAWAY")
                 .status(order.getStatus())
                 .timestamp(LocalDateTime.now())
                 .finalAmount(calculateFinalAmount(order))
                 .message(buildStatusMessage(order.getStatus()))
                 .build();
 
-        // Send to table-specific topic (for customer view)
-        messagingTemplate.convertAndSend(
-                "/topic/table/" + order.getTable().getPublicId(),
-                message
-        );
+        // Send to table-specific topic (for customer view) - only if table exists
+        if (order.getTable() != null) {
+            messagingTemplate.convertAndSend(
+                    "/topic/table/" + order.getTable().getPublicId(),
+                    message
+            );
+        }
 
         // Send to kitchen topic for IN_PREPARATION and PRETE status
         if (order.getStatus() == OrderStatus.EN_PREPARATION || order.getStatus() == OrderStatus.PRETE) {
@@ -52,8 +54,8 @@ public class NotificationService {
         OrderStatusMessage message = OrderStatusMessage.builder()
                 .orderPublicId(order.getPublicId())
                 .orderNumber(order.getOrderNumber())
-                .tablePublicId(order.getTable().getPublicId())
-                .tableNumber(order.getTable().getNumber())
+                .tablePublicId(order.getTable() != null ? order.getTable().getPublicId() : null)
+                .tableNumber(order.getTable() != null ? order.getTable().getNumber() : "TAKEAWAY")
                 .status(order.getStatus())
                 .timestamp(LocalDateTime.now())
                 .finalAmount(calculateFinalAmount(order))
@@ -72,8 +74,8 @@ public class NotificationService {
         OrderStatusMessage message = OrderStatusMessage.builder()
                 .orderPublicId(order.getPublicId())
                 .orderNumber(order.getOrderNumber())
-                .tablePublicId(order.getTable().getPublicId())
-                .tableNumber(order.getTable().getNumber())
+                .tablePublicId(order.getTable() != null ? order.getTable().getPublicId() : null)
+                .tableNumber(order.getTable() != null ? order.getTable().getNumber() : "TAKEAWAY")
                 .status(order.getStatus())
                 .timestamp(LocalDateTime.now())
                 .finalAmount(calculateFinalAmount(order))
@@ -82,8 +84,10 @@ public class NotificationService {
 
         // Send to cashier
         messagingTemplate.convertAndSend("/topic/cashier", message);
-        // Send to table for customer notification
-        messagingTemplate.convertAndSend("/topic/table/" + order.getTable().getPublicId(), message);
+        // Send to table for customer notification - only if table exists
+        if (order.getTable() != null) {
+            messagingTemplate.convertAndSend("/topic/table/" + order.getTable().getPublicId(), message);
+        }
 
         log.info("Order prepared notification sent: {}", order.getOrderNumber());
     }

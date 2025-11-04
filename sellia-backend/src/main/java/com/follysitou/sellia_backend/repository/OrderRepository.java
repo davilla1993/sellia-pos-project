@@ -40,7 +40,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate ORDER BY o.createdAt DESC")
     Page<Order> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
-    @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.isPaid = false AND (o.status != OrderStatus.LIVREE AND o.status != OrderStatus.ANNULEE) ORDER BY o.createdAt")
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "LEFT JOIN FETCH o.items i " +
+           "LEFT JOIN FETCH i.product " +
+           "WHERE o.deleted = false AND o.isPaid = false AND (o.status != 'LIVREE' AND o.status != 'ANNULEE') " +
+           "ORDER BY o.createdAt")
     List<Order> findUnpaidPendingOrders();
 
     @Query("SELECT DISTINCT o FROM Order o " +
@@ -50,6 +54,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "WHERE o.deleted = false AND (o.status = OrderStatus.EN_PREPARATION OR o.status = OrderStatus.PRETE) " +
            "ORDER BY o.createdAt")
     List<Order> findActiveKitchenOrders();
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "LEFT JOIN FETCH o.items i " +
+           "LEFT JOIN FETCH i.product p " +
+           "LEFT JOIN FETCH o.table t " +
+           "LEFT JOIN FETCH o.cashierSession cs " +
+           "LEFT JOIN FETCH cs.cashier c " +
+           "LEFT JOIN FETCH cs.user u " +
+           "WHERE o.deleted = false AND o.status != 'ANNULEE' AND o.status != 'PAYEE' " +
+           "ORDER BY o.createdAt DESC")
+    List<Order> findAllActiveOrders();
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt >= :startDate")
     Long countOrdersSinceDate(@Param("startDate") LocalDateTime startDate);
@@ -79,4 +94,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> getCashierPerformanceStats(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     boolean existsByOrderNumberAndDeletedFalse(String orderNumber);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.cashierSession.publicId = :cashierSessionId AND o.deleted = false")
+    Long countByCashierSession(@Param("cashierSessionId") String cashierSessionId);
 }

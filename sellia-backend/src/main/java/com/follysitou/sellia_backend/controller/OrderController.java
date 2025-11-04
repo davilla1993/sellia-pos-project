@@ -144,6 +144,13 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
+    @GetMapping("/active")
+    public ResponseEntity<List<OrderResponse>> getAllActiveOrders() {
+        List<OrderResponse> response = orderService.getAllActiveOrders();
+        return ResponseEntity.ok(response);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{publicId}")
     public ResponseEntity<Void> deleteOrder(@PathVariable String publicId) {

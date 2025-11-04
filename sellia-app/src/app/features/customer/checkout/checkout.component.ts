@@ -76,12 +76,10 @@ export class CheckoutComponent implements OnInit {
 
   formatItemTotal(price: number, quantity: number): string {
     const total = price * quantity;
-    const amountInFcfa = Math.round(total / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(total).toLocaleString('fr-FR') + ' FCFA';
   }
 
   formatPrice(value: number): string {
-    const amountInFcfa = Math.round(value / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
   }
 }

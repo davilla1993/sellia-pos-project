@@ -60,15 +60,15 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalSales() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalDiscounts() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
         summaryTable.addCell("Montant Initial");
-        summaryTable.addCell(String.format("%.2f XAF", report.getInitialAmount() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getInitialAmount()));
         summaryTable.addCell("Montant Final");
-        summaryTable.addCell(String.format("%.2f XAF", report.getFinalAmount() != null ? report.getFinalAmount() / 100.0 : 0));
+        summaryTable.addCell(String.format("%.0f XAF", report.getFinalAmount() != null ? (double) report.getFinalAmount() : 0));
 
         document.add(summaryTable);
 
@@ -88,7 +88,7 @@ public class PdfReportService {
             for (GlobalSessionReportResponse.CashierSessionSummary session : report.getCashierSessions()) {
                 cashierTable.addCell(session.getCashierName());
                 cashierTable.addCell(session.getUserName());
-                cashierTable.addCell(String.format("%.2f XAF", session.getTotalSales() / 100.0));
+                cashierTable.addCell(String.format("%.0f XAF", (double) session.getTotalSales()));
                 cashierTable.addCell(String.valueOf(session.getOrderCount()));
 
                 String duration = "N/A";
@@ -118,7 +118,7 @@ public class PdfReportService {
             for (GlobalSessionReportResponse.OrderSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.2f XAF", product.getTotalAmount() / 100.0));
+                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
             }
         }
 
@@ -158,13 +158,13 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalSales() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Valeur Moyenne Commande");
-        summaryTable.addCell(String.format("%.2f XAF", report.getAverageOrderValue() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getAverageOrderValue()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalDiscounts() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
 
         document.add(summaryTable);
 
@@ -183,9 +183,9 @@ public class PdfReportService {
             for (CashierReportResponse.UserSummary user : report.getUsers()) {
                 usersTable.addCell(user.getFirstName() + " " + user.getLastName());
                 usersTable.addCell(String.valueOf(user.getOrderCount()));
-                usersTable.addCell(String.format("%.2f XAF", user.getTotalSales() / 100.0));
-                usersTable.addCell(String.format("%.2f XAF", 
-                    user.getOrderCount() > 0 ? user.getTotalSales() / (100.0 * user.getOrderCount()) : 0));
+                usersTable.addCell(String.format("%.0f XAF", (double) user.getTotalSales()));
+                usersTable.addCell(String.format("%.0f XAF",
+                    user.getOrderCount() > 0 ? (double) user.getTotalSales() / user.getOrderCount() : 0));
             }
         }
 
@@ -205,7 +205,7 @@ public class PdfReportService {
             for (CashierReportResponse.ProductSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.2f XAF", product.getTotalAmount() / 100.0));
+                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
             }
         }
 
@@ -245,15 +245,15 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalSales() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Valeur Moyenne Commande");
-        summaryTable.addCell(String.format("%.2f XAF", report.getAverageOrderValue() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getAverageOrderValue()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.2f XAF", report.getTotalDiscounts() / 100.0));
+        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
         summaryTable.addCell("Remise Moyenne");
-        summaryTable.addCell(String.format("%.2f XAF", report.getAverageDiscount() * 100));
+        summaryTable.addCell(String.format("%.2f%%", report.getAverageDiscount() * 100));
 
         document.add(summaryTable);
 
@@ -271,7 +271,7 @@ public class PdfReportService {
             for (UserReportResponse.CashierSummary cashier : report.getCashiers()) {
                 cashiersTable.addCell(cashier.getCashierName());
                 cashiersTable.addCell(String.valueOf(cashier.getOrderCount()));
-                cashiersTable.addCell(String.format("%.2f XAF", cashier.getTotalSales() / 100.0));
+                cashiersTable.addCell(String.format("%.0f XAF", (double) cashier.getTotalSales()));
             }
         }
 
@@ -291,7 +291,7 @@ public class PdfReportService {
             for (UserReportResponse.ProductSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.2f XAF", product.getTotalAmount() / 100.0));
+                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
             }
         }
 

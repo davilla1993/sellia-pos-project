@@ -34,6 +34,9 @@ public class CashierSessionService {
     private final GlobalSessionRepository globalSessionRepository;
     private final CashierService cashierService;
     private final com.follysitou.sellia_backend.repository.UserRepository userRepository;
+    private final AuditLogService auditLogService;
+    private final com.follysitou.sellia_backend.mapper.ActiveCashierSessionMapper activeCashierSessionMapper;
+    private final com.follysitou.sellia_backend.repository.OrderRepository orderRepository;
 
     @Transactional
     public CashierSessionResponse openSession(CashierSessionOpenRequest request) {
@@ -46,27 +49,55 @@ public class CashierSessionService {
 
         Cashier cashier = cashierService.getCashierEntityById(request.getCashierId());
 
+        User currentUser = getCurrentUser();
+
+        // SECURITY CHECK: Verify cash register (caisse) doesn't already have an active session
+        // This prevents multiple users from opening sessions on the same cash register simultaneously
         var existingSession = cashierSessionRepository.findActiveByCashierAndGlobalSession(
                 request.getCashierId(),
                 globalSession
         );
         if (existingSession.isPresent()) {
-            throw new ConflictException(
-                    "cashier",
+            CashierSession activeSession = existingSession.get();
+            User sessionUser = activeSession.getUser();
+
+            // AUDIT LOG: Failed attempt to open session on occupied cash register
+            auditLogService.logFailure(
+                    currentUser.getUsername(),
+                    "OPEN_CASHIER_SESSION",
+                    "CASH_REGISTER",
                     request.getCashierId(),
-                    "This cashier already has an active session in the current global session"
+                    "Attempted to open session on cash register " + cashier.getName() + " already in use by " + sessionUser.getUsername(),
+                    "Cash register already in use"
+            );
+
+            throw new ConflictException(
+                    "cash_register",
+                    cashier.getName(),
+                    "This cash register is already in use by " + sessionUser.getUsername() +
+                    ". Session opened at " + activeSession.getOpenedAt() + ". " +
+                    "Please ask them to close their session first."
             );
         }
 
+        // SECURITY CHECK: Validate PIN (ALWAYS required to open a session)
         if (!cashierService.validatePin(request.getPin(), request.getCashierId())) {
+            // AUDIT LOG: Failed PIN validation
+            auditLogService.logFailure(
+                    currentUser.getUsername(),
+                    "OPEN_CASHIER_SESSION",
+                    "CASH_REGISTER",
+                    request.getCashierId(),
+                    "Invalid PIN for cash register " + cashier.getName(),
+                    "Invalid PIN"
+            );
+
             throw new ConflictException(
                     "pin",
                     "invalid",
                     "Invalid PIN for this cashier"
             );
         }
-
-        User currentUser = getCurrentUser();
 
         CashierSession session = CashierSession.builder()
                 .globalSession(globalSession)
@@ -81,6 +112,16 @@ public class CashierSessionService {
                 .build();
 
         CashierSession savedSession = cashierSessionRepository.save(session);
+
+        // AUDIT LOG: Successful session opening
+        auditLogService.logSuccess(
+                currentUser.getUsername(),
+                "OPEN_CASHIER_SESSION",
+                "CASHIER_SESSION",
+                savedSession.getPublicId(),
+                "Opened session on cash register " + cashier.getName() + " with initial amount: " + request.getInitialAmount()
+        );
+
         return cashierSessionMapper.toResponse(savedSession);
     }
 
@@ -134,6 +175,7 @@ public class CashierSessionService {
     @Transactional
     public CashierSessionResponse closeSession(String publicId, CashierSessionCloseRequest request) {
         CashierSession session = getCashierSessionEntityById(publicId);
+        User currentUser = getCurrentUser();
 
         if (session.getStatus().equals(CashierSessionStatus.CLOSED)) {
             throw new ConflictException(
@@ -149,6 +191,25 @@ public class CashierSessionService {
         session.setNotes(request.getNotes());
 
         CashierSession updatedSession = cashierSessionRepository.save(session);
+
+        // Calculate discrepancy
+        long expectedAmount = session.getInitialAmount() + session.getTotalSales();
+        long discrepancy = request.getFinalAmount() - expectedAmount;
+
+        // AUDIT LOG: Session closed
+        auditLogService.logSuccess(
+                currentUser.getUsername(),
+                "CLOSE_CASHIER_SESSION",
+                "CASHIER_SESSION",
+                updatedSession.getPublicId(),
+                "Closed session on cash register " + session.getCashier().getName() +
+                ". Initial: " + session.getInitialAmount() +
+                ", Sales: " + session.getTotalSales() +
+                ", Expected: " + expectedAmount +
+                ", Final: " + request.getFinalAmount() +
+                ", Discrepancy: " + discrepancy
+        );
+
         return cashierSessionMapper.toResponse(updatedSession);
     }
 
@@ -226,9 +287,82 @@ public class CashierSessionService {
         cashierSessionRepository.save(session);
     }
 
+    /**
+     * Force close all active cashier sessions for a specific user
+     * Used when a new login is detected to prevent session hijacking
+     */
+    @Transactional
+    public void forceCloseAllUserSessions(String userId, String reason) {
+        List<CashierSession> activeSessions = cashierSessionRepository.findActiveSessionsByGlobalSession(
+                globalSessionRepository.findCurrentSession(com.follysitou.sellia_backend.enums.GlobalSessionStatus.OPEN)
+                        .orElse(null)
+        );
+
+        if (activeSessions == null || activeSessions.isEmpty()) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        int closedCount = 0;
+
+        for (CashierSession session : activeSessions) {
+            if (session.getUser().getPublicId().equals(userId) &&
+                (session.getStatus().equals(CashierSessionStatus.OPEN) ||
+                 session.getStatus().equals(CashierSessionStatus.LOCKED))) {
+
+                session.setStatus(CashierSessionStatus.CLOSED);
+                session.setClosedAt(now);
+                session.setNotes(session.getNotes() != null ?
+                    session.getNotes() + " [FORCE CLOSED: " + reason + "]" :
+                    "[FORCE CLOSED: " + reason + "]");
+
+                cashierSessionRepository.save(session);
+
+                // Audit log
+                auditLogService.logSuccess(
+                        session.getUser().getUsername(),
+                        "FORCE_CLOSE_CASHIER_SESSION",
+                        "CASHIER_SESSION",
+                        session.getPublicId(),
+                        "Session automatically closed on cash register " + session.getCashier().getName() +
+                        " due to: " + reason
+                );
+
+                closedCount++;
+            }
+        }
+
+        if (closedCount > 0) {
+            org.slf4j.LoggerFactory.getLogger(CashierSessionService.class)
+                    .info("Force closed {} active cashier sessions for user {}: {}", closedCount, userId, reason);
+        }
+    }
+
     public CashierSession getCashierSessionEntityById(String publicId) {
         return cashierSessionRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("CashierSession", "publicId", publicId));
+    }
+
+    /**
+     * Get all active cashier sessions (OPEN and LOCKED) with order statistics
+     */
+    public List<com.follysitou.sellia_backend.dto.response.ActiveCashierSessionResponse> getActiveSessions() {
+        GlobalSession globalSession = globalSessionRepository.findCurrentSession(com.follysitou.sellia_backend.enums.GlobalSessionStatus.OPEN)
+                .orElse(null);
+
+        if (globalSession == null) {
+            return List.of(); // No active global session, return empty list
+        }
+
+        List<CashierSession> activeSessions = cashierSessionRepository.findActiveSessionsByGlobalSession(globalSession);
+
+        return activeSessions.stream()
+                .map(session -> {
+                    // Count orders for this session
+                    Long orderCount = orderRepository.countByCashierSession(session.getPublicId());
+                    return activeCashierSessionMapper.toResponse(session, orderCount);
+                })
+                .toList();
     }
 
     private GlobalSession getGlobalSessionById(String publicId) {

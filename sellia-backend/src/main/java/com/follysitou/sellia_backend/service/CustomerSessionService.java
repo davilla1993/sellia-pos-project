@@ -75,16 +75,18 @@ public class CustomerSessionService {
 
         // Handle TAKEAWAY order type
         else if (request.getOrderType().name().equals("TAKEAWAY")) {
-            if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
-                throw new BusinessException("Customer name is required for takeaway orders");
-            }
+            // Customer name and phone are optional for takeaway orders
+            // Use "TAKEAWAY" as default if no name provided
+            String customerName = (request.getCustomerName() != null && !request.getCustomerName().isBlank())
+                    ? request.getCustomerName()
+                    : "TAKEAWAY";
 
             // For takeaway, create a new session (no check for existing session)
             // Each takeaway order can be separate or grouped by phone number if provided
             CustomerSession newSession = CustomerSession.builder()
                     .table(null) // No table for takeaway
                     .orderType(com.follysitou.sellia_backend.enums.OrderType.TAKEAWAY)
-                    .customerName(request.getCustomerName())
+                    .customerName(customerName)
                     .customerPhone(request.getCustomerPhone())
                     .active(true)
                     .sessionStart(LocalDateTime.now())
@@ -94,7 +96,7 @@ public class CustomerSessionService {
                     .build();
 
             CustomerSession savedSession = customerSessionRepository.save(newSession);
-            log.info("New takeaway session created: {} for customer {}", savedSession.getPublicId(), request.getCustomerName());
+            log.info("New takeaway session created: {} for customer {}", savedSession.getPublicId(), customerName);
 
             return customerSessionMapper.toResponse(savedSession);
         }

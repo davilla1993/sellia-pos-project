@@ -666,11 +666,7 @@ export class ApiService {
 
   // Active Sessions
   getActiveCashierSessions(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/cashier-sessions`, {
-      params: { page: '0', size: '100' }
-    }).pipe(
-      map(response => this.extractArray(response))
-    );
+    return this.http.get<any[]>(`${this.apiUrl}/cashier-sessions/active`);
   }
 
   getAllCashierSessions(page: number = 0, size: number = 20): Observable<any> {
@@ -682,11 +678,7 @@ export class ApiService {
 
   // Active Orders
   getActiveOrders(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/orders/status/EN_ATTENTE`, {
-      params: { page: '0', size: '100' }
-    }).pipe(
-      map(response => this.extractArray(response))
-    );
+    return this.http.get<any[]>(`${this.apiUrl}/orders/active`);
   }
 
   // Public/QR Code Endpoints (No authentication required)

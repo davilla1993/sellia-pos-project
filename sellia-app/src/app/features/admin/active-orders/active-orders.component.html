@@ -82,7 +82,7 @@
               <th class="px-4 py-3 text-left font-semibold text-white">Table</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Articles</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Statut</th>
-              <th class="px-4 py-3 text-left font-semibold text-white">Caissier</th>
+              <th class="px-4 py-3 text-left font-semibold text-white">Par</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Montant</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Depuis</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Actions</th>
@@ -120,9 +120,15 @@
                 </span>
               </td>
 
-              <!-- Caissier -->
-              <td class="px-4 py-4 text-sm text-neutral-400">
-                {{ order.cashierSessionCashierName }}
+              <!-- Caissier / Client -->
+              <td class="px-4 py-4 text-sm">
+                <span *ngIf="order.cashierSessionCashierName || order.createdByUserName" class="text-neutral-300">
+                  {{ order.cashierSessionCashierName || order.createdByUserName }}
+                </span>
+                <span *ngIf="!order.cashierSessionCashierName && !order.createdByUserName" class="text-blue-400">
+                  <span *ngIf="order.customerName">📱 {{ order.customerName }}</span>
+                  <span *ngIf="!order.customerName">📱 Client QR</span>
+                </span>
               </td>
 
               <!-- Montant -->
@@ -137,35 +143,11 @@
 
               <!-- Actions -->
               <td class="px-4 py-4">
-                <button 
-                  (click)="toggleOrderDetails(order.publicId)"
+                <button
+                  (click)="openOrderDetails(order)"
                   class="text-blue-400 hover:text-blue-300 font-medium text-xs">
                   👁️ Détails
                 </button>
-              </td>
-            </tr>
-
-            <!-- Order Details Row (Expandable) -->
-            <tr *ngFor="let order of filteredOrders()" [class.hidden]="expandedOrderId() !== order.publicId" class="bg-neutral-700/30 border-b border-neutral-700">
-              <td colspan="8" class="px-4 py-4">
-                <div class="space-y-4">
-                  <div>
-                    <h4 class="text-white font-bold mb-2">Détails de la commande</h4>
-                    <div class="bg-neutral-800 rounded p-3 space-y-2">
-                      <div *ngFor="let item of getOrderItems(order)" class="flex justify-between text-sm">
-                        <span class="text-neutral-300">{{ item.quantity }}x {{ item.productName }}</span>
-                        <span class="text-neutral-400">{{ formatCurrency(item.totalPrice) }}</span>
-                      </div>
-                      <div class="border-t border-neutral-600 pt-2 flex justify-between font-semibold text-white">
-                        <span>Total:</span>
-                        <span>{{ formatCurrency(order.totalAmount) }}</span>
-                      </div>
-                      <div *ngIf="order.discount > 0" class="text-red-400 text-sm">
-                        Remise: -{{ formatCurrency(order.discount) }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </td>
             </tr>
           </tbody>
@@ -181,5 +163,152 @@
       <div *ngIf="error()" class="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg">
         {{ error() }}
       </div>
+
+      <!-- Order Details Modal -->
+      <div *ngIf="showModal()" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-neutral-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-neutral-700">
+          <!-- Modal Header -->
+          <div class="sticky top-0 bg-neutral-800 border-b border-neutral-700 px-6 py-4 flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Commande #{{ selectedOrder()?.orderNumber }}</h2>
+              <p class="text-sm text-neutral-400 mt-1">{{ selectedOrder()?.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <button
+              (click)="closeModal()"
+              class="text-neutral-400 hover:text-white text-2xl leading-none">
+              ✕
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 space-y-6">
+            <!-- Status Badge -->
+            <div class="flex items-center gap-4">
+              <span [class]="getOrderStatusClass(selectedOrder()?.status)" class="px-3 py-1.5 rounded-lg text-sm font-semibold">
+                {{ getOrderStatusLabel(selectedOrder()?.status) }}
+              </span>
+              <span *ngIf="selectedOrder()?.isPaid" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-green-900/30 text-green-300">
+                ✓ Payée
+              </span>
+            </div>
+
+            <!-- Order Info Grid -->
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Table -->
+              <div class="bg-neutral-700/50 rounded-lg p-4">
+                <p class="text-xs text-neutral-400 mb-1">Table</p>
+                <p class="text-white font-semibold">
+                  <span *ngIf="selectedOrder()?.tableNumber">Table {{ selectedOrder()?.tableNumber }}</span>
+                  <span *ngIf="!selectedOrder()?.tableNumber" class="text-neutral-500">À emporter</span>
+                </p>
+              </div>
+
+              <!-- Par -->
+              <div class="bg-neutral-700/50 rounded-lg p-4">
+                <p class="text-xs text-neutral-400 mb-1">Créé par</p>
+                <p class="text-white font-semibold">
+                  <span *ngIf="selectedOrder()?.cashierSessionCashierName || selectedOrder()?.createdByUserName">
+                    {{ selectedOrder()?.cashierSessionCashierName || selectedOrder()?.createdByUserName }}
+                  </span>
+                  <span *ngIf="!selectedOrder()?.cashierSessionCashierName && !selectedOrder()?.createdByUserName" class="text-blue-400">
+                    <span *ngIf="selectedOrder()?.customerName">📱 {{ selectedOrder()?.customerName }}</span>
+                    <span *ngIf="!selectedOrder()?.customerName">📱 Client QR</span>
+                  </span>
+                </p>
+              </div>
+
+              <!-- Customer Name (if takeaway) -->
+              <div *ngIf="selectedOrder()?.customerName && selectedOrder()?.orderType === 'TAKEAWAY'" class="bg-neutral-700/50 rounded-lg p-4">
+                <p class="text-xs text-neutral-400 mb-1">Client</p>
+                <p class="text-white font-semibold">{{ selectedOrder()?.customerName }}</p>
+                <p *ngIf="selectedOrder()?.customerPhone" class="text-sm text-neutral-400 mt-1">{{ selectedOrder()?.customerPhone }}</p>
+              </div>
+
+              <!-- Payment Method -->
+              <div *ngIf="selectedOrder()?.paymentMethod" class="bg-neutral-700/50 rounded-lg p-4">
+                <p class="text-xs text-neutral-400 mb-1">Mode de paiement</p>
+                <p class="text-white font-semibold">{{ selectedOrder()?.paymentMethod }}</p>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="selectedOrder()?.notes" class="bg-neutral-700/50 rounded-lg p-4">
+              <p class="text-xs text-neutral-400 mb-1">📝 Notes</p>
+              <p class="text-white">{{ selectedOrder()?.notes }}</p>
+            </div>
+
+            <!-- Items List -->
+            <div>
+              <h3 class="text-lg font-bold text-white mb-3">Articles commandés</h3>
+              <div class="bg-neutral-700/50 rounded-lg overflow-hidden">
+                <div *ngFor="let item of getOrderItems(selectedOrder()); let last = last"
+                     [class.border-b]="!last"
+                     class="border-neutral-600 p-4">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+                          {{ item.quantity }}x
+                        </span>
+                        <span class="text-white font-semibold">{{ item.product?.name || 'Produit' }}</span>
+                      </div>
+                      <p *ngIf="item.notes" class="text-sm text-neutral-400 mt-1 ml-10">
+                        💬 {{ item.notes }}
+                      </p>
+                      <!-- Menu items -->
+                      <div *ngIf="item.menuItem?.products && item.menuItem.products.length > 0" class="ml-10 mt-2 space-y-1">
+                        <p class="text-xs text-neutral-500 font-semibold">Menu: {{ item.menuItem.menuName }}</p>
+                        <div *ngFor="let product of item.menuItem.products" class="text-xs text-neutral-400">
+                          • {{ product.name }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-green-400 font-bold">{{ formatCurrency(item.totalPrice) }}</p>
+                      <p *ngIf="item.quantity > 1" class="text-xs text-neutral-500">{{ formatCurrency(item.unitPrice) }} / unité</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Section -->
+            <div class="bg-neutral-700 rounded-lg p-4 space-y-2">
+              <div class="flex justify-between text-neutral-300">
+                <span>Sous-total:</span>
+                <span>{{ formatCurrency(selectedOrder()?.totalAmount) }}</span>
+              </div>
+              <div *ngIf="selectedOrder()?.discountAmount && selectedOrder()?.discountAmount > 0" class="flex justify-between text-red-400">
+                <span>Remise:</span>
+                <span>-{{ formatCurrency(selectedOrder()?.discountAmount) }}</span>
+              </div>
+              <div class="border-t border-neutral-600 pt-2 flex justify-between text-white font-bold text-lg">
+                <span>TOTAL:</span>
+                <span class="text-green-400">{{ formatCurrency(selectedOrder()?.finalAmount || selectedOrder()?.totalAmount) }}</span>
+              </div>
+            </div>
+
+            <!-- Timestamps -->
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="bg-neutral-700/50 rounded-lg p-3">
+                <p class="text-neutral-400 mb-1">Créée</p>
+                <p class="text-white">{{ selectedOrder()?.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+              </div>
+              <div *ngIf="selectedOrder()?.paidAt" class="bg-neutral-700/50 rounded-lg p-3">
+                <p class="text-neutral-400 mb-1">Payée</p>
+                <p class="text-white">{{ selectedOrder()?.paidAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="sticky bottom-0 bg-neutral-800 border-t border-neutral-700 px-6 py-4">
+            <button
+              (click)="closeModal()"
+              class="w-full px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  

@@ -63,17 +63,17 @@ export class ActiveSessionsComponent implements OnInit, OnDestroy {
 
   calculateStats(): void {
     const sessions = this.activeSessions();
-    
+
     this.totalSales.set(
       sessions.reduce((sum, s) => sum + (s.totalSales || 0), 0)
     );
-    
+
     this.totalOrders.set(
       sessions.reduce((sum, s) => sum + (s.orderCount || 0), 0)
     );
 
     const maxInactMin = Math.max(
-      ...sessions.map(s => this.getInactivityMinutes(s.lastActivity)),
+      ...sessions.map(s => s.inactivityMinutes || 0),
       0
     );
     this.maxInactivity.set(maxInactMin);
@@ -97,29 +97,18 @@ export class ActiveSessionsComponent implements OnInit, OnDestroy {
     return classes[status] || 'bg-gray-900/30 text-gray-300';
   }
 
-  getInactivityMinutes(lastActivity: string): number {
-    if (!lastActivity) return 0;
-    const last = new Date(lastActivity).getTime();
-    const now = new Date().getTime();
-    return Math.floor((now - last) / 1000 / 60);
-  }
-
-  getInactivityClass(lastActivity: string): string {
-    const minutes = this.getInactivityMinutes(lastActivity);
+  getInactivityClass(minutes: number): string {
     if (minutes > 10) return 'text-red-400';
     if (minutes > 5) return 'text-yellow-400';
     return 'text-green-400';
   }
 
-  calculateDuration(openedAt: string, closedAt: string | null): string {
-    if (!openedAt) return 'N/A';
-    const start = new Date(openedAt).getTime();
-    const end = closedAt ? new Date(closedAt).getTime() : new Date().getTime();
-    const diff = end - start;
-    
-    const hours = Math.floor(diff / 1000 / 60 / 60);
-    const minutes = Math.floor((diff / 1000 / 60) % 60);
-    
+  formatDuration(durationMinutes: number | null): string {
+    if (!durationMinutes && durationMinutes !== 0) return 'N/A';
+
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+
     return `${hours}h ${minutes}m`;
   }
 
@@ -133,8 +122,7 @@ export class ActiveSessionsComponent implements OnInit, OnDestroy {
 
   formatCurrency(value: number): string {
     if (!value) return '0 FCFA';
-    const amountInFcfa = Math.round(value / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
   }
 
   forceCloseSession(session: any): void {

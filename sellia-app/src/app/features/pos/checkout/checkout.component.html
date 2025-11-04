@@ -78,6 +78,46 @@
             <span class="text-neutral-400 text-sm ml-4 font-semibold">{{ currentTablePage() }} / {{ totalTablePages() }}</span>
           </div>
         </div>
+
+        <!-- Takeaway Orders Section -->
+        <div class="mt-6">
+          <h2 class="text-2xl font-bold text-white mb-3">🛍️ Commandes à Emporter</h2>
+
+          <div *ngIf="isLoadingTakeaway()" class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+
+          <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length === 0" class="text-center py-8">
+            <p class="text-neutral-400">Aucune commande à emporter en attente</p>
+          </div>
+
+          <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let order of takeawayOrders()"
+              [class.ring-3]="selectedTakeawayOrder() === order"
+              [class.ring-primary]="selectedTakeawayOrder() === order"
+              (click)="selectTakeawayOrder(order)"
+              class="p-4 bg-neutral-800 border-2 border-neutral-700 rounded-lg hover:border-primary transition-all cursor-pointer">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white font-bold text-lg">#{{ order.orderNumber }}</span>
+                <span class="text-xs bg-blue-500 text-white px-2 py-1 rounded font-bold">À EMPORTER</span>
+              </div>
+
+              <div class="text-sm text-neutral-400 mb-2">
+                <p>👤 {{ order.customerName || 'TAKEAWAY' }}</p>
+                <p *ngIf="order.customerPhone" class="text-xs">📞 {{ order.customerPhone }}</p>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-green-400 font-bold text-xl">{{ currencyService.formatPrice(order.totalAmount) }}</span>
+                <span class="text-xs text-neutral-500">{{ order.createdAt | date:'HH:mm' }}</span>
+              </div>
+
+              <div *ngIf="order.items && order.items.length > 0" class="mt-2 pt-2 border-t border-neutral-700">
+                <p class="text-xs text-neutral-500">{{ order.items.length }} article(s)</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- BOTTOM: Payment Section - SIDEBAR ON RIGHT (FIXED) -->
@@ -88,8 +128,15 @@
           <p class="text-neutral-400 text-sm">Table {{ selectedSession().tableNumber }} <span *ngIf="selectedSession().tableName"> - {{ selectedSession().tableName }}</span></p>
         </div>
 
+        <!-- Takeaway Order Info -->
+        <div *ngIf="selectedTakeawayOrder()">
+          <h2 class="text-2xl font-bold text-white">Encaissement</h2>
+          <p class="text-neutral-400 text-sm">🛍️ À Emporter #{{ selectedTakeawayOrder().orderNumber }}</p>
+          <p class="text-neutral-400 text-xs">👤 {{ selectedTakeawayOrder().customerName || 'TAKEAWAY' }}</p>
+        </div>
+
         <!-- Orders Display -->
-        <div *ngIf="selectedSession() && !isLoadingOrders()" class="flex-1 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3 min-w-0">
+        <div *ngIf="(selectedSession() || selectedTakeawayOrder()) && !isLoadingOrders()" class="flex-1 overflow-y-auto bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-3 min-w-0">
           <div *ngIf="sessionOrders().length > 0">
             <p class="text-sm font-semibold text-neutral-300 mb-3 uppercase">Commandes ({{ sessionOrders().length }})</p>
             <div *ngFor="let order of sessionOrders()" class="bg-neutral-700 rounded p-3 space-y-2 mb-3">

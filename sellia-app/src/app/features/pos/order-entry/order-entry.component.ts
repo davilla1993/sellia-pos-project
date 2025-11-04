@@ -37,6 +37,7 @@ export class OrderEntryComponent implements OnInit {
   filteredProducts = signal<any[]>([]);
   categories = signal<any[]>([]);
   selectedCategory = signal<any>('');
+  selectedMenuType = signal<string>('all');
   searchTerm = signal<string>('');
   imageUrls = signal<{ [key: string]: string }>({});
 
@@ -86,6 +87,7 @@ export class OrderEntryComponent implements OnInit {
             price: menu.bundlePrice,
             imageUrl: menu.imageUrl,
             categoryId: 'MENUS',
+            menuType: menu.menuType,
             isMenu: true,
             menuPublicId: menu.publicId,
             menuItems: menu.menuItems || []
@@ -176,6 +178,13 @@ export class OrderEntryComponent implements OnInit {
   filterProducts(): void {
     let filtered = this.allProducts();
 
+    // Filter by menu type
+    const selectedType = this.selectedMenuType();
+    if (selectedType !== 'all') {
+      filtered = filtered.filter(p => p.menuType === selectedType);
+    }
+
+    // Filter by search term
     if (this.searchTerm()) {
       const term = this.searchTerm().toLowerCase();
       filtered = filtered.filter(p =>
@@ -185,6 +194,19 @@ export class OrderEntryComponent implements OnInit {
     }
 
     this.filteredProducts.set(filtered);
+  }
+
+  selectMenuType(type: string): void {
+    this.selectedMenuType.set(type);
+    this.filterProducts();
+  }
+
+  getStandardCount(): number {
+    return this.allProducts().filter(m => m.menuType === 'STANDARD').length;
+  }
+
+  getVipCount(): number {
+    return this.allProducts().filter(m => m.menuType === 'VIP').length;
   }
 
   addProductToCart(product: any): void {
@@ -228,7 +250,8 @@ export class OrderEntryComponent implements OnInit {
     if (this.orderType === 'TABLE') {
       return this.selectedTableId() !== '';
     } else {
-      return this.customerName() !== '';
+      // For TAKEAWAY, no fields are required - customer info is optional
+      return true;
     }
   }
 

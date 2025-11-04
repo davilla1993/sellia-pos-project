@@ -89,40 +89,26 @@ public class OrderService {
         if (request.getCustomerSessionPublicId() != null) {
             customerSession = customerSessionRepository.findByPublicId(request.getCustomerSessionPublicId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
-            
+
             // Validate session is active
             customerSessionService.validateSessionIsActive(request.getCustomerSessionPublicId());
-        }
-
-        // Get current cashier session for CAISSIER/ADMIN users
-        com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
-        String currentUserId = SecurityUtil.getCurrentUserId();
-        if (currentUserId != null) {
-            try {
-                var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUserId);
-                if (optionalSession.isPresent()) {
-                    cashierSession = optionalSession.get();
-                }
-            } catch (Exception e) {
-                log.warn("Could not get cashier session for user: {}", currentUserId, e);
-            }
         }
 
         // Generate unique order number
         String orderNumber = generateUniqueOrderNumber();
 
         // Create order
+        // NOTE: cashierSession is NOT assigned here - it will be assigned at payment time
         Order order = orderMapper.toEntity(request);
         order.setOrderNumber(orderNumber);
         order.setTable(table);
         order.setCustomerSession(customerSession);
-        order.setCashierSession(cashierSession);
+        order.setCashierSession(null); // Will be assigned at payment
         order.setOrderType(request.getOrderType() != null ? request.getOrderType() : com.follysitou.sellia_backend.enums.OrderType.TABLE);
-        
-        // Set cashier ID from current user or cashier session
-        if (cashierSession != null && cashierSession.getUser() != null) {
-            order.setCashierId(cashierSession.getUser().getPublicId());
-        } else if (currentUserId != null) {
+
+        // Set cashier ID from current user (for tracking who created the order)
+        String currentUserId = SecurityUtil.getCurrentUserId();
+        if (currentUserId != null) {
             order.setCashierId(currentUserId);
         }
 
@@ -144,7 +130,7 @@ public class OrderService {
                 menu = menuRepository.fetchMenuItemProducts(menu);
 
                 unitPrice = menu.getBundlePrice() != null ? menu.getBundlePrice() : 0L;
-                
+
                 // Find first MenuItem with products
                 if (menu.getMenuItems() != null && !menu.getMenuItems().isEmpty()) {
                     for (com.follysitou.sellia_backend.model.MenuItem mi : menu.getMenuItems()) {
@@ -154,6 +140,16 @@ public class OrderService {
                             break;
                         }
                     }
+                }
+
+                // If no menuItem found with products, check if menu has any menuItems
+                if (menuItem == null && (menu.getMenuItems() == null || menu.getMenuItems().isEmpty())) {
+                    throw new BusinessException("Le menu '" + menu.getName() + "' ne contient aucun article. Veuillez ajouter des articles au menu avant de créer une commande.");
+                }
+
+                // If menuItem still not found, it means menuItems exist but have no products
+                if (menuItem == null) {
+                    throw new BusinessException("Le menu '" + menu.getName() + "' contient des articles mais aucun produit n'y est associé. Veuillez configurer les produits dans les articles du menu.");
                 }
             } else {
                 // Load MenuItem with products (legacy flow)
@@ -214,7 +210,11 @@ public class OrderService {
 
         // Save order and items
         Order savedOrder = orderRepository.save(order);
-        log.info("Order created: {} for table {}", orderNumber, table.getNumber());
+        if (table != null) {
+            log.info("Order created: {} for table {}", orderNumber, table.getNumber());
+        } else {
+            log.info("Order created: {} for takeaway", orderNumber);
+        }
 
         // Record inventory movements for each item (reduce stock)
         for (OrderItem item : savedOrder.getItems()) {
@@ -358,12 +358,47 @@ public class OrderService {
             throw new BusinessException("Order is already paid");
         }
 
+        // CRITICAL: Get current cashier session and assign to order at payment time
+        String currentUserId = SecurityUtil.getCurrentUserId();
+        com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
+
+        if (currentUserId != null) {
+            var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUserId);
+            if (optionalSession.isPresent()) {
+                cashierSession = optionalSession.get();
+
+                // Assign cashier session to order
+                order.setCashierSession(cashierSession);
+
+                // Calculate amount to add (total - discount)
+                long orderAmount = order.getTotalAmount();
+                if (order.getDiscountAmount() != null) {
+                    orderAmount -= order.getDiscountAmount();
+                }
+                orderAmount = Math.max(0, orderAmount);
+
+                // Update cashier session total sales
+                cashierSession.setTotalSales((cashierSession.getTotalSales() != null ? cashierSession.getTotalSales() : 0L) + orderAmount);
+                cashierSessionRepository.save(cashierSession);
+
+                log.info("Order {} assigned to cashier session {} - Amount added: {} FCFA",
+                        publicId, cashierSession.getPublicId(), orderAmount);
+            } else {
+                log.warn("No active cashier session found for user {} - Payment will proceed without session assignment", currentUserId);
+            }
+        }
+
         order.setIsPaid(true);
         order.setPaymentMethod(paymentMethod);
         order.setPaidAt(LocalDateTime.now());
         order.setStatus(OrderStatus.PAYEE);
 
+        // Save order first to get the updated state
         Order updated = orderRepository.save(order);
+
+        // Create invoice for this order
+        invoiceService.createOrderInvoice(updated, paymentMethod);
+
         log.info("Order marked as paid: {} using {}", publicId, paymentMethod);
 
         // Send notification
@@ -381,6 +416,13 @@ public class OrderService {
 
     public List<OrderResponse> getActiveKitchenOrders() {
         List<Order> orders = orderRepository.findActiveKitchenOrders();
+        return orders.stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderResponse> getAllActiveOrders() {
+        List<Order> orders = orderRepository.findAllActiveOrders();
         return orders.stream()
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
@@ -549,17 +591,43 @@ public class OrderService {
                 })
                 .sum();
 
+        // CRITICAL: Get current cashier session for the cashier processing the payment
+        String currentUserId = SecurityUtil.getCurrentUserId();
+        com.follysitou.sellia_backend.model.CashierSession cashierSession = null;
+
+        if (currentUserId != null) {
+            var optionalSession = cashierSessionRepository.findCurrentSessionByUser(currentUserId);
+            if (optionalSession.isPresent()) {
+                cashierSession = optionalSession.get();
+
+                // Update cashier session total sales
+                cashierSession.setTotalSales((cashierSession.getTotalSales() != null ? cashierSession.getTotalSales() : 0L) + totalAmount);
+                cashierSessionRepository.save(cashierSession);
+
+                log.info("Session checkout {} assigned to cashier session {} - Amount added: {} FCFA",
+                        customerSessionPublicId, cashierSession.getPublicId(), totalAmount);
+            } else {
+                log.warn("No active cashier session found for user {} - Session checkout will proceed without cashier session assignment", currentUserId);
+            }
+        }
+
         // Créer l'invoice consolidée
         Invoice invoice = invoiceService.createSessionInvoice(session, orders, totalAmount);
 
-        // Marquer TOUTES les orders comme payées
+        // Marquer TOUTES les orders comme payées ET assigner la cashier session
         for (Order order : orders) {
             order.setIsPaid(true);
             order.setPaymentMethod(paymentMethod);
             order.setPaidAt(LocalDateTime.now());
             order.setStatus(OrderStatus.PAYEE);
+
+            // Assign cashier session to order
+            if (cashierSession != null) {
+                order.setCashierSession(cashierSession);
+            }
+
             orderRepository.save(order);
-            
+
             // Notification
             notificationService.notifyOrderStatusChange(order);
         }
@@ -568,8 +636,8 @@ public class OrderService {
         session.setIsPaid(true);
         customerSessionRepository.save(session);
 
-        log.info("Session checkout completed: {} - Invoice: {} - Amount: {} XAF",
-                customerSessionPublicId, invoice.getInvoiceNumber(), totalAmount);
+        log.info("Session checkout completed: {} - Invoice: {} - Amount: {} XAF - Orders count: {}",
+                customerSessionPublicId, invoice.getInvoiceNumber(), totalAmount, orders.size());
 
         // Retourner la première order (ou créer une réponse consolidée)
         return orderMapper.toResponse(orders.get(0));

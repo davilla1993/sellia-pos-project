@@ -86,9 +86,34 @@ export class CashierSelectionComponent implements OnInit {
         },
         (error) => {
           this.loading = false;
-          this.pinError = 'Code PIN incorrect ou caisse verrouillée';
+          this.handleOpenSessionError(error);
         }
       );
+    }
+  }
+
+  private handleOpenSessionError(error: any): void {
+    // Extract error message from backend response
+    const errorMessage = error?.error?.message || error?.message || '';
+    const errorField = error?.error?.field || '';
+
+    if (errorField === 'pin' || errorMessage.toLowerCase().includes('pin')) {
+      this.pinError = 'Code PIN incorrect. Veuillez réessayer.';
+    } else if (errorField === 'cash_register' || errorMessage.toLowerCase().includes('already in use') || errorMessage.toLowerCase().includes('déjà utilisée')) {
+      // Cash register already occupied by another user
+      this.pinError = errorMessage || 'Cette caisse est déjà utilisée par un autre caissier. Veuillez demander la fermeture de la session active.';
+      this.showPinForm = false; // Return to cashier selection
+    } else if (errorMessage.toLowerCase().includes('token') && errorMessage.toLowerCase().includes('revoked')) {
+      // Token has been revoked - redirect to login
+      this.pinError = 'Votre session a expiré. Vous allez être redirigé vers la page de connexion.';
+      setTimeout(() => {
+        this.router.navigate(['/auth/login']);
+      }, 2000);
+    } else if (errorMessage.toLowerCase().includes('global session')) {
+      this.pinError = 'Aucune session globale ouverte. Contactez l\'administrateur.';
+      this.showPinForm = false;
+    } else {
+      this.pinError = errorMessage || 'Erreur lors de l\'ouverture de la session. Veuillez réessayer.';
     }
   }
 

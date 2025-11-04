@@ -21,7 +21,8 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   error = signal<string | null>(null);
   filter = signal<string>('ALL');
-  expandedOrderId = signal<string | null>(null);
+  selectedOrder = signal<any | null>(null);
+  showModal = signal(false);
 
   orderStatuses = [
     { value: 'ALL', label: 'Toutes' },
@@ -118,20 +119,21 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
 
   formatCurrency(value: number): string {
     if (!value) return '0 FCFA';
-    const amountInFcfa = Math.round(value / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
   }
 
   totalAmount(): number {
     return this.filteredOrders().reduce((sum, o) => sum + (o.totalAmount || 0), 0);
   }
 
-  toggleOrderDetails(orderId: string): void {
-    if (this.expandedOrderId() === orderId) {
-      this.expandedOrderId.set(null);
-    } else {
-      this.expandedOrderId.set(orderId);
-    }
+  openOrderDetails(order: any): void {
+    this.selectedOrder.set(order);
+    this.showModal.set(true);
+  }
+
+  closeModal(): void {
+    this.showModal.set(false);
+    this.selectedOrder.set(null);
   }
 
   getCurrentStatusLabel(): string {

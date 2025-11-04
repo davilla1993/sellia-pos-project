@@ -39,6 +39,11 @@ export class CheckoutComponent implements OnInit {
   sessionOrders = signal<any[]>([]);
   isLoadingOrders = signal(false);
 
+  // Takeaway Orders
+  takeawayOrders = signal<any[]>([]);
+  isLoadingTakeaway = signal(false);
+  selectedTakeawayOrder = signal<any | null>(null);
+
   // Payment
   amountPaidInput = signal('');
   amountPaid = signal(0);
@@ -52,6 +57,7 @@ export class CheckoutComponent implements OnInit {
   ngOnInit(): void {
     this.loadRestaurantInfo();
     this.loadTables();
+    this.loadTakeawayOrders();
   }
 
   loadRestaurantInfo(): void {
@@ -100,7 +106,8 @@ export class CheckoutComponent implements OnInit {
                 this.updateTableStats(sessionsSet, tablesArray);
               }
             },
-            error: () => {
+            error: (err) => {
+              // Silent fail - table has no active session
               completedChecks++;
               if (completedChecks === tablesArray.length) {
                 this.updateTableStats(sessionsSet, tablesArray);
@@ -129,7 +136,33 @@ export class CheckoutComponent implements OnInit {
 
   selectTable(table: any): void {
     this.selectedTableId.set(table.publicId);
+    this.selectedTakeawayOrder.set(null); // Deselect takeaway if any
     this.loadSession(table.publicId);
+  }
+
+  loadTakeawayOrders(): void {
+    this.isLoadingTakeaway.set(true);
+    this.apiService.getUnpaidPendingOrders().subscribe({
+      next: (orders) => {
+        console.log('All unpaid orders:', orders);
+        // Filter only TAKEAWAY orders
+        const takeawayOrders = orders.filter((o: any) => o.orderType === 'TAKEAWAY');
+        console.log('Filtered TAKEAWAY orders:', takeawayOrders);
+        this.takeawayOrders.set(takeawayOrders);
+        this.isLoadingTakeaway.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading takeaway orders:', err);
+        this.isLoadingTakeaway.set(false);
+      }
+    });
+  }
+
+  selectTakeawayOrder(order: any): void {
+    this.selectedTakeawayOrder.set(order);
+    this.selectedTableId.set(null); // Deselect table if any
+    this.selectedSession.set(null);
+    this.sessionOrders.set([order]);
   }
 
   loadSession(tablePublicId: string): void {
@@ -194,15 +227,24 @@ export class CheckoutComponent implements OnInit {
   }
 
   processPayment(): void {
-    if (!this.canProcessPayment() || !this.selectedSession()) return;
+    if (!this.canProcessPayment()) return;
 
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
     const paymentMethod = 'ESPECES';
 
+    // Handle TAKEAWAY orders differently (no session)
+    if (this.selectedTakeawayOrder()) {
+      this.processTakeawayPayment(paymentMethod);
+    } else if (this.selectedSession()) {
+      this.processSessionPayment(paymentMethod);
+    }
+  }
+
+  private processSessionPayment(paymentMethod: string): void {
     // Use the checkout session endpoint which handles payment and returns invoice
-    this.apiService.checkoutSession(this.selectedSession().publicId, paymentMethod).subscribe({
+    this.apiService.checkoutSession(this.selectedSession()!.publicId, paymentMethod).subscribe({
       next: (response: any) => {
         // Extract invoice number from the response
         if (response?.invoice?.invoiceNumber) {
@@ -212,11 +254,12 @@ export class CheckoutComponent implements OnInit {
         }
 
         // Finalize the session
-        this.apiService.finalizeSession(this.selectedSession().publicId).subscribe({
+        this.apiService.finalizeSession(this.selectedSession()!.publicId).subscribe({
           next: () => {
             this.isProcessing.set(false);
             this.printReceipt();
             this.resetCheckout();
+            this.loadTables();
           },
           error: () => {
             this.errorMessage.set('Erreur lors de la finalisation');
@@ -232,10 +275,43 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  private processTakeawayPayment(paymentMethod: string): void {
+    const order = this.selectedTakeawayOrder()!;
+
+    // Mark order as paid
+    this.apiService.markOrderAsPaid(order.publicId, paymentMethod).subscribe({
+      next: (response: any) => {
+        // Get invoice number if available
+        if (response?.invoice?.invoiceNumber) {
+          this.invoiceNumber.set(response.invoice.invoiceNumber);
+        } else {
+          this.invoiceNumber.set('N/A');
+        }
+
+        this.isProcessing.set(false);
+        this.printReceipt();
+        this.resetCheckout();
+        this.loadTakeawayOrders();
+      },
+      error: (error) => {
+        console.error('Payment error:', error);
+        this.errorMessage.set('Erreur lors de l\'encaissement');
+        this.isProcessing.set(false);
+      }
+    });
+  }
+
   printReceipt(): void {
     const printWindow = window.open('', '', 'width=300,height=600');
     if (printWindow) {
-      const tableNumber = this.selectedSession()?.tableNumber || 'Takeaway';
+      let tableNumber = 'TAKEAWAY';
+      if (this.selectedSession()?.tableNumber) {
+        tableNumber = this.selectedSession().tableNumber;
+      } else if (this.selectedTakeawayOrder()) {
+        // Use customer name if available
+        const order = this.selectedTakeawayOrder();
+        tableNumber = order.customerName || 'TAKEAWAY';
+      }
       const restaurant = this.restaurantInfo();
       
       printWindow.document.write(`
@@ -344,6 +420,7 @@ export class CheckoutComponent implements OnInit {
   resetCheckout(): void {
     this.selectedTableId.set(null);
     this.selectedSession.set(null);
+    this.selectedTakeawayOrder.set(null);
     this.sessionOrders.set([]);
     this.amountPaidInput.set('');
     this.amountPaid.set(0);

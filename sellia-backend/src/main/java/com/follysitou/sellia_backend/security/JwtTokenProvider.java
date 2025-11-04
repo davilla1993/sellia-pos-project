@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtTokenProvider {
@@ -25,31 +26,60 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(String username, String userId, String role) {
+    // Classe interne pour retourner le token avec son JTI
+    public static class TokenWithJti {
+        private final String token;
+        private final String jti;
+        private final Date expiresAt;
+
+        public TokenWithJti(String token, String jti, Date expiresAt) {
+            this.token = token;
+            this.jti = jti;
+            this.expiresAt = expiresAt;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public String getJti() {
+            return jti;
+        }
+
+        public Date getExpiresAt() {
+            return expiresAt;
+        }
+    }
+
+    public TokenWithJti generateAccessToken(String username, String userId, String role) {
         return generateToken(username, userId, role, accessTokenExpiration);
     }
 
-    public String generateRefreshToken(String username, String userId) {
+    public TokenWithJti generateRefreshToken(String username, String userId) {
         return generateToken(username, userId, null, refreshTokenExpiration);
     }
 
-    private String generateToken(String username, String userId, String role, long expirationTime) {
+    private TokenWithJti generateToken(String username, String userId, String role, long expirationTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
+        String jti = UUID.randomUUID().toString();
 
         var builder = Jwts.builder()
+                .setId(jti)
                 .setSubject(username)
                 .claim("userId", userId);
-        
+
         if (role != null) {
             builder.claim("role", role);
         }
-        
-        return builder
+
+        String token = builder
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
+
+        return new TokenWithJti(token, jti, expiryDate);
     }
 
     public String getUsernameFromToken(String token) {
@@ -77,6 +107,15 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("role", String.class);
+    }
+
+    public String getJtiFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getId();
     }
 
     public boolean validateToken(String token) {

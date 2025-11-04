@@ -2,6 +2,7 @@ package com.follysitou.sellia_backend.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.follysitou.sellia_backend.exception.ApiError;
+import com.follysitou.sellia_backend.service.ActiveTokenService;
 import com.follysitou.sellia_backend.util.ErrorMessages;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final ActiveTokenService activeTokenService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -37,8 +39,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
+                // Validate token format and expiration
                 if (!tokenProvider.validateToken(jwt)) {
                     sendErrorResponse(response, ErrorMessages.TOKEN_EXPIRED, request.getRequestURI());
+                    return;
+                }
+
+                // SECURITY: Check if token has been revoked
+                String jti = tokenProvider.getJtiFromToken(jwt);
+                if (!activeTokenService.isTokenActive(jti)) {
+                    sendErrorResponse(response, "Token has been revoked. Please login again.", request.getRequestURI());
                     return;
                 }
 

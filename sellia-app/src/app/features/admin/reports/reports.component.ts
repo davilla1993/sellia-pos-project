@@ -159,7 +159,7 @@ export class ReportsComponent implements OnInit {
 
   formatCurrency(value: number): string {
     if (!value) return '0 FCFA';
-    const formatted = Math.round(value / 100).toLocaleString('fr-FR');
+    const formatted = Math.round(value).toLocaleString('fr-FR');
     return `${formatted} FCFA`;
   }
 

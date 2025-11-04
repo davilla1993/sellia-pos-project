@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class OrderMapper {
 
     private final MenuRepository menuRepository;
+    private final com.follysitou.sellia_backend.repository.UserRepository userRepository;
 
     public Order toEntity(OrderCreateRequest request) {
         Order order = Order.builder()
@@ -67,7 +68,33 @@ public class OrderMapper {
         response.setCustomerPhone(order.getCustomerPhone());
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
-        
+
+        // Set flattened fields for easier frontend access
+        if (order.getCashierSession() != null) {
+            if (order.getCashierSession().getCashier() != null) {
+                response.setCashierSessionCashierName(order.getCashierSession().getCashier().getName());
+            } else if (order.getCashierSession().getUser() != null) {
+                User user = order.getCashierSession().getUser();
+                response.setCashierSessionCashierName(user.getFirstName() + " " + user.getLastName());
+            }
+        }
+        if (order.getTable() != null) {
+            response.setTableNumber(order.getTable().getNumber());
+        }
+
+        // Set creator user name
+        if (order.getCreatedBy() != null && !order.getCreatedBy().equals("SYSTEM")) {
+            try {
+                // createdBy contains the username from Spring Security
+                User creator = userRepository.findByUsername(order.getCreatedBy()).orElse(null);
+                if (creator != null) {
+                    response.setCreatedByUserName(creator.getFirstName() + " " + creator.getLastName());
+                }
+            } catch (Exception e) {
+                // Ignore if user not found
+            }
+        }
+
         return response;
     }
 

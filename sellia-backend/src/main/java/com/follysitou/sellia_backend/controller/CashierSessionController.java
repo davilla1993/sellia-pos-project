@@ -3,6 +3,7 @@ package com.follysitou.sellia_backend.controller;
 import com.follysitou.sellia_backend.dto.request.CashierSessionCloseRequest;
 import com.follysitou.sellia_backend.dto.request.CashierSessionOpenRequest;
 import com.follysitou.sellia_backend.dto.request.CashierSessionPinUnlockRequest;
+import com.follysitou.sellia_backend.dto.response.ActiveCashierSessionResponse;
 import com.follysitou.sellia_backend.dto.response.CashierSessionResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.service.CashierSessionService;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cashier-sessions")
@@ -74,6 +77,13 @@ public class CashierSessionController {
     public ResponseEntity<CashierSessionResponse> getSessionById(@PathVariable String publicId) {
         CashierSessionResponse response = cashierSessionService.getSessionById(publicId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/active")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ActiveCashierSessionResponse>> getActiveSessions() {
+        List<ActiveCashierSessionResponse> activeSessions = cashierSessionService.getActiveSessions();
+        return ResponseEntity.ok(activeSessions);
     }
 
     @GetMapping

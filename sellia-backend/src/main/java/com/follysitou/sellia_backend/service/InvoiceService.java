@@ -74,6 +74,47 @@ public class InvoiceService {
         return savedInvoice;
     }
 
+    /**
+     * Create an invoice for a single order (admin/cashier direct payment)
+     */
+    public Invoice createOrderInvoice(Order order, String paymentMethod) {
+        // Calculate totals
+        long subtotal = order.getTotalAmount();
+        long totalDiscount = order.getDiscountAmount() != null ? order.getDiscountAmount() : 0L;
+        long taxAmount = 0;
+        long finalAmount = subtotal - totalDiscount + taxAmount;
+
+        // Generate unique invoice number
+        String invoiceNumber = generateInvoiceNumber();
+
+        // Create invoice
+        Invoice invoice = Invoice.builder()
+                .invoiceNumber(invoiceNumber)
+                .customerSession(order.getCustomerSession())
+                .orders(List.of(order))
+                .subtotal(subtotal)
+                .taxAmount(taxAmount)
+                .discountAmount(totalDiscount)
+                .totalAmount(subtotal)
+                .finalAmount(Math.max(0, finalAmount))
+                .status(Invoice.InvoiceStatus.PAID)
+                .customerName(order.getCustomerName())
+                .customerPhone(order.getCustomerPhone())
+                .paymentMethod(paymentMethod)
+                .paidAt(LocalDateTime.now())
+                .build();
+
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        // Update order with invoice reference
+        order.setInvoice(savedInvoice);
+        orderRepository.save(order);
+
+        log.info("Invoice created: {} for order: {} with amount: {}", invoiceNumber, order.getOrderNumber(), finalAmount);
+
+        return savedInvoice;
+    }
+
     private String generateInvoiceNumber() {
         // Format: INV-YYYYMMDD-XXXXX
         String datePart = LocalDateTime.now().toString().substring(0, 10).replace("-", "");

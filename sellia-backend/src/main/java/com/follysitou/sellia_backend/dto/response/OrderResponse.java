@@ -33,6 +33,11 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Flattened fields for easier frontend access
+    private String cashierSessionCashierName;
+    private String tableNumber;
+    private String createdByUserName;
+
     @Data
     public static class RestaurantTableResponse {
         private String publicId;

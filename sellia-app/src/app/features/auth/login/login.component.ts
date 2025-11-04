@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,11 +11,12 @@ import { AuthService } from '@core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = signal(false);
   error = signal<string | null>(null);
   showPassword = signal(false);
+  warningMessage = signal<string | null>(null);
 
   constructor(
     private fb: FormBuilder,
@@ -26,6 +27,20 @@ export class LoginComponent {
       username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  ngOnInit(): void {
+    // Check if user was logged out due to token revocation
+    const logoutReason = sessionStorage.getItem('logoutReason');
+    if (logoutReason === 'session_revoked') {
+      this.warningMessage.set('Votre session a été fermée car une nouvelle connexion a été détectée depuis un autre appareil ou navigateur.');
+      sessionStorage.removeItem('logoutReason');
+
+      // Clear warning after 10 seconds
+      setTimeout(() => {
+        this.warningMessage.set(null);
+      }, 10000);
+    }
   }
 
   togglePasswordVisibility(): void {

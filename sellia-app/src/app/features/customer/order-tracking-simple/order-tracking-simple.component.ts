@@ -47,7 +47,6 @@ export class OrderTrackingSimpleComponent implements OnInit {
   }
 
   getTotal(order: Order): string {
-    const amountInFcfa = Math.round(order.totalAmount / 100);
-    return amountInFcfa.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(order.totalAmount).toLocaleString('fr-FR') + ' FCFA';
   }
 }
