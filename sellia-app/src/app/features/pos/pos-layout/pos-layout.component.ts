@@ -7,6 +7,7 @@ import { NavigationService } from '@core/services/navigation.service';
 import { ApiService } from '@core/services/api.service';
 import { OrderNotificationService } from '@core/services/order-notification.service';
 import { CashierSessionService } from '@core/services/cashier-session.service';
+import { CashOperationService, CashOperation, CashOperationTotals } from '@core/services/cash-operation.service';
 import { AudioNotificationControlComponent } from '@shared/components/audio-notification-control/audio-notification-control.component';
 import { ToastService } from '@shared/services/toast.service';
 
@@ -22,6 +23,7 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private orderNotificationService = inject(OrderNotificationService);
   private cashierSessionService = inject(CashierSessionService);
+  private cashOperationService = inject(CashOperationService);
   private toast = inject(ToastService);
   navigationService = inject(NavigationService);
 
@@ -53,11 +55,27 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   closingSession = signal(false);
   closeSessionError = signal('');
 
+  // Cash Operations Modal
+  showCashOperationsModal = signal(false);
+  cashOperationType = signal<'ENTREE' | 'SORTIE'>('SORTIE');
+  cashOperationAmount = signal(0);
+  cashOperationDescription = signal('');
+  cashOperationReference = signal('');
+  cashOperationAuthorizedBy = signal('');
+  savingCashOperation = signal(false);
+  cashOperationError = signal('');
+  cashOperations = signal<CashOperation[]>([]);
+  cashOperationTotals = signal<CashOperationTotals | null>(null);
+  loadingCashOperations = signal(false);
+
   // Computed values for closing
   get expectedAmount(): number {
     const session = this.currentCashierSession();
     if (!session) return 0;
-    return (session.initialAmount || 0) + (session.totalSales || 0);
+    const cashOps = this.cashOperationTotals();
+    const totalEntrees = cashOps?.totalEntrees || session.totalCashEntrees || 0;
+    const totalSorties = cashOps?.totalSorties || session.totalCashSorties || 0;
+    return (session.initialAmount || 0) + (session.totalSales || 0) + totalEntrees - totalSorties;
   }
 
   get discrepancy(): number {
@@ -327,6 +345,8 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     this.closeFinalAmount.set(0);
     this.closeNotes.set('');
     this.closeSessionError.set('');
+    // Load cash operation totals for display in close modal
+    this.loadCashOperationTotals();
   }
 
   confirmCloseSession(): void {
@@ -378,6 +398,120 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     this.closeFinalAmount.set(0);
     this.closeNotes.set('');
     this.closeSessionError.set('');
+  }
+
+  // Cash Operations Methods
+  openCashOperationsModal(): void {
+    const session = this.currentCashierSession();
+    if (!session) {
+      this.toast.error('Aucune session active');
+      return;
+    }
+    this.showCashOperationsModal.set(true);
+    this.resetCashOperationForm();
+    this.loadCashOperations();
+    this.loadCashOperationTotals();
+  }
+
+  closeCashOperationsModal(): void {
+    this.showCashOperationsModal.set(false);
+    this.resetCashOperationForm();
+  }
+
+  resetCashOperationForm(): void {
+    this.cashOperationType.set('SORTIE');
+    this.cashOperationAmount.set(0);
+    this.cashOperationDescription.set('');
+    this.cashOperationReference.set('');
+    this.cashOperationAuthorizedBy.set('');
+    this.cashOperationError.set('');
+  }
+
+  loadCashOperations(): void {
+    const session = this.currentCashierSession();
+    if (!session) return;
+
+    this.loadingCashOperations.set(true);
+    this.cashOperationService.getOperationsBySession(session.publicId).subscribe({
+      next: (operations) => {
+        this.cashOperations.set(operations);
+        this.loadingCashOperations.set(false);
+      },
+      error: () => {
+        this.loadingCashOperations.set(false);
+        this.toast.error('Erreur lors du chargement des opérations');
+      }
+    });
+  }
+
+  loadCashOperationTotals(): void {
+    const session = this.currentCashierSession();
+    if (!session) return;
+
+    this.cashOperationService.getTotalsBySession(session.publicId).subscribe({
+      next: (totals) => {
+        this.cashOperationTotals.set(totals);
+      },
+      error: () => {
+        this.cashOperationTotals.set(null);
+      }
+    });
+  }
+
+  submitCashOperation(): void {
+    const session = this.currentCashierSession();
+    if (!session) {
+      this.cashOperationError.set('Aucune session active');
+      return;
+    }
+
+    const amount = this.cashOperationAmount();
+    const description = this.cashOperationDescription();
+    const authorizedBy = this.cashOperationAuthorizedBy();
+
+    if (amount <= 0) {
+      this.cashOperationError.set('Le montant doit être supérieur à 0');
+      return;
+    }
+
+    if (!description || description.trim() === '') {
+      this.cashOperationError.set('La description est requise');
+      return;
+    }
+
+    if (!authorizedBy || authorizedBy.trim() === '') {
+      this.cashOperationError.set('Le nom de l\'autorisation est requis');
+      return;
+    }
+
+    this.savingCashOperation.set(true);
+    this.cashOperationError.set('');
+
+    const request = {
+      cashierSessionId: session.publicId,
+      type: this.cashOperationType(),
+      amount: amount,
+      description: description.trim(),
+      reference: this.cashOperationReference() || undefined,
+      authorizedBy: authorizedBy.trim()
+    };
+
+    this.cashOperationService.createCashOperation(request).subscribe({
+      next: () => {
+        this.toast.success('Opération enregistrée avec succès');
+        this.savingCashOperation.set(false);
+        this.resetCashOperationForm();
+        this.loadCashOperations();
+        this.loadCashOperationTotals();
+        // Recharger la session pour mettre à jour les totaux
+        this.cashierSessionService.loadCurrentSession();
+      },
+      error: (err) => {
+        this.savingCashOperation.set(false);
+        const errorMsg = err?.error?.message || 'Erreur lors de l\'enregistrement';
+        this.cashOperationError.set(errorMsg);
+      }
+    });
   }
 
   formatCurrency(value: number): string {

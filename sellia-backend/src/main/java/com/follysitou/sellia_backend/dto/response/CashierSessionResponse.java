@@ -23,6 +23,8 @@ public class CashierSessionResponse {
     private LocalDateTime lastActivityAt;
     private Integer inactivityLockMinutes;
     private String notes;
+    private Long totalCashEntrees;    // Total cash in operations
+    private Long totalCashSorties;    // Total cash out operations
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
