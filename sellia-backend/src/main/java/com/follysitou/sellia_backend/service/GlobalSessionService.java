@@ -27,6 +27,7 @@ public class GlobalSessionService {
     private final GlobalSessionRepository globalSessionRepository;
     private final GlobalSessionMapper globalSessionMapper;
     private final com.follysitou.sellia_backend.repository.UserRepository userRepository;
+    private final com.follysitou.sellia_backend.repository.OrderRepository orderRepository;
 
     @Transactional
     public GlobalSessionResponse openSession(GlobalSessionOpenRequest request) {
@@ -68,12 +69,18 @@ public class GlobalSessionService {
 
         User currentUser = getCurrentUser();
 
+        // Calculate final total sales before closing
+        LocalDateTime startDate = session.getOpenedAt();
+        LocalDateTime endDate = LocalDateTime.now();
+        Long totalSales = orderRepository.getTotalRevenue(startDate, endDate);
+
         session.setStatus(GlobalSessionStatus.CLOSED);
-        session.setClosedAt(LocalDateTime.now());
+        session.setClosedAt(endDate);
         session.setClosedBy(currentUser);
         session.setFinalAmount(request.getFinalAmount());
         session.setReconciliationNotes(request.getReconciliationNotes());
         session.setReconciliationAmount(request.getReconciliationAmount());
+        session.setTotalSales(totalSales != null ? totalSales : 0L);
 
         GlobalSession updatedSession = globalSessionRepository.save(session);
         return globalSessionMapper.toResponse(updatedSession);
@@ -82,18 +89,39 @@ public class GlobalSessionService {
     public GlobalSessionResponse getCurrentSession() {
         GlobalSession session = globalSessionRepository.findCurrentSession(GlobalSessionStatus.OPEN)
                 .orElseThrow(() -> new ResourceNotFoundException("GlobalSession", "status", "OPEN"));
+
+        // Calculate total sales dynamically for the current session
+        LocalDateTime startDate = session.getOpenedAt();
+        LocalDateTime endDate = session.getClosedAt() != null ? session.getClosedAt() : LocalDateTime.now();
+        Long totalSales = orderRepository.getTotalRevenue(startDate, endDate);
+        session.setTotalSales(totalSales != null ? totalSales : 0L);
+
         return globalSessionMapper.toResponse(session);
     }
 
     public GlobalSessionResponse getSessionById(String publicId) {
         GlobalSession session = globalSessionRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("GlobalSession", "publicId", publicId));
+
+        // Calculate total sales dynamically
+        LocalDateTime startDate = session.getOpenedAt();
+        LocalDateTime endDate = session.getClosedAt() != null ? session.getClosedAt() : LocalDateTime.now();
+        Long totalSales = orderRepository.getTotalRevenue(startDate, endDate);
+        session.setTotalSales(totalSales != null ? totalSales : 0L);
+
         return globalSessionMapper.toResponse(session);
     }
 
     public Page<GlobalSessionResponse> getAllSessions(Pageable pageable) {
         Page<GlobalSession> sessions = globalSessionRepository.findAllActive(pageable);
-        return sessions.map(globalSessionMapper::toResponse);
+        return sessions.map(session -> {
+            // Calculate total sales dynamically for each session
+            LocalDateTime startDate = session.getOpenedAt();
+            LocalDateTime endDate = session.getClosedAt() != null ? session.getClosedAt() : LocalDateTime.now();
+            Long totalSales = orderRepository.getTotalRevenue(startDate, endDate);
+            session.setTotalSales(totalSales != null ? totalSales : 0L);
+            return globalSessionMapper.toResponse(session);
+        });
     }
 
     public boolean isGlobalSessionOpen() {

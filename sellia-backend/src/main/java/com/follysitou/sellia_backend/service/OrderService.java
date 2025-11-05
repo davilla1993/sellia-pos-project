@@ -273,6 +273,11 @@ public class OrderService {
         return PagedResponse.of(orders.map(orderMapper::toResponse));
     }
 
+    public PagedResponse<OrderResponse> getOrdersByPaidDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByPaidDateRange(startDate, endDate, pageable);
+        return PagedResponse.of(orders.map(orderMapper::toResponse));
+    }
+
     public OrderResponse updateOrder(String publicId, OrderUpdateRequest request) {
         Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));

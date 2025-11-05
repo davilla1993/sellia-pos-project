@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CashierSessionService } from '@core/services/cashier-session.service';
 import { ApiService } from '@core/services/api.service';
@@ -9,7 +9,7 @@ import { GlobalSessionService } from '@core/services/global-session.service';
 @Component({
   selector: 'app-cashier-pin',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './cashier-pin.component.html',
   styleUrls: ['./cashier-pin.component.css']
 })
@@ -21,6 +21,11 @@ export class CashierPinComponent implements OnInit {
   error = signal('');
   sessionOpened = signal(false);
   existingSession = signal<any>(null);
+
+  // Two-step process: PIN then Initial Amount
+  step = signal(1); // 1: PIN, 2: Initial Amount
+  validatedPin = signal('');
+  initialAmount = signal(0);
 
   constructor(
     private fb: FormBuilder,
@@ -80,21 +85,18 @@ export class CashierPinComponent implements OnInit {
   private checkExistingSession(): void {
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
-        console.log('Session existante trouvée:', session);
         this.existingSession.set(session);
         // Si une session est déjà ouverte, rediriger directement
         if (session.status === 'OPEN') {
-          console.log('Session déjà OPEN, redirection vers POS');
           this.sessionOpened.set(true);
           setTimeout(() => {
             this.router.navigate(['/pos/order-entry']);
           }, 500);
         } else if (session.status === 'LOCKED') {
-          console.log('Session LOCKED détectée, affichage écran de déverrouillage');
+          // Session verrouillée
         }
       },
       error: (err) => {
-        console.log('Aucune session existante (normal):', err.status);
         // Pas de session existante, c'est normal
         this.existingSession.set(null);
       }
@@ -111,21 +113,16 @@ export class CashierPinComponent implements OnInit {
     const cashierId = this.myCashier().publicId;
 
     // IMPORTANT: Re-vérifier s'il existe une session AVANT d'essayer d'ouvrir
-    console.log('Vérification session existante avant soumission...');
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
-        console.log('Session trouvée:', session);
         // Une session existe
         if (session.status === 'OPEN') {
-          console.log('Session déjà OPEN, redirection');
           this.sessionOpened.set(true);
           this.isLoading.set(false);
           this.router.navigate(['/pos/order-entry']);
         } else if (session.status === 'LOCKED') {
-          console.log('Session LOCKED, déverrouillage...');
           this.cashierSessionService.unlockSession(session.publicId, pin).subscribe({
             next: (unlockedSession) => {
-              console.log('Session déverrouillée avec succès');
               this.sessionOpened.set(true);
               this.isLoading.set(false);
               setTimeout(() => {
@@ -133,7 +130,6 @@ export class CashierPinComponent implements OnInit {
               }, 1000);
             },
             error: (err) => {
-              console.error('Erreur déverrouillage:', err);
               this.isLoading.set(false);
               const errorMsg = err.error?.message || 'Code PIN incorrect';
               this.error.set(errorMsg);
@@ -143,27 +139,62 @@ export class CashierPinComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.log('Pas de session existante (normal), ouverture nouvelle session');
-        // Pas de session existante, ouvrir une nouvelle
-        this.cashierSessionService.openSession(cashierId, pin).subscribe({
-          next: (session) => {
-            console.log('Session ouverte avec succès');
-            this.sessionOpened.set(true);
+        // Pas de session existante, passer à l'étape 2 pour demander le montant initial
+        this.validatedPin.set(pin);
+
+        // Charger le montant de fermeture de la session précédente
+        this.apiService.getLastClosedSessionFinalAmount(cashierId).subscribe({
+          next: (finalAmount) => {
+            // Pré-remplir avec le solde de fermeture de la session précédente
+            this.initialAmount.set(finalAmount || 0);
+            this.step.set(2);
             this.isLoading.set(false);
-            setTimeout(() => {
-              this.router.navigate(['/pos/order-entry']);
-            }, 1000);
           },
-          error: (err) => {
-            console.error('Erreur ouverture session:', err);
+          error: () => {
+            // En cas d'erreur, utiliser 0 comme montant par défaut
+            this.initialAmount.set(0);
+            this.step.set(2);
             this.isLoading.set(false);
-            const errorMsg = err.error?.message || 'Code PIN incorrect';
-            this.error.set(errorMsg);
-            this.pinForm.reset();
           }
         });
       }
     });
+  }
+
+  confirmOpenSession(): void {
+    if (this.initialAmount() < 0) {
+      this.error.set('Le montant initial ne peut pas être négatif');
+      return;
+    }
+
+    const cashierId = this.myCashier().publicId;
+    const pin = this.validatedPin();
+    const amount = this.initialAmount();
+
+    this.isLoading.set(true);
+    this.error.set('');
+
+    this.cashierSessionService.openSession(cashierId, pin, amount).subscribe({
+      next: (session) => {
+        this.sessionOpened.set(true);
+        this.isLoading.set(false);
+        setTimeout(() => {
+          this.router.navigate(['/pos/order-entry']);
+        }, 1000);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const errorMsg = err.error?.message || 'Erreur lors de l\'ouverture de la session';
+        this.error.set(errorMsg);
+      }
+    });
+  }
+
+  backToPin(): void {
+    this.step.set(1);
+    this.validatedPin.set('');
+    this.initialAmount.set(0);
+    this.error.set('');
   }
 
   getFieldError(fieldName: string): boolean {

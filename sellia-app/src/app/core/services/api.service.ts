@@ -336,6 +336,18 @@ export class ApiService {
     );
   }
 
+  getOrdersByDateRange(startDate: string, endDate: string, page: number = 0, size: number = 1000): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/orders/range`, {
+      params: { startDate, endDate, page: page.toString(), size: size.toString() }
+    });
+  }
+
+  getOrdersByPaidDateRange(startDate: string, endDate: string, page: number = 0, size: number = 1000): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/orders/paid-range`, {
+      params: { startDate, endDate, page: page.toString(), size: size.toString() }
+    });
+  }
+
   // Customer Sessions
   createCustomerSession(request: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/customer-sessions`, request);
@@ -498,6 +510,10 @@ export class ApiService {
 
   updateCashierSessionActivity(sessionId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/cashier-sessions/${sessionId}/activity`, {});
+  }
+
+  getLastClosedSessionFinalAmount(cashierId: string): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/cashier-sessions/cashier/${cashierId}/last-closed-final-amount`);
   }
 
   // Reports

@@ -94,6 +94,17 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/paid-range")
+    public ResponseEntity<PagedResponse<OrderResponse>> getOrdersByPaidDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        PagedResponse<OrderResponse> response = orderService.getOrdersByPaidDateRange(startDate, endDate, pageable);
+        return ResponseEntity.ok(response);
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
     @PutMapping("/{publicId}")
     public ResponseEntity<OrderResponse> updateOrder(

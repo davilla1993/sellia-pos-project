@@ -6,28 +6,11 @@
           <h1 class="text-3xl font-bold text-white mb-2">📋 Gestion des Tables</h1>
           <p class="text-neutral-400">Créez, modifiez et gérez vos tables de restaurant</p>
         </div>
-        <div class="flex gap-2">
-          <button 
-            (click)="openCreateModal()"
-            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
-            ➕ Nouvelle Table
-          </button>
-          <button 
-            (click)="exportCSV()"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">
-            📥 Export CSV
-          </button>
-          <label class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors cursor-pointer">
-            📤 Import CSV
-            <input type="file" accept=".csv" (change)="importCSV($event)" hidden>
-          </label>
-          <button 
-            (click)="bulkGenerateQrCodes()"
-            [disabled]="tables().length === 0 || isGeneratingBulk()"
-            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
-            🎯 Générer QR (tous)
-          </button>
-        </div>
+        <button
+          (click)="openCreateModal()"
+          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors">
+          ➕ Nouvelle Table
+        </button>
       </div>
 
       <!-- Stats -->

@@ -104,13 +104,40 @@
 
         <!-- Footer -->
         <div class="p-4 border-t border-neutral-700 space-y-2">
-          <button 
+          <!-- Open Session Button (if no session) -->
+          <button
+            *ngIf="!hasCashierSession()"
+            (click)="openOpenSessionModal()"
+            class="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors text-sm">
+            🔓 Ouvrir Session
+          </button>
+
+          <!-- Lock Session Button (if session active and not locked) -->
+          <button
+            *ngIf="hasCashierSession() && !isLocked()"
+            (click)="lockSession()"
+            class="w-full py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition-colors text-sm">
+            🔒 Verrouiller
+          </button>
+
+          <!-- Close Session Button (if session active and not locked) -->
+          <button
+            *ngIf="hasCashierSession() && !isLocked()"
+            (click)="openCloseSessionModal()"
+            class="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors text-sm">
+            🚪 Fermer Session
+          </button>
+
+          <!-- Dashboard Button (Admin only) -->
+          <button
             *ngIf="navigationService.isAdmin()"
-            (click)="goToDashboard()" 
-            class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm mb-2">
+            (click)="goToDashboard()"
+            class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm">
             📊 Dashboard
           </button>
-          <button (click)="logout()" 
+
+          <!-- Logout Button -->
+          <button (click)="logout()"
             class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors text-sm">
             🚪 Déconnexion
           </button>
@@ -121,5 +148,307 @@
       <div class="flex-1 overflow-hidden h-full">
         <router-outlet></router-outlet>
       </div>
+
+      <!-- Lock Screen Overlay -->
+      <div *ngIf="isLocked()" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
+        <div class="bg-neutral-800 rounded-2xl p-12 border-2 border-yellow-500/50 shadow-2xl max-w-md w-full mx-4">
+          <!-- Lock Icon -->
+          <div class="text-center mb-8">
+            <div class="text-8xl mb-4 animate-pulse">🔒</div>
+            <h2 class="text-3xl font-bold text-white mb-2">Session Verrouillée</h2>
+            <p class="text-neutral-400">Entrez votre code PIN pour déverrouiller</p>
+          </div>
+
+          <!-- Cashier Info -->
+          <div class="bg-neutral-700/50 rounded-lg p-4 mb-6 text-center">
+            <p class="text-sm text-neutral-400 mb-1">Caisse</p>
+            <p class="text-xl font-bold text-yellow-400">{{ getCashierInfo() }}</p>
+          </div>
+
+          <!-- PIN Input -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Code PIN</label>
+              <input
+                type="password"
+                [ngModel]="unlockPin()"
+                (ngModelChange)="unlockPin.set($event)"
+                (keypress)="onPinKeyPress($event)"
+                maxlength="4"
+                placeholder="••••"
+                class="w-full px-6 py-4 bg-neutral-700 border-2 border-neutral-600 rounded-lg text-white text-center text-2xl tracking-widest focus:outline-none focus:border-yellow-500 transition-colors"
+                [disabled]="unlocking()"
+                autofocus>
+            </div>
+
+            <button
+              (click)="unlockSession()"
+              [disabled]="unlocking() || unlockPin().length !== 4"
+              class="w-full py-4 bg-yellow-600 hover:bg-yellow-700 disabled:bg-neutral-600 disabled:cursor-not-allowed text-white rounded-lg font-bold text-lg transition-colors flex items-center justify-center gap-2">
+              <span *ngIf="!unlocking()">🔓 Déverrouiller</span>
+              <span *ngIf="unlocking()">
+                <span class="inline-block animate-spin">⏳</span> Déverrouillage...
+              </span>
+            </button>
+          </div>
+
+          <!-- Hint -->
+          <div class="mt-6 text-center text-xs text-neutral-500">
+            <p>Utilisez le même code PIN que pour ouvrir la session</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Open Session Modal -->
+      <div *ngIf="showOpenSessionModal()" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-neutral-800 rounded-xl border border-neutral-700 max-w-md w-full shadow-2xl">
+          <!-- Modal Header -->
+          <div class="px-6 py-4 border-b border-neutral-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">
+              <span *ngIf="openSessionStep() === 1">Ouvrir une Session</span>
+              <span *ngIf="openSessionStep() === 2">Solde Initial</span>
+            </h2>
+            <button (click)="closeOpenSessionModal()" class="text-neutral-400 hover:text-white text-2xl">✕</button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="px-6 py-6">
+            <!-- Step 1: Select Cashier (if multiple) + Enter PIN -->
+            <div *ngIf="openSessionStep() === 1" class="space-y-4">
+              <!-- Loading -->
+              <div *ngIf="loadingCashiers()" class="text-center py-8">
+                <div class="inline-block animate-spin text-4xl mb-2">⏳</div>
+                <p class="text-neutral-400">Chargement...</p>
+              </div>
+
+              <!-- Cashier Selection (if multiple cashiers) -->
+              <div *ngIf="!loadingCashiers() && myCashiers().length > 1 && !selectedCashier()" class="space-y-3">
+                <p class="text-neutral-400 text-sm mb-3">Sélectionnez votre caisse :</p>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                  <button
+                    *ngFor="let cashier of myCashiers()"
+                    (click)="selectCashier(cashier)"
+                    [class.border-primary]="selectedCashier()?.publicId === cashier.publicId"
+                    [class.bg-primary/20]="selectedCashier()?.publicId === cashier.publicId"
+                    class="w-full p-3 bg-neutral-700 hover:bg-primary/20 border border-neutral-600 hover:border-primary rounded-lg text-left transition-colors">
+                    <div class="flex items-center gap-3">
+                      <span class="text-2xl">🏪</span>
+                      <div>
+                        <p class="font-semibold text-white">{{ cashier.name }}</p>
+                        <p class="text-xs text-neutral-400">Caisse #{{ cashier.cashierNumber }}</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Selected Cashier + PIN -->
+              <div *ngIf="!loadingCashiers() && selectedCashier()" class="space-y-4">
+                <!-- Cashier Info -->
+                <div class="bg-neutral-700/50 rounded-lg p-4">
+                  <p class="text-xs text-neutral-400 mb-1">Caisse sélectionnée</p>
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">🏪</span>
+                    <div>
+                      <p class="text-lg font-bold text-white">{{ selectedCashier()?.name }}</p>
+                      <p class="text-xs text-neutral-400">Caisse #{{ selectedCashier()?.cashierNumber }}</p>
+                    </div>
+                  </div>
+                  <!-- Change button if multiple cashiers -->
+                  <button
+                    *ngIf="myCashiers().length > 1"
+                    (click)="selectedCashier.set(null)"
+                    class="mt-2 text-xs text-primary hover:underline">
+                    Changer de caisse
+                  </button>
+                </div>
+
+                <!-- PIN Input -->
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-300 mb-2">
+                    Code PIN <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    [ngModel]="openSessionPin()"
+                    (ngModelChange)="openSessionPin.set($event)"
+                    (keypress)="$event.key === 'Enter' && submitOpenSessionPin()"
+                    maxlength="4"
+                    placeholder="••••"
+                    class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white text-center text-xl tracking-widest focus:outline-none focus:border-primary"
+                    autofocus>
+                  <p class="text-xs text-neutral-400 mt-2">Entrez votre code PIN à 4 chiffres</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Enter Initial Amount -->
+            <div *ngIf="openSessionStep() === 2" class="space-y-4">
+              <div class="bg-neutral-700/50 rounded-lg p-4 mb-4">
+                <p class="text-xs text-neutral-400 mb-1">Caisse</p>
+                <p class="text-lg font-bold text-white">{{ selectedCashier()?.name }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">
+                  Solde actuel de la caisse (FCFA) <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  [ngModel]="initialAmount()"
+                  (ngModelChange)="initialAmount.set($event)"
+                  (keypress)="$event.key === 'Enter' && confirmOpenSession()"
+                  min="0"
+                  placeholder="0"
+                  class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white text-right text-xl focus:outline-none focus:border-primary"
+                  autofocus>
+                <p class="text-xs text-neutral-400 mt-2">Comptez l'argent en caisse et entrez le montant total</p>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="openSessionError()" class="mt-4 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-400 text-sm">
+              {{ openSessionError() }}
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-6 py-4 border-t border-neutral-700 flex gap-2">
+            <button
+              *ngIf="openSessionStep() === 2"
+              (click)="backOpenSessionStep()"
+              class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+              ← Retour
+            </button>
+            <button
+              (click)="closeOpenSessionModal()"
+              class="flex-1 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+              Annuler
+            </button>
+            <button
+              *ngIf="openSessionStep() === 1"
+              (click)="submitOpenSessionPin()"
+              [disabled]="!selectedCashier() || openSessionPin().length !== 4"
+              class="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-neutral-600 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors">
+              Suivant →
+            </button>
+            <button
+              *ngIf="openSessionStep() === 2"
+              (click)="confirmOpenSession()"
+              [disabled]="openingSession() || initialAmount() < 0"
+              class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-neutral-600 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors">
+              <span *ngIf="!openingSession()">✓ Ouvrir Session</span>
+              <span *ngIf="openingSession()">⏳ Ouverture...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Close Session Modal -->
+      <div *ngIf="showCloseSessionModal()" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-neutral-800 rounded-xl border border-neutral-700 max-w-md w-full shadow-2xl">
+          <!-- Modal Header -->
+          <div class="px-6 py-4 border-b border-neutral-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Fermer la Session</h2>
+            <button (click)="closeCloseSessionModal()" class="text-neutral-400 hover:text-white text-2xl">✕</button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="px-6 py-6 space-y-4">
+            <!-- Cashier Info -->
+            <div class="bg-neutral-700/50 rounded-lg p-4">
+              <p class="text-xs text-neutral-400 mb-1">Caisse</p>
+              <p class="text-lg font-bold text-white">{{ getCashierInfo() }}</p>
+            </div>
+
+            <!-- Initial Amount (Read-only) -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Montant à l'ouverture</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white text-right text-xl">
+                {{ formatCurrency(currentCashierSession()?.initialAmount || 0) }}
+              </div>
+            </div>
+
+            <!-- Total Sales (Read-only) -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Total ventes de la journée</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-green-400 text-right text-xl font-bold">
+                {{ formatCurrency(currentCashierSession()?.totalSales || 0) }}
+              </div>
+            </div>
+
+            <!-- Real Amount in Cash (User input) -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">
+                Montant réel en caisse (FCFA) <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                [ngModel]="closeFinalAmount()"
+                (ngModelChange)="closeFinalAmount.set($event)"
+                min="0"
+                placeholder="0"
+                class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white text-right text-xl focus:outline-none focus:border-primary"
+                autofocus>
+              <p class="text-xs text-neutral-400 mt-2">Comptez l'argent en caisse et entrez le montant total</p>
+            </div>
+
+            <!-- Discrepancy (Auto-calculated) -->
+            <div *ngIf="closeFinalAmount() > 0">
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">Écart</label>
+              <div
+                class="px-4 py-3 border rounded-lg text-right text-xl font-bold"
+                [class.bg-green-900/30]="discrepancy === 0"
+                [class.border-green-700]="discrepancy === 0"
+                [class.text-green-400]="discrepancy === 0"
+                [class.bg-red-900/30]="discrepancy < 0"
+                [class.border-red-700]="discrepancy < 0"
+                [class.text-red-400]="discrepancy < 0"
+                [class.bg-orange-900/30]="discrepancy > 0"
+                [class.border-orange-700]="discrepancy > 0"
+                [class.text-orange-400]="discrepancy > 0">
+                {{ discrepancyFormatted }}
+              </div>
+              <p class="text-xs text-neutral-400 mt-2">
+                <span *ngIf="discrepancy === 0">✓ Parfait, aucun écart</span>
+                <span *ngIf="discrepancy > 0">⚠️ Surplus de {{ formatCurrency(discrepancy) }}</span>
+                <span *ngIf="discrepancy < 0">⚠️ Manque de {{ formatCurrency(Math.abs(discrepancy)) }}</span>
+              </p>
+            </div>
+
+            <!-- Notes (Required) -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-300 mb-2">
+                Notes <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                [ngModel]="closeNotes()"
+                (ngModelChange)="closeNotes.set($event)"
+                rows="3"
+                placeholder="Observations, incidents, remarques..."
+                class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none focus:border-primary resize-none"></textarea>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="closeSessionError()" class="p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-400 text-sm">
+              {{ closeSessionError() }}
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-6 py-4 border-t border-neutral-700 flex gap-2">
+            <button
+              (click)="closeCloseSessionModal()"
+              class="flex-1 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+              Annuler
+            </button>
+            <button
+              (click)="confirmCloseSession()"
+              [disabled]="closingSession() || closeFinalAmount() < 0 || !closeNotes() || closeNotes().trim() === ''"
+              class="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-neutral-600 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors">
+              <span *ngIf="!closingSession()">🚪 Fermer Session</span>
+              <span *ngIf="closingSession()">⏳ Fermeture...</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  

@@ -40,10 +40,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate ORDER BY o.createdAt DESC")
     Page<Order> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
+    @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate ORDER BY o.paidAt DESC")
+    Page<Order> findByPaidDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
+
     @Query("SELECT DISTINCT o FROM Order o " +
            "LEFT JOIN FETCH o.items i " +
            "LEFT JOIN FETCH i.product " +
-           "WHERE o.deleted = false AND o.isPaid = false AND (o.status != 'LIVREE' AND o.status != 'ANNULEE') " +
+           "WHERE o.deleted = false AND o.isPaid = false AND o.status != 'ANNULEE' " +
            "ORDER BY o.createdAt")
     List<Order> findUnpaidPendingOrders();
 

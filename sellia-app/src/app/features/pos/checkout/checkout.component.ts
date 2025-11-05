@@ -32,7 +32,7 @@ export class CheckoutComponent implements OnInit {
   activeTables = signal(0);
   inactiveTables = signal(0);
   currentTablePage = signal(1);
-  tablesPerPage = 20;
+  tablesPerPage = 12;
 
   // Session & Orders
   selectedSession = signal<any | null>(null);
@@ -43,6 +43,11 @@ export class CheckoutComponent implements OnInit {
   takeawayOrders = signal<any[]>([]);
   isLoadingTakeaway = signal(false);
   selectedTakeawayOrder = signal<any | null>(null);
+  currentTakeawayPage = signal(1);
+  takeawayPerPage = 10;
+
+  // Tabs
+  activeTab = signal<'tables' | 'takeaway'>('tables');
 
   // Payment
   amountPaidInput = signal('');
@@ -144,10 +149,8 @@ export class CheckoutComponent implements OnInit {
     this.isLoadingTakeaway.set(true);
     this.apiService.getUnpaidPendingOrders().subscribe({
       next: (orders) => {
-        console.log('All unpaid orders:', orders);
         // Filter only TAKEAWAY orders
         const takeawayOrders = orders.filter((o: any) => o.orderType === 'TAKEAWAY');
-        console.log('Filtered TAKEAWAY orders:', takeawayOrders);
         this.takeawayOrders.set(takeawayOrders);
         this.isLoadingTakeaway.set(false);
       },
@@ -485,6 +488,44 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  // Takeaway Pagination
+  paginatedTakeawayOrders() {
+    const start = (this.currentTakeawayPage() - 1) * this.takeawayPerPage;
+    return this.takeawayOrders().slice(start, start + this.takeawayPerPage);
+  }
 
+  totalTakeawayPages() {
+    return Math.ceil(this.takeawayOrders().length / this.takeawayPerPage);
+  }
+
+  getTakeawayPageNumbers(): number[] {
+    const pages = [];
+    const max = this.totalTakeawayPages();
+    for (let i = 1; i <= max && i <= 5; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  previousTakeawayPage(): void {
+    if (this.currentTakeawayPage() > 1) {
+      this.currentTakeawayPage.set(this.currentTakeawayPage() - 1);
+    }
+  }
+
+  nextTakeawayPage(): void {
+    if (this.currentTakeawayPage() < this.totalTakeawayPages()) {
+      this.currentTakeawayPage.set(this.currentTakeawayPage() + 1);
+    }
+  }
+
+  goToTakeawayPage(page: number): void {
+    this.currentTakeawayPage.set(page);
+  }
+
+  // Tabs
+  selectTab(tab: 'tables' | 'takeaway'): void {
+    this.activeTab.set(tab);
+  }
 }
 

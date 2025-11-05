@@ -54,7 +54,6 @@ export class OrderEntryComponent implements OnInit {
   loadTables(): void {
     this.apiService.getAvailableTables().subscribe({
       next: (tables) => {
-        console.log('Tables chargées:', tables);
         const tableList = Array.isArray(tables) ? tables : [];
         this.availableTables.set(tableList);
         if (tableList.length === 0) {
@@ -155,7 +154,6 @@ export class OrderEntryComponent implements OnInit {
   loadCategories(): void {
     this.apiService.getCategories().subscribe({
       next: (categories) => {
-        console.log('Catégories chargées:', categories);
         const categoryList = Array.isArray(categories) ? categories : [];
         this.categories.set(categoryList);
       },

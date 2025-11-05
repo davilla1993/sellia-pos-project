@@ -18,6 +18,7 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
   currencyService = inject(CurrencyService);
 
   allOrders = signal<any[]>([]);
+  paidOrdersToday = signal<any[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
   filter = signal<string>('ALL');
@@ -36,8 +37,10 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadOrders();
+    this.loadPaidOrdersToday();
     this.refreshSubscription = interval(20000).subscribe(() => {
       this.loadOrders();
+      this.loadPaidOrdersToday();
     });
   }
 
@@ -126,6 +129,30 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
     return this.filteredOrders().reduce((sum, o) => sum + (o.totalAmount || 0), 0);
   }
 
+  loadPaidOrdersToday(): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = today.toISOString();
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const endDate = tomorrow.toISOString();
+
+    this.apiService.getOrdersByPaidDateRange(startDate, endDate).subscribe({
+      next: (response: any) => {
+        const orders = response.content || response.data || response || [];
+        this.paidOrdersToday.set(Array.isArray(orders) ? orders : []);
+      },
+      error: (err) => {
+        this.error.set('Erreur lors du chargement des commandes payées');
+      }
+    });
+  }
+
+  paidAmount(): number {
+    return this.paidOrdersToday().reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  }
+
   openOrderDetails(order: any): void {
     this.selectedOrder.set(order);
     this.showModal.set(true);
@@ -143,6 +170,7 @@ export class ActiveOrdersComponent implements OnInit, OnDestroy {
 
   refreshOrders(): void {
     this.loadOrders();
+    this.loadPaidOrdersToday();
     this.toast.success('Commandes rafraîchies');
   }
 

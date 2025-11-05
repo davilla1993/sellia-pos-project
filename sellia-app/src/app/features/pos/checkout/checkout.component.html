@@ -1,8 +1,31 @@
+<div class="flex flex-col h-full gap-6 px-8 pb-8 bg-neutral-900 overflow-y-auto" style="padding-right: 28rem; padding-top: 5rem;">
+  <!-- Tabs Navigation -->
+  <div class="flex gap-4 border-b border-neutral-700 pb-0">
+    <button
+      (click)="selectTab('tables')"
+      [class.border-primary]="activeTab() === 'tables'"
+      [class.text-white]="activeTab() === 'tables'"
+      [class.border-transparent]="activeTab() !== 'tables'"
+      [class.text-neutral-400]="activeTab() !== 'tables'"
+      class="px-6 py-3 font-bold text-lg border-b-2 transition-all hover:text-white">
+      🪑 Commandes QR Code
+      <span *ngIf="activeTables() > 0" class="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">{{ activeTables() }}</span>
+    </button>
+    <button
+      (click)="selectTab('takeaway')"
+      [class.border-primary]="activeTab() === 'takeaway'"
+      [class.text-white]="activeTab() === 'takeaway'"
+      [class.border-transparent]="activeTab() !== 'takeaway'"
+      [class.text-neutral-400]="activeTab() !== 'takeaway'"
+      class="px-6 py-3 font-bold text-lg border-b-2 transition-all hover:text-white">
+      🛍️ Commandes à Emporter
+      <span *ngIf="takeawayOrders().length > 0" class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">{{ takeawayOrders().length }}</span>
+    </button>
+  </div>
 
-    <div class="flex flex-col h-full gap-6 px-8 pb-8 pr-96 bg-neutral-900 overflow-hidden">
-      <!-- TOP: Table Selection - FULL WIDTH -->
-      <div class="flex-1 flex flex-col gap-4 overflow-hidden">
-        <div>
+  <!-- Tab Content: Tables -->
+  <div *ngIf="activeTab() === 'tables'" class="flex flex-col gap-4">
+    <div>
           <h2 class="text-2xl font-bold text-white mb-3">🪑 Sélectionner une Table</h2>
           <div class="flex gap-6 text-sm">
             <div class="flex items-center gap-2">
@@ -18,51 +41,49 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Search -->
         <div class="relative">
-          <input [(ngModel)]="searchTable" type="text" placeholder="🔍 Rechercher table..." 
+          <input [(ngModel)]="searchTable" type="text" placeholder="🔍 Rechercher table..."
             class="w-full input-field bg-neutral-800 border-neutral-700 text-white placeholder-neutral-500 py-3">
         </div>
 
         <!-- Tables Grid - FULL WIDTH HORIZONTAL -->
-        <div class="flex-1 flex flex-col gap-4 overflow-hidden">
-          <div *ngIf="isLoadingTables()" class="flex justify-center items-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
+        <div *ngIf="isLoadingTables()" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
 
-          <div *ngIf="!isLoadingTables()" class="flex-1 overflow-hidden">
-            <div class="grid gap-4" [ngStyle]="{'gridTemplateColumns': 'repeat(auto-fit, minmax(140px, 1fr))'}">
-              <div *ngFor="let table of paginatedTables()"
-                [class.ring-3]="selectedTableId() === table.publicId"
-                [class.ring-primary]="selectedTableId() === table.publicId"
-                [class.bg-red-900]="tablesWithSessions().has(table.publicId)"
-                [class.bg-green-900]="!tablesWithSessions().has(table.publicId)"
-                [class.border-red-600]="tablesWithSessions().has(table.publicId)"
-                [class.border-green-600]="!tablesWithSessions().has(table.publicId)"
-                class="p-4 bg-neutral-800 border-2 border-neutral-700 rounded-lg transition-all relative">
-                <button (click)="selectTable(table)" class="w-full text-left">
-                  <div class="flex items-center gap-2 mb-2">
-                    <div [class.bg-red-500]="tablesWithSessions().has(table.publicId)" [class.bg-green-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
-                    <p class="font-bold text-white text-lg">{{ table.number }}</p>
-                    <span *ngIf="table.isVip" class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded font-bold ml-auto">VIP</span>
-                  </div>
-                  <p class="text-sm text-neutral-400 mb-2">{{ table.name }}</p>
-                  <p class="text-xs font-semibold" [class.text-red-400]="tablesWithSessions().has(table.publicId)" [class.text-green-400]="!tablesWithSessions().has(table.publicId)">
-                    {{ tablesWithSessions().has(table.publicId) ? '✓ Occupée' : '○ Libre' }}
-                  </p>
-                </button>
-              </div>
+        <div *ngIf="!isLoadingTables()">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div *ngFor="let table of paginatedTables()"
+              [class.ring-3]="selectedTableId() === table.publicId"
+              [class.ring-primary]="selectedTableId() === table.publicId"
+              [class.bg-red-900]="tablesWithSessions().has(table.publicId)"
+              [class.bg-green-900]="!tablesWithSessions().has(table.publicId)"
+              [class.border-red-600]="tablesWithSessions().has(table.publicId)"
+              [class.border-green-600]="!tablesWithSessions().has(table.publicId)"
+              class="p-4 bg-neutral-800 border-2 border-neutral-700 rounded-lg transition-all relative">
+              <button (click)="selectTable(table)" class="w-full text-left">
+                <div class="flex items-center gap-2 mb-2">
+                  <div [class.bg-red-500]="tablesWithSessions().has(table.publicId)" [class.bg-green-500]="!tablesWithSessions().has(table.publicId)" class="w-2 h-2 rounded-full"></div>
+                  <p class="font-bold text-white text-lg">{{ table.number }}</p>
+                  <span *ngIf="table.isVip" class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded font-bold ml-auto">VIP</span>
+                </div>
+                <p class="text-sm text-neutral-400 mb-2">{{ table.name }}</p>
+                <p class="text-xs font-semibold" [class.text-red-400]="tablesWithSessions().has(table.publicId)" [class.text-green-400]="!tablesWithSessions().has(table.publicId)">
+                  {{ tablesWithSessions().has(table.publicId) ? '✓ Occupée' : '○ Libre' }}
+                </p>
+              </button>
             </div>
           </div>
 
           <!-- Pagination -->
-          <div *ngIf="!isLoadingTables() && filteredTables().length > 0" class="flex justify-center items-center gap-3 pt-4 border-t border-neutral-700">
+          <div *ngIf="filteredTables().length > 0" class="flex justify-center items-center gap-3 pt-6 mt-8 border-t border-neutral-700">
             <button (click)="previousTablePage()" [disabled]="currentTablePage() === 1" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 rounded-lg font-semibold">
               ← Précédent
             </button>
             <div class="flex gap-2">
-              <button *ngFor="let page of getTablePageNumbers()" 
+              <button *ngFor="let page of getTablePageNumbers()"
                 (click)="goToTablePage(page)"
                 [class.bg-primary]="currentTablePage() === page"
                 [class.bg-neutral-700]="currentTablePage() !== page"
@@ -78,21 +99,34 @@
             <span class="text-neutral-400 text-sm ml-4 font-semibold">{{ currentTablePage() }} / {{ totalTablePages() }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Takeaway Orders Section -->
-        <div class="mt-6">
+      <!-- Tab Content: Takeaway Orders -->
+      <div *ngIf="activeTab() === 'takeaway'" class="flex flex-col gap-4">
+        <div>
           <h2 class="text-2xl font-bold text-white mb-3">🛍️ Commandes à Emporter</h2>
-
-          <div *ngIf="isLoadingTakeaway()" class="flex justify-center items-center py-8">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length > 0" class="flex gap-6 text-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span class="text-blue-400 font-semibold">{{ takeawayOrders().length }} commande{{ takeawayOrders().length > 1 ? 's' : '' }} en attente</span>
+            </div>
+            <div class="ml-auto text-neutral-400">
+              {{ paginatedTakeawayOrders().length }} commande{{ paginatedTakeawayOrders().length > 1 ? 's' : '' }} affichée{{ paginatedTakeawayOrders().length > 1 ? 's' : '' }}
+            </div>
           </div>
+        </div>
 
-          <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length === 0" class="text-center py-8">
-            <p class="text-neutral-400">Aucune commande à emporter en attente</p>
-          </div>
+        <div *ngIf="isLoadingTakeaway()" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
 
-          <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div *ngFor="let order of takeawayOrders()"
+        <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length === 0" class="text-center py-12">
+          <p class="text-neutral-400 text-lg">Aucune commande à emporter en attente</p>
+        </div>
+
+        <div *ngIf="!isLoadingTakeaway() && takeawayOrders().length > 0">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div *ngFor="let order of paginatedTakeawayOrders()"
               [class.ring-3]="selectedTakeawayOrder() === order"
               [class.ring-primary]="selectedTakeawayOrder() === order"
               (click)="selectTakeawayOrder(order)"
@@ -117,11 +151,33 @@
               </div>
             </div>
           </div>
+
+          <!-- Takeaway Pagination -->
+          <div class="flex justify-center items-center gap-3 pt-6 mt-8 border-t border-neutral-700">
+            <button (click)="previousTakeawayPage()" [disabled]="currentTakeawayPage() === 1" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 rounded-lg font-semibold">
+              ← Précédent
+            </button>
+            <div class="flex gap-2">
+              <button *ngFor="let page of getTakeawayPageNumbers()"
+                (click)="goToTakeawayPage(page)"
+                [class.bg-primary]="currentTakeawayPage() === page"
+                [class.bg-neutral-700]="currentTakeawayPage() !== page"
+                [class.text-white]="currentTakeawayPage() === page"
+                [class.text-neutral-300]="currentTakeawayPage() !== page"
+                class="w-10 h-10 rounded-lg font-bold transition-colors">
+                {{ page }}
+              </button>
+            </div>
+            <button (click)="nextTakeawayPage()" [disabled]="currentTakeawayPage() === totalTakeawayPages()" class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 rounded-lg font-semibold">
+              Suivant →
+            </button>
+            <span class="text-neutral-400 text-sm ml-4 font-semibold">{{ currentTakeawayPage() }} / {{ totalTakeawayPages() }}</span>
+          </div>
         </div>
       </div>
 
       <!-- BOTTOM: Payment Section - SIDEBAR ON RIGHT (FIXED) -->
-      <div class="flex gap-6 h-1/3 overflow-hidden">
+      <div class="flex gap-6 overflow-hidden mt-8">
         <!-- Session Info -->
         <div *ngIf="selectedSession()">
           <h2 class="text-2xl font-bold text-white">Encaissement</h2>
@@ -165,7 +221,7 @@
         </div>
 
         <!-- Payment Sidebar - FIXED -->
-        <div *ngIf="selectedSession() && !isLoadingOrders()" class="fixed bottom-8 right-8 w-96 flex flex-col gap-4 bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4 shadow-2xl" style="max-height: calc(100vh - 120px); overflow-y: auto;">
+        <div *ngIf="(selectedSession() || selectedTakeawayOrder()) && !isLoadingOrders()" class="fixed bottom-8 right-8 w-96 flex flex-col gap-4 bg-neutral-800 rounded-lg border border-neutral-700 p-4 space-y-4 shadow-2xl" style="max-height: calc(100vh - 120px); overflow-y: auto;">
           <!-- Totals -->
           <div class="space-y-2">
             <div class="flex justify-between text-neutral-300">

@@ -127,4 +127,11 @@ public class CashierSessionController {
         cashierSessionService.updateLastActivity(publicId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/cashier/{cashierId}/last-closed-final-amount")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
+    public ResponseEntity<Long> getLastClosedSessionFinalAmount(@PathVariable String cashierId) {
+        Long finalAmount = cashierSessionService.getLastClosedSessionFinalAmount(cashierId);
+        return ResponseEntity.ok(finalAmount != null ? finalAmount : 0L);
+    }
 }

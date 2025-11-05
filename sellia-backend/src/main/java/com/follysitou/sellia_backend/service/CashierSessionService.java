@@ -370,6 +370,16 @@ public class CashierSessionService {
                 .orElseThrow(() -> new ResourceNotFoundException("GlobalSession", "publicId", publicId));
     }
 
+    /**
+     * Get the final amount from the last closed session for a specific cashier
+     * Returns null if no previous closed session exists
+     */
+    public Long getLastClosedSessionFinalAmount(String cashierId) {
+        return cashierSessionRepository.findLastClosedByCashier(cashierId)
+                .map(CashierSession::getFinalAmount)
+                .orElse(null);
+    }
+
     private User getCurrentUser() {
         String userId = com.follysitou.sellia_backend.util.SecurityUtil.getCurrentUserId();
         if (userId == null) {

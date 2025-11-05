@@ -21,7 +21,6 @@ export class TablesComponent implements OnInit {
   tables = signal<any[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
-  isGeneratingBulk = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
   
@@ -189,102 +188,6 @@ export class TablesComponent implements OnInit {
         this.error.set('Erreur lors du téléchargement');
         setTimeout(() => this.error.set(null), 3000);
       });
-  }
-
-  bulkGenerateQrCodes(): void {
-    const tableIds = this.tables().map(t => t.publicId);
-    if (tableIds.length === 0) {
-      this.error.set('Aucune table à générer');
-      return;
-    }
-
-    if (!confirm(`Générer les QR codes pour ${tableIds.length} table(s)?`)) return;
-
-    this.isGeneratingBulk.set(true);
-    this.apiService.generateBulkTableQrCodes(tableIds).subscribe({
-      next: () => {
-        this.isGeneratingBulk.set(false);
-        this.success.set(`${tableIds.length} QR codes générés`);
-        this.loadTables();
-        setTimeout(() => this.success.set(null), 3000);
-      },
-      error: () => {
-        this.isGeneratingBulk.set(false);
-        this.error.set('Erreur génération QR');
-        setTimeout(() => this.error.set(null), 3000);
-      }
-    });
-  }
-
-  exportCSV(): void {
-    const headers = ['Nom', 'Localisation', 'Capacité', 'Type', 'Statut'];
-    const rows = this.tables().map(t => [
-      t.name,
-      t.location || '',
-      t.capacity,
-      t.isVip ? 'VIP' : 'Standard',
-      this.getStatusLabel(t.status)
-    ]);
-
-    const csv = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `tables-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-    this.success.set('CSV exporté');
-    setTimeout(() => this.success.set(null), 3000);
-  }
-
-  importCSV(event: any): void {
-    const file: File = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      try {
-        const csv = e.target.result;
-        const lines = csv.split('\n').filter((line: string) => line.trim());
-        if (lines.length < 2) {
-          this.error.set('Fichier CSV invalide');
-          return;
-        }
-
-        const headers = lines[0].split(',').map((h: string) => h.trim().toLowerCase());
-        let imported = 0;
-
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map((v: string) => v.trim().replace(/"/g, ''));
-          
-          const data = {
-            name: values[headers.indexOf('nom')] || `Table ${i}`,
-            location: values[headers.indexOf('localisation')] || '',
-            capacity: parseInt(values[headers.indexOf('capacité')] || '4') || 4,
-            isVip: (values[headers.indexOf('type')] || '').toLowerCase() === 'vip'
-          };
-
-          this.apiService.createTable(data).subscribe({
-            next: () => {
-              imported++;
-              if (imported === lines.length - 1) {
-                this.success.set(`${imported} tables importées`);
-                this.loadTables();
-                setTimeout(() => this.success.set(null), 3000);
-              }
-            }
-          });
-        }
-      } catch (err) {
-        this.error.set('Erreur lors de l\'importation');
-        setTimeout(() => this.error.set(null), 3000);
-      }
-    };
-    reader.readAsText(file);
   }
 
   getStatusLabel(status: string): string {
