@@ -45,6 +45,6 @@ public interface CashierSessionRepository extends JpaRepository<CashierSession, 
     @Query("SELECT COUNT(cs) FROM CashierSession cs WHERE cs.deleted = false AND cs.status = :status")
     Long countByStatus(@Param("status") String status);
 
-    @Query("SELECT cs FROM CashierSession cs WHERE cs.cashier.publicId = :cashierId AND cs.status = 'CLOSED' AND cs.deleted = false ORDER BY cs.closedAt DESC")
+    @Query("SELECT cs FROM CashierSession cs WHERE cs.cashier.publicId = :cashierId AND cs.status = 'CLOSED' AND cs.deleted = false AND cs.closedAt IS NOT NULL ORDER BY cs.closedAt DESC LIMIT 1")
     Optional<CashierSession> findLastClosedByCashier(@Param("cashierId") String cashierId);
 }
