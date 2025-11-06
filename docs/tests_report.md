@@ -19,9 +19,9 @@ On doit voir le total de toutes les ventes(Qr caisse code, caisses, admin, takew
 
 Caisse1:
 Solde initial : 5000
-Vente: 11500 + 30000
+Vente:
 
 
 Caisse2:
-Solde initial: 10000
-Vente: 2500
+Solde initial: 5000
+
