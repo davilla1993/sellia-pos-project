@@ -83,6 +83,22 @@ export class CashierPinComponent implements OnInit {
   }
 
   private checkExistingSession(): void {
+    // Ne vérifie la session que si l'utilisateur est CAISSE ou ADMIN
+    const user = localStorage.getItem('currentUser');
+    if (!user) return;
+
+    try {
+      const userData = JSON.parse(user);
+      const role = userData?.role;
+      if (role !== 'CAISSE' && role !== 'ADMIN') {
+        // Pas de session pour les autres rôles
+        this.existingSession.set(null);
+        return;
+      }
+    } catch {
+      return;
+    }
+
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
         this.existingSession.set(session);
@@ -115,12 +131,14 @@ export class CashierPinComponent implements OnInit {
     // IMPORTANT: Re-vérifier s'il existe une session AVANT d'essayer d'ouvrir
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
-        // Une session existe
+        // Une session existe ET est ouverte
         if (session && session.status === 'OPEN') {
           this.sessionOpened.set(true);
           this.isLoading.set(false);
           this.router.navigate(['/pos/order-entry']);
-        } else if (session && session.status === 'LOCKED') {
+        }
+        // Une session existe ET est verrouillée
+        else if (session && session.status === 'LOCKED') {
           this.cashierSessionService.unlockSession(session.publicId, pin).subscribe({
             next: (unlockedSession) => {
               this.sessionOpened.set(true);
@@ -137,9 +155,29 @@ export class CashierPinComponent implements OnInit {
             }
           });
         }
+        // Pas de session (null) - passer à l'étape 2 pour demander le montant initial
+        else {
+          this.validatedPin.set(pin);
+
+          // Charger le montant de fermeture de la session précédente
+          this.apiService.getLastClosedSessionFinalAmount(cashierId).subscribe({
+            next: (finalAmount) => {
+              // Pré-remplir avec le solde de fermeture de la session précédente
+              this.initialAmount.set(finalAmount || 0);
+              this.step.set(2);
+              this.isLoading.set(false);
+            },
+            error: () => {
+              // En cas d'erreur, utiliser 0 comme montant par défaut
+              this.initialAmount.set(0);
+              this.step.set(2);
+              this.isLoading.set(false);
+            }
+          });
+        }
       },
       error: (err) => {
-        // Pas de session existante, passer à l'étape 2 pour demander le montant initial
+        // Erreur réseau ou autre - passer quand même à l'étape 2
         this.validatedPin.set(pin);
 
         // Charger le montant de fermeture de la session précédente
