@@ -193,6 +193,11 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
+    // Vérifier qu'il n'y a pas de session active avant de déconnecter
+    if (this.hasCashierSession()) {
+      this.toast.error('⚠️ Vous devez fermer votre session de caisse avant de vous déconnecter.');
+      return;
+    }
     this.router.navigate(['/auth/login']);
   }
 
