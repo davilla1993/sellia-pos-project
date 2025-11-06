@@ -32,11 +32,9 @@
       <!-- Open Modal -->
       <div *ngIf="showOpenModal" class="modal">
         <div class="modal-content">
-          <h2>Ouvrir Nouvelle Session</h2>
-          <div class="form-group">
-            <label>Montant Initial</label>
-            <input type="number" [(ngModel)]="initialAmount" placeholder="0">
-          </div>
+          <h2>Ouvrir Nouvelle Session Globale</h2>
+          <p class="text-neutral-400">Voulez-vous ouvrir une nouvelle session globale ?</p>
+          <p class="text-neutral-400 text-sm">Les totaux seront calculés à partir de toutes les sessions de caisse.</p>
           <div class="modal-actions">
             <button (click)="closeModal()" class="btn btn-secondary">Annuler</button>
             <button (click)="openSession()" class="btn btn-primary" [disabled]="loading">
@@ -48,20 +46,141 @@
 
       <!-- Close Modal -->
       <div *ngIf="showCloseModal" class="modal">
-        <div class="modal-content">
-          <h2>Fermer Session</h2>
-          <div class="form-group">
-            <label>Montant Final</label>
-            <input type="number" [(ngModel)]="finalAmount" placeholder="0">
+        <div class="modal-content close-session-modal">
+          <h2>Fermer Session Globale</h2>
+
+          <!-- Loading Summary -->
+          <div *ngIf="loadingSummary" class="text-center py-4">
+            <div class="inline-block animate-spin text-4xl mb-2">⏳</div>
+            <p class="text-neutral-400">Chargement du résumé...</p>
           </div>
-          <div class="form-group">
-            <label>Notes de Réconciliation</label>
-            <textarea [(ngModel)]="reconciliationNotes" placeholder="Notes optionnelles"></textarea>
+
+          <!-- Summary loaded -->
+          <div *ngIf="!loadingSummary && sessionSummary" class="space-y-4">
+
+            <!-- Status of cashier sessions -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">État des caisses</label>
+              <div class="p-4 bg-neutral-700/50 border border-neutral-600 rounded-lg">
+                <p class="text-white mb-1">
+                  Total: <strong>{{ sessionSummary.totalCashierSessions }}</strong> caisse(s)
+                </p>
+                <p class="text-green-400 mb-1">
+                  Fermées: <strong>{{ sessionSummary.closedCashierSessions }}</strong>
+                </p>
+                <p class="text-yellow-400" *ngIf="sessionSummary.openCashierSessions > 0">
+                  ⚠️ Encore ouvertes: <strong>{{ sessionSummary.openCashierSessions }}</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- Total Initial Amount (Read-only) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">Solde initial total (toutes les caisses)</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white text-right text-xl">
+                {{ formatCurrency(sessionSummary.totalInitialAmount) }}
+              </div>
+            </div>
+
+            <!-- Total Sales (Read-only) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">Total ventes</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-green-400 text-right text-xl font-bold">
+                {{ formatCurrency(sessionSummary.totalSales) }}
+              </div>
+            </div>
+
+            <!-- Cash In Operations (Read-only) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">Total entrées de caisse</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-green-400 text-right text-xl">
+                +{{ formatCurrency(sessionSummary.totalCashEntrees) }}
+              </div>
+            </div>
+
+            <!-- Cash Out Operations (Read-only) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">Total sorties de caisse</label>
+              <div class="px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-red-400 text-right text-xl">
+                -{{ formatCurrency(sessionSummary.totalCashSorties) }}
+              </div>
+            </div>
+
+            <!-- Expected Amount (Calculated) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">Montant attendu</label>
+              <div class="px-4 py-3 bg-blue-900/30 border border-blue-700 rounded-lg text-blue-300 text-right text-xl font-bold">
+                {{ formatCurrency(sessionSummary.expectedAmount) }}
+              </div>
+              <p class="text-xs text-neutral-400 mt-1">
+                Solde initial + Ventes + Entrées - Sorties
+              </p>
+            </div>
+
+            <!-- Real Amount in Cash (User input) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">
+                Montant réel total en caisse (FCFA) <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                [(ngModel)]="finalAmount"
+                min="0"
+                placeholder="0"
+                class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white text-right text-xl focus:outline-none focus:border-primary"
+                autofocus>
+              <p class="text-xs text-neutral-400 mt-2">Comptez l'argent total de toutes les caisses</p>
+            </div>
+
+            <!-- Discrepancy (Auto-calculated) -->
+            <div *ngIf="finalAmount > 0" class="form-group">
+              <label class="block text-sm font-semibold mb-2">Écart</label>
+              <div
+                class="px-4 py-3 border rounded-lg text-right text-xl font-bold"
+                [class.bg-green-900/30]="discrepancy === 0"
+                [class.border-green-700]="discrepancy === 0"
+                [class.text-green-400]="discrepancy === 0"
+                [class.bg-red-900/30]="discrepancy < 0"
+                [class.border-red-700]="discrepancy < 0"
+                [class.text-red-400]="discrepancy < 0"
+                [class.bg-orange-900/30]="discrepancy > 0"
+                [class.border-orange-700]="discrepancy > 0"
+                [class.text-orange-400]="discrepancy > 0">
+                {{ discrepancyFormatted }}
+              </div>
+              <p class="text-xs text-neutral-400 mt-2">
+                <span *ngIf="discrepancy === 0">✓ Parfait, aucun écart</span>
+                <span *ngIf="discrepancy > 0">⚠️ Surplus de {{ formatCurrency(discrepancy) }}</span>
+                <span *ngIf="discrepancy < 0">⚠️ Manque de {{ formatCurrency(Math.abs(discrepancy)) }}</span>
+              </p>
+            </div>
+
+            <!-- Notes (Required) -->
+            <div class="form-group">
+              <label class="block text-sm font-semibold mb-2">
+                Notes <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                [(ngModel)]="reconciliationNotes"
+                rows="3"
+                placeholder="Observations, incidents, remarques..."
+                class="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none focus:border-primary resize-none"></textarea>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="error" class="p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-400 text-sm">
+              {{ error }}
+            </div>
           </div>
+
+          <!-- Modal Actions -->
           <div class="modal-actions">
             <button (click)="closeModal()" class="btn btn-secondary">Annuler</button>
-            <button (click)="closeSession()" class="btn btn-danger" [disabled]="loading">
-              {{ loading ? 'Fermeture...' : 'Fermer' }}
+            <button
+              (click)="closeSession()"
+              class="btn btn-danger"
+              [disabled]="loading || !sessionSummary || finalAmount <= 0 || !reconciliationNotes || reconciliationNotes.trim() === ''">
+              {{ loading ? 'Fermeture...' : '🚪 Fermer Session' }}
             </button>
           </div>
         </div>

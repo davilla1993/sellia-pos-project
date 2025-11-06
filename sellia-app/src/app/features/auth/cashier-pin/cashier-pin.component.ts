@@ -87,12 +87,12 @@ export class CashierPinComponent implements OnInit {
       next: (session) => {
         this.existingSession.set(session);
         // Si une session est déjà ouverte, rediriger directement
-        if (session.status === 'OPEN') {
+        if (session && session.status === 'OPEN') {
           this.sessionOpened.set(true);
           setTimeout(() => {
             this.router.navigate(['/pos/order-entry']);
           }, 500);
-        } else if (session.status === 'LOCKED') {
+        } else if (session && session.status === 'LOCKED') {
           // Session verrouillée
         }
       },
@@ -116,11 +116,11 @@ export class CashierPinComponent implements OnInit {
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
         // Une session existe
-        if (session.status === 'OPEN') {
+        if (session && session.status === 'OPEN') {
           this.sessionOpened.set(true);
           this.isLoading.set(false);
           this.router.navigate(['/pos/order-entry']);
-        } else if (session.status === 'LOCKED') {
+        } else if (session && session.status === 'LOCKED') {
           this.cashierSessionService.unlockSession(session.publicId, pin).subscribe({
             next: (unlockedSession) => {
               this.sessionOpened.set(true);

@@ -7,8 +7,9 @@ import lombok.Data;
 public class GlobalSessionCloseRequest {
 
     @NotNull(message = "Final amount is required")
-    private Long finalAmount;
+    private Long finalAmount;  // Real amount counted by admin
 
+    @NotNull(message = "Notes are required")
     private String reconciliationNotes;
 
     private Long reconciliationAmount;

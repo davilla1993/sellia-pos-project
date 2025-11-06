@@ -28,6 +28,7 @@ public class RestaurantMapper {
                 .maxTables(restaurant.getMaxTables())
                 .allowOnlinePayment(restaurant.getAllowOnlinePayment())
                 .allowCashPayment(restaurant.getAllowCashPayment())
+                .maxCashOperationAmount(restaurant.getMaxCashOperationAmount())
                 .build();
     }
 }

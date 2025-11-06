@@ -6,6 +6,7 @@ import com.follysitou.sellia_backend.dto.request.CashierSessionPinUnlockRequest;
 import com.follysitou.sellia_backend.dto.response.ActiveCashierSessionResponse;
 import com.follysitou.sellia_backend.dto.response.CashierSessionResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
+import com.follysitou.sellia_backend.dto.response.SessionReportResponse;
 import com.follysitou.sellia_backend.service.CashierSessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,9 @@ public class CashierSessionController {
     @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
     public ResponseEntity<CashierSessionResponse> getCurrentSession() {
         CashierSessionResponse response = cashierSessionService.getCurrentSession();
+        if (response == null) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(response);
     }
 
@@ -77,6 +81,13 @@ public class CashierSessionController {
     public ResponseEntity<CashierSessionResponse> getSessionById(@PathVariable String publicId) {
         CashierSessionResponse response = cashierSessionService.getSessionById(publicId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{publicId}/report")
+    @PreAuthorize("hasRole('CAISSE') or hasRole('ADMIN')")
+    public ResponseEntity<SessionReportResponse> getSessionReport(@PathVariable String publicId) {
+        SessionReportResponse report = cashierSessionService.getSessionReport(publicId);
+        return ResponseEntity.ok(report);
     }
 
     @GetMapping("/active")

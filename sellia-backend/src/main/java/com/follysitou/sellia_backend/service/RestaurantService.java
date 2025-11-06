@@ -48,6 +48,7 @@ public class RestaurantService {
         if (request.getMaxTables() != null) restaurant.setMaxTables(request.getMaxTables());
         if (request.getAllowOnlinePayment() != null) restaurant.setAllowOnlinePayment(request.getAllowOnlinePayment());
         if (request.getAllowCashPayment() != null) restaurant.setAllowCashPayment(request.getAllowCashPayment());
+        if (request.getMaxCashOperationAmount() != null) restaurant.setMaxCashOperationAmount(request.getMaxCashOperationAmount());
 
         Restaurant updated = restaurantRepository.save(restaurant);
         log.info("Restaurant updated: {}", updated.getPublicId());

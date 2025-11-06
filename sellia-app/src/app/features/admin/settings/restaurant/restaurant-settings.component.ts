@@ -28,6 +28,7 @@ export class RestaurantSettingsComponent implements OnInit {
     currency: 'XOF',
     timezone: 'Africa/Douala',
     taxRate: 0,
+    maxCashOperationAmount: 50000,
     openingHours: ''
   };
 

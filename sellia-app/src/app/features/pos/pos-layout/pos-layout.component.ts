@@ -36,6 +36,7 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   isLocked = signal(false);
   unlockPin = signal('');
   unlocking = signal(false);
+  restaurantSettings = signal<any>(null);
 
   // Open Session Modal
   showOpenSessionModal = signal(false);
@@ -112,6 +113,20 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
       this.currentCashierSession.set(session);
       this.isLocked.set(session?.status === 'LOCKED');
     });
+
+    // Load restaurant settings for cash operation limit
+    this.loadRestaurantSettings();
+  }
+
+  loadRestaurantSettings(): void {
+    this.apiService.getRestaurant().subscribe({
+      next: (settings) => {
+        this.restaurantSettings.set(settings);
+      },
+      error: () => {
+        // Silent fail, not critical
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -166,6 +181,11 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
 
   hasCashierSession(): boolean {
     return this.currentCashierSession() !== null;
+  }
+
+  canManageCashierSession(): boolean {
+    const role = this.navigationService.getCurrentUserRole();
+    return role === 'CAISSE' || role === 'ADMIN';
   }
 
   goToDashboard(): void {
@@ -278,9 +298,20 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.openSessionStep.set(2);
-    this.openSessionError.set('');
-    this.initialAmount.set(0);
+    // Récupérer le solde final de la dernière session fermée
+    this.apiService.getLastClosedSessionFinalAmount(cashier.publicId).subscribe({
+      next: (finalAmount) => {
+        this.initialAmount.set(finalAmount || 0);
+        this.openSessionStep.set(2);
+        this.openSessionError.set('');
+      },
+      error: () => {
+        // Si pas de session précédente ou erreur, initialiser à 0
+        this.initialAmount.set(0);
+        this.openSessionStep.set(2);
+        this.openSessionError.set('');
+      }
+    });
   }
 
   confirmOpenSession(): void {
@@ -482,6 +513,12 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     if (!authorizedBy || authorizedBy.trim() === '') {
       this.cashOperationError.set('Le nom de l\'autorisation est requis');
       return;
+    }
+
+    // Check if amount exceeds maximum (warning only, non-blocking)
+    const settings = this.restaurantSettings();
+    if (settings?.maxCashOperationAmount && amount > settings.maxCashOperationAmount) {
+      this.toast.warning(`⚠️ Attention: Le montant dépasse la limite configurée de ${this.formatCurrency(settings.maxCashOperationAmount)}`);
     }
 
     this.savingCashOperation.set(true);

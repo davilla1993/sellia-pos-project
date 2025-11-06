@@ -38,4 +38,5 @@ public class RestaurantUpdateRequest {
     private Integer maxTables;
     private Boolean allowOnlinePayment;
     private Boolean allowCashPayment;
+    private Long maxCashOperationAmount;
 }

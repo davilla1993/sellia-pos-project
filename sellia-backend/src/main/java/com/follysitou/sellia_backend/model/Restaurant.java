@@ -68,4 +68,7 @@ public class Restaurant extends BaseEntity {
 
     @Column(name = "allow_cash_payment")
     private Boolean allowCashPayment = true;
+
+    @Column(name = "max_cash_operation_amount")
+    private Long maxCashOperationAmount = 50000L; // Default 50,000 FCFA
 }

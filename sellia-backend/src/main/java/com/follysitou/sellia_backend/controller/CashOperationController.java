@@ -55,7 +55,7 @@ public class CashOperationController {
     public ResponseEntity<PagedResponse<CashOperationResponse>> getOperationsBySessionPaged(
             @PathVariable String sessionId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CashOperationResponse> operations = cashOperationService.getOperationsBySessionPaged(sessionId, pageable);
         return ResponseEntity.ok(PagedResponse.of(operations));
@@ -72,7 +72,7 @@ public class CashOperationController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<CashOperationResponse>> getAllOperations(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CashOperationResponse> operations = cashOperationService.getAllOperations(pageable);
         return ResponseEntity.ok(PagedResponse.of(operations));
@@ -84,7 +84,7 @@ public class CashOperationController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CashOperationResponse> operations = cashOperationService.getOperationsByDateRange(startDate, endDate, pageable);
         return ResponseEntity.ok(PagedResponse.of(operations));
@@ -95,7 +95,7 @@ public class CashOperationController {
     public ResponseEntity<PagedResponse<CashOperationResponse>> getOperationsByCashier(
             @PathVariable String cashierId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CashOperationResponse> operations = cashOperationService.getOperationsByCashier(cashierId, pageable);
         return ResponseEntity.ok(PagedResponse.of(operations));

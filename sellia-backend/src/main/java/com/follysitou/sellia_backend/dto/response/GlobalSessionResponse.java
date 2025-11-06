@@ -21,4 +21,7 @@ public class GlobalSessionResponse {
     private Long reconciliationAmount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Total amount from all cashier sessions (sum of their final amounts)
+    private Long totalCashierSessionsAmount;
 }

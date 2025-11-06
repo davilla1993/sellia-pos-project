@@ -18,6 +18,18 @@ export interface GlobalSession {
   reconciliationAmount?: number;
 }
 
+export interface GlobalSessionSummary {
+  globalSessionId: string;
+  totalInitialAmount: number;
+  totalSales: number;
+  totalCashEntrees: number;
+  totalCashSorties: number;
+  expectedAmount: number;
+  totalCashierSessions: number;
+  openCashierSessions: number;
+  closedCashierSessions: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,8 +60,8 @@ export class GlobalSessionService {
     return this.http.get<GlobalSession>(`${this.apiUrl}/current`);
   }
 
-  openSession(initialAmount: number = 0): Observable<GlobalSession> {
-    return this.http.post<GlobalSession>(`${this.apiUrl}/open`, { initialAmount }).pipe(
+  openSession(): Observable<GlobalSession> {
+    return this.http.post<GlobalSession>(`${this.apiUrl}/open`, {}).pipe(
       tap((session) => {
         this.currentSessionSubject.next(session);
         this.isSessionOpen$.next(true);
@@ -57,7 +69,11 @@ export class GlobalSessionService {
     );
   }
 
-  closeSession(publicId: string, finalAmount: number, notes?: string): Observable<GlobalSession> {
+  getSummary(publicId: string): Observable<GlobalSessionSummary> {
+    return this.http.get<GlobalSessionSummary>(`${this.apiUrl}/${publicId}/summary`);
+  }
+
+  closeSession(publicId: string, finalAmount: number, notes: string): Observable<GlobalSession> {
     return this.http.post<GlobalSession>(`${this.apiUrl}/${publicId}/close`, {
       finalAmount,
       reconciliationNotes: notes

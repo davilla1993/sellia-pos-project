@@ -3,6 +3,7 @@ package com.follysitou.sellia_backend.controller;
 import com.follysitou.sellia_backend.dto.request.GlobalSessionCloseRequest;
 import com.follysitou.sellia_backend.dto.request.GlobalSessionOpenRequest;
 import com.follysitou.sellia_backend.dto.response.GlobalSessionResponse;
+import com.follysitou.sellia_backend.dto.response.GlobalSessionSummaryResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.service.GlobalSessionService;
 import jakarta.validation.Valid;
@@ -50,6 +51,13 @@ public class GlobalSessionController {
     public ResponseEntity<GlobalSessionResponse> getSessionById(@PathVariable String publicId) {
         GlobalSessionResponse response = globalSessionService.getSessionById(publicId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{publicId}/summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GlobalSessionSummaryResponse> getGlobalSessionSummary(@PathVariable String publicId) {
+        GlobalSessionSummaryResponse summary = globalSessionService.getGlobalSessionSummary(publicId);
+        return ResponseEntity.ok(summary);
     }
 
     @GetMapping

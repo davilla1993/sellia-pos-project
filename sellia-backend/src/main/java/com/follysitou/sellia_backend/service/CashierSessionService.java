@@ -4,6 +4,8 @@ import com.follysitou.sellia_backend.dto.request.CashierSessionCloseRequest;
 import com.follysitou.sellia_backend.dto.request.CashierSessionOpenRequest;
 import com.follysitou.sellia_backend.dto.request.CashierSessionPinUnlockRequest;
 import com.follysitou.sellia_backend.dto.response.CashierSessionResponse;
+import com.follysitou.sellia_backend.dto.response.SessionReportResponse;
+import com.follysitou.sellia_backend.dto.response.CashOperationResponse;
 import com.follysitou.sellia_backend.enums.CashierSessionStatus;
 import com.follysitou.sellia_backend.exception.ConflictException;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
@@ -37,6 +39,8 @@ public class CashierSessionService {
     private final AuditLogService auditLogService;
     private final com.follysitou.sellia_backend.mapper.ActiveCashierSessionMapper activeCashierSessionMapper;
     private final com.follysitou.sellia_backend.repository.OrderRepository orderRepository;
+    private final CashOperationService cashOperationService;
+    private final RestaurantService restaurantService;
 
     @Transactional
     public CashierSessionResponse openSession(CashierSessionOpenRequest request) {
@@ -215,9 +219,9 @@ public class CashierSessionService {
 
     public CashierSessionResponse getCurrentSession() {
         User currentUser = getCurrentUser();
-        CashierSession session = cashierSessionRepository.findCurrentSessionByUser(currentUser.getPublicId())
-                .orElseThrow(() -> new ResourceNotFoundException("CashierSession", "user", currentUser.getPublicId()));
-        return cashierSessionMapper.toResponse(session);
+        return cashierSessionRepository.findCurrentSessionByUser(currentUser.getPublicId())
+                .map(cashierSessionMapper::toResponse)
+                .orElse(null);
     }
 
     public CashierSessionResponse getSessionById(String publicId) {
@@ -387,5 +391,58 @@ public class CashierSessionService {
         }
         return userRepository.findByPublicId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "publicId", userId));
+    }
+
+    public SessionReportResponse getSessionReport(String publicId) {
+        // Get session details using the existing mapper which calculates everything
+        CashierSessionResponse sessionResponse = getSessionById(publicId);
+
+        // Get cash operations for this session
+        List<CashOperationResponse> cashOperations = cashOperationService.getOperationsBySession(publicId);
+
+        // Get cash operation totals
+        var totals = cashOperationService.getTotalsBySession(publicId);
+
+        // Calculate expected amount
+        Long initialAmount = sessionResponse.getInitialAmount() != null ? sessionResponse.getInitialAmount() : 0L;
+        Long totalSales = sessionResponse.getTotalSales() != null ? sessionResponse.getTotalSales() : 0L;
+        Long totalEntrees = totals.getTotalEntrees();
+        Long totalSorties = totals.getTotalSorties();
+        Long expectedAmount = initialAmount + totalSales + totalEntrees - totalSorties;
+
+        // Calculate discrepancy
+        Long finalAmount = sessionResponse.getFinalAmount() != null ? sessionResponse.getFinalAmount() : 0L;
+        Long discrepancy = finalAmount - expectedAmount;
+
+        // Get restaurant info
+        var restaurant = restaurantService.getRestaurant();
+
+        // Count orders for this session
+        Long ordersCountLong = orderRepository.countByCashierSession(publicId);
+        Integer ordersCount = ordersCountLong != null ? ordersCountLong.intValue() : 0;
+
+        return SessionReportResponse.builder()
+                .sessionId(sessionResponse.getPublicId())
+                .cashierName(sessionResponse.getCashier().getName())
+                .cashierNumber(sessionResponse.getCashier().getCashierNumber())
+                .userName(sessionResponse.getUser().getFirstName() + " " + sessionResponse.getUser().getLastName())
+                .openedAt(sessionResponse.getOpenedAt())
+                .closedAt(sessionResponse.getClosedAt())
+                .initialAmount(initialAmount)
+                .finalAmount(finalAmount)
+                .expectedAmount(expectedAmount)
+                .discrepancy(discrepancy)
+                .totalSales(totalSales)
+                .ordersCount(ordersCount)
+                .totalCashEntrees(totalEntrees)
+                .totalCashSorties(totalSorties)
+                .cashEntreesCount(totals.getEntreesCount())
+                .cashSortiesCount(totals.getSortiesCount())
+                .cashOperations(cashOperations)
+                .closingNotes(sessionResponse.getNotes())
+                .restaurantName(restaurant.getName())
+                .restaurantAddress(restaurant.getAddress())
+                .restaurantPhone(restaurant.getPhoneNumber())
+                .build();
     }
 }

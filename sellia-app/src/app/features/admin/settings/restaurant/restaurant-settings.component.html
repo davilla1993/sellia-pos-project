@@ -64,6 +64,12 @@
           </div>
 
           <div>
+            <label class="block text-sm font-semibold text-neutral-300 mb-2">💸 Montant Maximum Opération Caisse (FCFA)</label>
+            <input [(ngModel)]="form.maxCashOperationAmount" type="number" min="0" step="1000" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
+            <p class="text-xs text-neutral-400 mt-1">Affiche une alerte si une opération de caisse dépasse ce montant (non bloquant)</p>
+          </div>
+
+          <div>
             <label class="block text-sm font-semibold text-neutral-300 mb-2">Heures d'Ouverture</label>
             <input [(ngModel)]="form.openingHours" type="text" placeholder="Ex: Lun-Ven: 08h-22h, Sam-Dim: 10h-23h" class="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded text-white focus:outline-none focus:border-orange-500">
           </div>

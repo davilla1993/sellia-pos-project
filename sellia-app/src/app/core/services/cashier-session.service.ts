@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, interval } from 'rxjs';
 import { map, tap, switchMap } from 'rxjs/operators';
@@ -32,25 +32,47 @@ export class CashierSessionService {
   public sessionStatus$ = this.sessionStatusSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadCurrentSession();
-    this.startActivityTracking();
+    // Ne charger la session que si l'utilisateur peut gérer des sessions de caisse
+    if (this.canManageCashierSession()) {
+      this.loadCurrentSession();
+      this.startActivityTracking();
+    }
+  }
+
+  private canManageCashierSession(): boolean {
+    try {
+      const userStr = localStorage.getItem('currentUser');
+      if (!userStr) return false;
+      const user = JSON.parse(userStr);
+      const role = user?.role;
+      return role === 'CAISSE' || role === 'ADMIN';
+    } catch {
+      return false;
+    }
   }
 
   loadCurrentSession(): void {
     this.getCurrentSession().subscribe(
       (session) => {
-        this.currentSessionSubject.next(session);
-        this.sessionStatusSubject.next(session.status);
+        if (session) {
+          this.currentSessionSubject.next(session);
+          this.sessionStatusSubject.next(session.status);
+        } else {
+          // Pas de session active (code 204)
+          this.currentSessionSubject.next(null);
+          this.sessionStatusSubject.next('NONE');
+        }
       },
       () => {
+        // Erreur (403, 401, etc.)
         this.currentSessionSubject.next(null);
         this.sessionStatusSubject.next('NONE');
       }
     );
   }
 
-  getCurrentSession(): Observable<CashierSession> {
-    return this.http.get<CashierSession>(`${this.apiUrl}/current`);
+  getCurrentSession(): Observable<CashierSession | null> {
+    return this.http.get<CashierSession | null>(`${this.apiUrl}/current`);
   }
 
   openSession(cashierId: string, pin: string, initialAmount: number = 0): Observable<CashierSession> {

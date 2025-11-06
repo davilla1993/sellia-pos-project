@@ -27,4 +27,5 @@ public class RestaurantResponse {
     private Integer maxTables;
     private Boolean allowOnlinePayment;
     private Boolean allowCashPayment;
+    private Long maxCashOperationAmount;
 }

@@ -127,6 +127,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/active-orders/active-orders.component').then(m => m.ActiveOrdersComponent)
       },
       {
+        path: 'cash-operations',
+        loadComponent: () => import('./features/admin/cash-operations/cash-operations.component').then(m => m.CashOperationsComponent)
+      },
+      {
         path: 'stock-alerts',
         loadComponent: () => import('./features/admin/stock-alerts/stock-alerts.component').then(m => m.StockAlertsComponent)
       },

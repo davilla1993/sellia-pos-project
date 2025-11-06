@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GlobalSessionService } from '@core/services/global-session.service';
+import { GlobalSessionService, GlobalSessionSummary } from '@core/services/global-session.service';
 import { ApiService } from '@core/services/api.service';
 
 @Component({
@@ -13,14 +13,18 @@ import { ApiService } from '@core/services/api.service';
 })
 export class GlobalSessionComponent implements OnInit {
   currentSession: any = null;
+  sessionSummary: GlobalSessionSummary | null = null;
   showOpenModal = false;
   showCloseModal = false;
   loading = false;
+  loadingSummary = false;
   error = '';
   success = '';
-  initialAmount = 0;
   finalAmount = 0;
   reconciliationNotes = '';
+
+  // Expose Math for template
+  Math = Math;
 
   constructor(
     private globalSessionService: GlobalSessionService,
@@ -44,22 +48,38 @@ export class GlobalSessionComponent implements OnInit {
   }
 
   openCloseModal() {
-    this.showCloseModal = true;
-    this.error = '';
-    this.success = '';
+    if (!this.currentSession) return;
+
+    // Load summary before opening modal
+    this.loadingSummary = true;
+    this.globalSessionService.getSummary(this.currentSession.publicId).subscribe({
+      next: (summary) => {
+        this.sessionSummary = summary;
+        this.loadingSummary = false;
+        this.showCloseModal = true;
+        this.error = '';
+        this.success = '';
+        this.finalAmount = 0;
+        this.reconciliationNotes = '';
+      },
+      error: (err) => {
+        this.loadingSummary = false;
+        this.error = err.error?.message || 'Erreur lors du chargement du résumé';
+      }
+    });
   }
 
   closeModal() {
     this.showOpenModal = false;
     this.showCloseModal = false;
-    this.initialAmount = 0;
     this.finalAmount = 0;
     this.reconciliationNotes = '';
+    this.sessionSummary = null;
   }
 
   openSession() {
     this.loading = true;
-    this.globalSessionService.openSession(this.initialAmount).subscribe(
+    this.globalSessionService.openSession().subscribe(
       () => {
         this.loading = false;
         this.success = 'Session ouverte avec succès';
@@ -74,7 +94,7 @@ export class GlobalSessionComponent implements OnInit {
   }
 
   closeSession() {
-    if (!this.currentSession) return;
+    if (!this.currentSession || !this.reconciliationNotes) return;
     this.loading = true;
     this.globalSessionService.closeSession(this.currentSession.publicId, this.finalAmount, this.reconciliationNotes).subscribe(
       () => {
@@ -88,6 +108,18 @@ export class GlobalSessionComponent implements OnInit {
         this.error = error.error?.message || 'Erreur lors de la fermeture de la session';
       }
     );
+  }
+
+  get discrepancy(): number {
+    if (!this.sessionSummary) return 0;
+    return this.finalAmount - this.sessionSummary.expectedAmount;
+  }
+
+  get discrepancyFormatted(): string {
+    const disc = this.discrepancy;
+    if (disc === 0) return '0 FCFA';
+    const prefix = disc > 0 ? '+' : '';
+    return prefix + this.formatCurrency(Math.abs(disc));
   }
 
   formatCurrency(value: number): string {
