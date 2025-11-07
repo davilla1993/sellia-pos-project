@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { ToastService } from '@shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-tables',
@@ -215,7 +216,9 @@ export class TablesComponent implements OnInit {
   getQrCodeUrl(qrCodeUrl: string): string {
     if (!qrCodeUrl) return '';
     if (qrCodeUrl.startsWith('http')) return qrCodeUrl;
-    return `http://localhost:8080${qrCodeUrl}`;
+    // Utiliser l'URL des uploads depuis l'environnement
+    const baseUrl = environment.uploadsUrl || window.location.origin;
+    return `${baseUrl}${qrCodeUrl}`;
   }
 
   getMenuUrl(tablePublicId: string): string {

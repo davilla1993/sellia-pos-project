@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 interface ComboProductDetail {
   name: string;
@@ -226,7 +227,7 @@ export class PublicMenuComponent implements OnInit {
 
   /**
    * Construit l'URL complète de l'image à partir de l'URL relative
-   * Convertit "/uploads/filename.jpg" en "http://localhost:8080/api/products/images/filename.jpg"
+   * Utilise l'environnement pour construire l'URL correcte en dev et prod
    */
   private buildImageUrl(imageUrl: string | null | undefined): string {
     if (!imageUrl) return '';
@@ -237,8 +238,12 @@ export class PublicMenuComponent implements OnInit {
     // Extraire le nom du fichier depuis le chemin
     const filename = imageUrl.includes('/') ? imageUrl.split('/').pop() : imageUrl;
 
-    // Construire l'URL complète vers l'API backend
-    return `http://localhost:8080/api/products/images/${filename}`;
+    // Construire l'URL en utilisant l'apiUrl de l'environnement
+    const baseUrl = environment.apiUrl.startsWith('http')
+      ? environment.apiUrl
+      : `${window.location.origin}${environment.apiUrl}`;
+
+    return `${baseUrl}/products/images/${filename}`;
   }
 
   loadMenuByQrToken(qrToken: string): void {

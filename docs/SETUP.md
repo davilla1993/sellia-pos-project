@@ -31,10 +31,10 @@ INSERT INTO users (
 SELECT 
     gen_random_uuid(),
     'admin',
-    'Admin',
-    'System',
+    'Adote Laurent',
+    'AGBOSSOU',
     'admin@sella.com',
-    '$2a$10$gacjHPAnQgYwMK9QFccX7OHTRcyk5vc8QJcA4SSsY0kNB8i5RZhlK',
+    '$2a$12$Zy1r0bJ05317oQ80VTodseXEp1SCG5fWl3WqJHUQ9siOp9O3aL84C',
     r.id,
     true,
     false,
