@@ -216,9 +216,19 @@ export class TablesComponent implements OnInit {
   getQrCodeUrl(qrCodeUrl: string): string {
     if (!qrCodeUrl) return '';
     if (qrCodeUrl.startsWith('http')) return qrCodeUrl;
-    // Utiliser l'URL des uploads depuis l'environnement
-    const baseUrl = environment.uploadsUrl || window.location.origin;
-    return `${baseUrl}${qrCodeUrl}`;
+
+    // qrCodeUrl contient déjà le chemin complet genre "/uploads/qrcodes/xxx.png"
+    // En dev: environment.uploadsUrl = "http://localhost:8080/uploads"
+    // En prod: environment.uploadsUrl = "/uploads"
+
+    if (environment.uploadsUrl.startsWith('http')) {
+      // Dev: enlever "/uploads" de la baseUrl car qrCodeUrl l'a déjà
+      const baseUrl = environment.uploadsUrl.replace('/uploads', '');
+      return `${baseUrl}${qrCodeUrl}`;
+    } else {
+      // Prod: URL relative, juste retourner qrCodeUrl
+      return qrCodeUrl;
+    }
   }
 
   getMenuUrl(tablePublicId: string): string {
