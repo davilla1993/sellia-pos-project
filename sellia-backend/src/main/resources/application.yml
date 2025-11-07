@@ -1,5 +1,75 @@
 spring:
   application:
     name: sellia-api
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
+  # Database Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/sellia_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:toor}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  
+  # Jackson Configuration
+  jackson:
+    time-zone: UTC
+    date-format: dd-MM-yyyy HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# Server Configuration
+server:
+  port: ${BACKEND_PORT:8080}
+  servlet:
+    context-path: /
+
+# Application Configuration
+app:
+  server-url: ${APP_SERVER_URL:http://localhost:8080}
+  base-url: ${APP_BASE_URL:http://localhost:4200} # Frontend URL for QR code generation
+  jwt:
+    secret: ${JWT_SECRET:SevvwQ3vogESlsvgFTgBoXqfnbVeSsJiC917Mi7ZprAloOegCz5NNEuWwktK4qqoT0DDAPzsvtEBm0XLmUBNIQ==}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}  # 1 hour in milliseconds
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:432000000}  # 5 days in milliseconds
+  
+  upload-dir: ./uploads
+  qr-codes-dir: ./uploads/qrcodes
+  products-images-dir: ./uploads/products
+  receipts-dir: ./uploads/receipts
+
+# Actuator Configuration (minimal)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.follysitou.sellia_backend: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
