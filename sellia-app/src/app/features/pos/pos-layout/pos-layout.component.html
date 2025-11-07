@@ -161,8 +161,9 @@
               </svg>
             </button>
             <div class="absolute right-0 mt-0 w-72 bg-neutral-700 border border-neutral-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <!-- Logout button - disabled if session is open -->
+              <!-- Logout button for Admin -->
               <button
+                *ngIf="navigationService.isAdmin()"
                 (click)="hasCashierSession() ? null : logout()"
                 [disabled]="hasCashierSession()"
                 [class.opacity-50]="hasCashierSession()"
@@ -176,6 +177,27 @@
                 </div>
                 <p *ngIf="hasCashierSession()" class="text-xs text-yellow-400 mt-1">
                   ⚠️ Fermez d'abord votre session
+                </p>
+              </button>
+              <!-- Close Session button for Cashiers -->
+              <button
+                *ngIf="!navigationService.isAdmin()"
+                (click)="openCloseSessionModal()"
+                [disabled]="!hasCashierSession() || isLocked()"
+                [class.opacity-50]="!hasCashierSession() || isLocked()"
+                [class.cursor-not-allowed]="!hasCashierSession() || isLocked()"
+                [class.hover:bg-neutral-600/50]="hasCashierSession() && !isLocked()"
+                [class.hover:text-orange-500]="hasCashierSession() && !isLocked()"
+                class="w-full text-left px-4 py-3 text-sm text-neutral-400 transition-colors rounded-lg">
+                <div class="flex items-center gap-2">
+                  <span>🚪</span>
+                  <span>Fermer Session</span>
+                </div>
+                <p *ngIf="!hasCashierSession()" class="text-xs text-yellow-400 mt-1">
+                  ⚠️ Aucune session active
+                </p>
+                <p *ngIf="isLocked()" class="text-xs text-yellow-400 mt-1">
+                  ⚠️ Déverrouillez d'abord votre session
                 </p>
               </button>
             </div>

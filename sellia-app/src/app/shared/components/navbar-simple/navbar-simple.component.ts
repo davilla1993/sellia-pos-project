@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-navbar-simple',
@@ -12,9 +11,5 @@ import { AuthService } from '@core/services/auth.service';
 
 
 export class NavbarSimpleComponent {
-  constructor(private authService: AuthService) {}
-
-  logout(): void {
-    this.authService.logout();
-  }
+  // Logout button removed from navbar
 }
