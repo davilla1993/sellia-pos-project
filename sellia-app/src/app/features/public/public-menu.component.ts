@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 interface ComboProductDetail {
   name: string;

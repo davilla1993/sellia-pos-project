@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { ToastService } from '@shared/services/toast.service';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-tables',
