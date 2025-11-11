@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 interface ComboProductDetail {
   name: string;
@@ -63,18 +64,19 @@ export class PublicMenuComponent implements OnInit {
   isVip: boolean = false;
   loading: boolean = false;
   error: string = '';
-  
+
   allMenuItems: MenuItem[] = [];
   filteredItems: MenuItem[] = [];
   searchQuery: string = '';
   categories: CategoryFilter[] = [];
   selectedCategory: string = 'all';
-  
+
   cart: CartItem[] = [];
   cartTotal: number = 0;
   customerName: string = '';
   customerPhone: string = '';
   notes: string = '';
+  restaurantService = inject(RestaurantInfoService);
   
   showCart: boolean = false;
   submitting: boolean = false;
@@ -91,10 +93,12 @@ export class PublicMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
+
     // Check for QR token in route params and redirect to table parameter
     this.route.params.subscribe(params => {
       const qrToken = params['token'];
-      
+
       if (qrToken) {
         // Redirect from /qr/:token to /menu?table=:tableId
         this.loadMenuByQrToken(qrToken);

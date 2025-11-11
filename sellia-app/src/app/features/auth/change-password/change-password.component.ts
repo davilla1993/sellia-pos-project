@@ -1,9 +1,10 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { ApiService } from '@core/services/api.service';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 @Component({
   selector: 'app-change-password',
@@ -12,7 +13,7 @@ import { ApiService } from '@core/services/api.service';
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.css']
 })
-export class ChangePasswordComponent {
+export class ChangePasswordComponent implements OnInit {
   changePasswordForm: FormGroup;
   isLoading = signal(false);
   error = signal<string | null>(null);
@@ -20,6 +21,7 @@ export class ChangePasswordComponent {
   showOldPassword = signal(false);
   showNewPassword = signal(false);
   showConfirmPassword = signal(false);
+  restaurantService = inject(RestaurantInfoService);
 
   private apiService = inject(ApiService);
 
@@ -40,6 +42,10 @@ export class ChangePasswordComponent {
       },
       { validators: this.passwordMatchValidator }
     );
+  }
+
+  ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
   }
 
   toggleOldPasswordVisibility(): void {

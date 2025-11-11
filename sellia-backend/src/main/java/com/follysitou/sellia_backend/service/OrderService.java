@@ -528,7 +528,7 @@ public class OrderService {
         order.setTotalAmount(order.getTotalAmount() + additionalAmount);
         Order updated = orderRepository.save(order);
 
-        log.info("Items added to order {}: +{} XAF, new total: {} XAF", 
+        log.info("Items added to order {}: +{} FCFA, new total: {} FCFA", 
                 orderId, additionalAmount, updated.getTotalAmount());
 
         return orderMapper.toResponse(updated);
@@ -641,7 +641,7 @@ public class OrderService {
         session.setIsPaid(true);
         customerSessionRepository.save(session);
 
-        log.info("Session checkout completed: {} - Invoice: {} - Amount: {} XAF - Orders count: {}",
+        log.info("Session checkout completed: {} - Invoice: {} - Amount: {} FCFA - Orders count: {}",
                 customerSessionPublicId, invoice.getInvoiceNumber(), totalAmount, orders.size());
 
         // Retourner la première order (ou créer une réponse consolidée)

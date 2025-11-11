@@ -2,6 +2,7 @@ package com.follysitou.sellia_backend.service;
 
 import com.follysitou.sellia_backend.dto.request.RestaurantUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.RestaurantResponse;
+import com.follysitou.sellia_backend.exception.ConflictException;
 import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.RestaurantMapper;
 import com.follysitou.sellia_backend.model.Restaurant;
@@ -19,6 +20,7 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper restaurantMapper;
+    private final FileService fileService;
 
     public RestaurantResponse getRestaurant() {
         Restaurant restaurant = restaurantRepository.findAll().stream()
@@ -27,14 +29,75 @@ public class RestaurantService {
         return restaurantMapper.toResponse(restaurant);
     }
 
+    public RestaurantResponse createRestaurant(RestaurantUpdateRequest request) {
+        // Check if restaurant already exists
+        boolean exists = restaurantRepository.findAll().stream().findFirst().isPresent();
+        if (exists) {
+            throw new ConflictException("Un restaurant existe déjà. Utilisez la mise à jour.");
+        }
+
+        Restaurant restaurant = new Restaurant();
+
+        // Set required fields
+        restaurant.setName(request.getName() != null ? request.getName() : "Restaurant");
+        restaurant.setCurrency(request.getCurrency() != null ? request.getCurrency() : "XOF");
+        restaurant.setTimezone(request.getTimezone() != null ? request.getTimezone() : "Africa/Lomé");
+
+        // Set default values
+        restaurant.setDefaultLanguage("fr");
+        restaurant.setIsActive(true);
+        restaurant.setQrCodePrefix("SELLIA");
+        restaurant.setMaxTables(100);
+        restaurant.setAllowOnlinePayment(false);
+        restaurant.setAllowCashPayment(true);
+        restaurant.setTaxRate(0.0);
+        restaurant.setMaxCashOperationAmount(50000L);
+
+        // Set optional fields
+        if (request.getDescription() != null) restaurant.setDescription(request.getDescription());
+        if (request.getAddress() != null) restaurant.setAddress(request.getAddress());
+        if (request.getPhoneNumber() != null) restaurant.setPhoneNumber(request.getPhoneNumber());
+        if (request.getEmail() != null) restaurant.setEmail(request.getEmail());
+        if (request.getTaxRate() != null) restaurant.setTaxRate(request.getTaxRate());
+        if (request.getOpeningHours() != null) restaurant.setOpeningHours(request.getOpeningHours());
+
+        // Handle logo upload
+        if (request.getLogo() != null && !request.getLogo().isEmpty()) {
+            String fileName = fileService.uploadRestaurantLogo(request.getLogo());
+            restaurant.setLogoUrl("/uploads/restaurant/" + fileName);
+            log.info("Restaurant logo uploaded: /uploads/restaurant/{}", fileName);
+        }
+
+        Restaurant saved = restaurantRepository.save(restaurant);
+        log.info("Restaurant created: {}", saved.getPublicId());
+        return restaurantMapper.toResponse(saved);
+    }
+
     public RestaurantResponse updateRestaurant(RestaurantUpdateRequest request) {
+        // Find existing restaurant
         Restaurant restaurant = restaurantRepository.findAll().stream()
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("No restaurant configured"));
 
+        // Update fields only if they are not null
         if (request.getName() != null) restaurant.setName(request.getName());
         if (request.getDescription() != null) restaurant.setDescription(request.getDescription());
-        if (request.getLogoUrl() != null) restaurant.setLogoUrl(request.getLogoUrl());
+
+        // Handle logo upload
+        if (request.getLogo() != null && !request.getLogo().isEmpty()) {
+            // Delete old logo if it exists
+            if (restaurant.getLogoUrl() != null && !restaurant.getLogoUrl().isEmpty()) {
+                fileService.deleteRestaurantLogo(restaurant.getLogoUrl());
+                log.info("Old restaurant logo deleted: {}", restaurant.getLogoUrl());
+            }
+            // Upload new logo
+            String fileName = fileService.uploadRestaurantLogo(request.getLogo());
+            restaurant.setLogoUrl("/uploads/restaurant/" + fileName);
+            log.info("New restaurant logo uploaded: /uploads/restaurant/{}", fileName);
+        } else if (request.getLogoUrl() != null) {
+            restaurant.setLogoUrl(request.getLogoUrl());
+        }
+
         if (request.getAddress() != null) restaurant.setAddress(request.getAddress());
         if (request.getPhoneNumber() != null) restaurant.setPhoneNumber(request.getPhoneNumber());
         if (request.getEmail() != null) restaurant.setEmail(request.getEmail());

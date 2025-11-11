@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -18,6 +19,8 @@ public class RestaurantUpdateRequest {
     private String description;
 
     private String logoUrl;
+
+    private MultipartFile logo;
 
     @Size(max = 200)
     private String address;

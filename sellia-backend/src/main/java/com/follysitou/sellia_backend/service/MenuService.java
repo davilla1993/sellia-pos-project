@@ -103,14 +103,9 @@ public class MenuService {
         // Handle image upload
         if (request.getImage() != null && !request.getImage().isEmpty()) {
             // Delete old image if it exists
-            if (menu.getImageUrl() != null) {
-                try {
-                    String oldFileName = menu.getImageUrl().substring(menu.getImageUrl().lastIndexOf('/') + 1);
-                    fileService.deleteFile("/uploads/products/" + oldFileName);
-                    log.info("Old menu image deleted: {}", oldFileName);
-                } catch (Exception e) {
-                    log.warn("Failed to delete old menu image: {}", e.getMessage());
-                }
+            if (menu.getImageUrl() != null && !menu.getImageUrl().isEmpty()) {
+                fileService.deleteProductImage(menu.getImageUrl());
+                log.info("Old menu image deleted: {}", menu.getImageUrl());
             }
             // Upload new image
             String newFileName = fileService.uploadProductImage(request.getImage());
@@ -127,6 +122,13 @@ public class MenuService {
     public void deleteMenu(String publicId) {
         Menu menu = menuRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu", "publicId", publicId));
+
+        // Delete associated image
+        if (menu.getImageUrl() != null && !menu.getImageUrl().isEmpty()) {
+            fileService.deleteProductImage(menu.getImageUrl());
+            log.info("Menu image deleted during menu deletion: {}", menu.getImageUrl());
+        }
+
         menu.setDeleted(true);
         menu.setDeletedAt(java.time.LocalDateTime.now());
         menu.setDeletedBy(SecurityUtil.getCurrentUsername());

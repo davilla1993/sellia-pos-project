@@ -4,8 +4,8 @@
     <div class="header-content">
       <div class="header-top">
         <div class="logo-section">
-          <img src="assets/logo.jpg" alt="MAISON RECLA" class="logo">
-          <h1>MAISON RECLA</h1>
+          <img [src]="restaurantService.restaurantInfo().logoUrl" [alt]="restaurantService.restaurantInfo().name" class="logo">
+          <h1>{{ restaurantService.restaurantInfo().name }}</h1>
         </div>
         <div class="table-info">
           <span class="table-label">Table {{ tableNumber }}</span>

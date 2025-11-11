@@ -28,6 +28,9 @@ public class FileService {
     @Value("${app.receipts-dir:./uploads/receipts}")
     private String receiptsDir;
 
+    @Value("${app.restaurant-logos-dir:./uploads/restaurant}")
+    private String restaurantLogosDir;
+
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"};
 
@@ -52,6 +55,27 @@ public class FileService {
         }
     }
 
+    public String uploadRestaurantLogo(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("Logo file is required");
+        }
+
+        validateImageFile(file);
+
+        String fileName = generateFileName(file.getOriginalFilename());
+        Path uploadPath = Paths.get(restaurantLogosDir);
+
+        try {
+            Files.createDirectories(uploadPath);
+            Files.write(uploadPath.resolve(fileName), file.getBytes());
+            log.info("Restaurant logo uploaded successfully: {}", fileName);
+            return fileName;
+        } catch (IOException e) {
+            log.error("Failed to upload restaurant logo", e);
+            throw new BusinessException("Failed to upload logo. Please try again later.");
+        }
+    }
+
     public void deleteFile(String filePath) {
         if (filePath == null || filePath.isBlank()) {
             return;
@@ -64,6 +88,38 @@ public class FileService {
             log.info("File deleted successfully: {}", fileName);
         } catch (IOException e) {
             log.error("Failed to delete file", e);
+            // Don't throw - deletion failure shouldn't block operations
+        }
+    }
+
+    public void deleteRestaurantLogo(String logoUrl) {
+        if (logoUrl == null || logoUrl.isBlank()) {
+            return;
+        }
+
+        try {
+            String fileName = extractFileName(logoUrl);
+            Path fileToDelete = Paths.get(restaurantLogosDir).resolve(fileName);
+            Files.deleteIfExists(fileToDelete);
+            log.info("Restaurant logo deleted successfully: {}", fileName);
+        } catch (IOException e) {
+            log.error("Failed to delete restaurant logo: {}", e.getMessage());
+            // Don't throw - deletion failure shouldn't block operations
+        }
+    }
+
+    public void deleteProductImage(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+
+        try {
+            String fileName = extractFileName(imageUrl);
+            Path fileToDelete = Paths.get(productsImagesDir).resolve(fileName);
+            Files.deleteIfExists(fileToDelete);
+            log.info("Product image deleted successfully: {}", fileName);
+        } catch (IOException e) {
+            log.error("Failed to delete product image: {}", e.getMessage());
             // Don't throw - deletion failure shouldn't block operations
         }
     }

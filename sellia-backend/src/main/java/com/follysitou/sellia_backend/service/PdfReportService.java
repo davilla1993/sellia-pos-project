@@ -1,11 +1,14 @@
 package com.follysitou.sellia_backend.service;
 
 import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
@@ -13,19 +16,70 @@ import com.itextpdf.layout.properties.UnitValue;
 import com.follysitou.sellia_backend.dto.response.CashierReportResponse;
 import com.follysitou.sellia_backend.dto.response.GlobalSessionReportResponse;
 import com.follysitou.sellia_backend.dto.response.UserReportResponse;
+import com.follysitou.sellia_backend.model.Restaurant;
+import com.follysitou.sellia_backend.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PdfReportService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private final RestaurantRepository restaurantRepository;
+
+    @Value("${app.restaurant-logos-dir:./uploads/restaurant}")
+    private String restaurantLogosDir;
+
+    private void addRestaurantHeader(Document document, String reportTitle) throws IOException {
+        Restaurant restaurant = restaurantRepository.findAll().stream()
+                .findFirst()
+                .orElse(null);
+
+        if (restaurant != null && restaurant.getLogoUrl() != null && !restaurant.getLogoUrl().isEmpty()) {
+            try {
+                String filename = restaurant.getLogoUrl().substring(restaurant.getLogoUrl().lastIndexOf("/") + 1);
+                java.nio.file.Path logoPath = Paths.get(restaurantLogosDir).resolve(filename);
+
+                if (java.nio.file.Files.exists(logoPath)) {
+                    ImageData imageData = ImageDataFactory.create(logoPath.toString());
+                    Image logo = new Image(imageData);
+                    logo.setWidth(60);
+                    logo.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
+                    document.add(logo);
+                }
+            } catch (Exception e) {
+                log.warn("Could not load restaurant logo for PDF: {}", e.getMessage());
+            }
+        }
+
+        // Restaurant name
+        if (restaurant != null && restaurant.getName() != null) {
+            Paragraph restaurantName = new Paragraph(restaurant.getName())
+                    .setFontSize(12)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER);
+            document.add(restaurantName);
+        }
+
+        // Report title
+        Paragraph title = new Paragraph(reportTitle)
+                .setFontSize(18)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER);
+        document.add(title);
+        document.add(new Paragraph("").setMarginBottom(10));
+    }
 
     public byte[] generateGlobalSessionReportPdf(GlobalSessionReportResponse report) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -36,12 +90,8 @@ public class PdfReportService {
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-        // Title
-        Paragraph title = new Paragraph("RAPPORT SESSION GLOBALE")
-                .setFont(boldFont)
-                .setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER);
-        document.add(title);
+        // Header with logo and title
+        addRestaurantHeader(document, "RAPPORT SESSION GLOBALE");
 
         // Session Info
         document.add(new Paragraph("").setMarginBottom(10));
@@ -60,15 +110,15 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalDiscounts()));
         summaryTable.addCell("Montant Initial");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getInitialAmount()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getInitialAmount()));
         summaryTable.addCell("Montant Final");
-        summaryTable.addCell(String.format("%.0f XAF", report.getFinalAmount() != null ? (double) report.getFinalAmount() : 0));
+        summaryTable.addCell(String.format("%.0f FCFA", report.getFinalAmount() != null ? (double) report.getFinalAmount() : 0));
 
         document.add(summaryTable);
 
@@ -88,7 +138,7 @@ public class PdfReportService {
             for (GlobalSessionReportResponse.CashierSessionSummary session : report.getCashierSessions()) {
                 cashierTable.addCell(session.getCashierName());
                 cashierTable.addCell(session.getUserName());
-                cashierTable.addCell(String.format("%.0f XAF", (double) session.getTotalSales()));
+                cashierTable.addCell(String.format("%.0f FCFA", (double) session.getTotalSales()));
                 cashierTable.addCell(String.valueOf(session.getOrderCount()));
 
                 String duration = "N/A";
@@ -118,7 +168,7 @@ public class PdfReportService {
             for (GlobalSessionReportResponse.OrderSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
+                productsTable.addCell(String.format("%.0f FCFA", (double) product.getTotalAmount()));
             }
         }
 
@@ -137,12 +187,8 @@ public class PdfReportService {
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-        // Title
-        Paragraph title = new Paragraph("RAPPORT CAISSE")
-                .setFont(boldFont)
-                .setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER);
-        document.add(title);
+        // Header with logo and title
+        addRestaurantHeader(document, "RAPPORT CAISSE");
 
         // Cashier Info
         document.add(new Paragraph("").setMarginBottom(10));
@@ -158,13 +204,13 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Valeur Moyenne Commande");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getAverageOrderValue()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getAverageOrderValue()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalDiscounts()));
 
         document.add(summaryTable);
 
@@ -183,8 +229,8 @@ public class PdfReportService {
             for (CashierReportResponse.UserSummary user : report.getUsers()) {
                 usersTable.addCell(user.getFirstName() + " " + user.getLastName());
                 usersTable.addCell(String.valueOf(user.getOrderCount()));
-                usersTable.addCell(String.format("%.0f XAF", (double) user.getTotalSales()));
-                usersTable.addCell(String.format("%.0f XAF",
+                usersTable.addCell(String.format("%.0f FCFA", (double) user.getTotalSales()));
+                usersTable.addCell(String.format("%.0f FCFA",
                     user.getOrderCount() > 0 ? (double) user.getTotalSales() / user.getOrderCount() : 0));
             }
         }
@@ -205,7 +251,7 @@ public class PdfReportService {
             for (CashierReportResponse.ProductSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
+                productsTable.addCell(String.format("%.0f FCFA", (double) product.getTotalAmount()));
             }
         }
 
@@ -224,12 +270,8 @@ public class PdfReportService {
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-        // Title
-        Paragraph title = new Paragraph("RAPPORT UTILISATEUR")
-                .setFont(boldFont)
-                .setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER);
-        document.add(title);
+        // Header with logo and title
+        addRestaurantHeader(document, "RAPPORT UTILISATEUR");
 
         // User Info
         document.add(new Paragraph("").setMarginBottom(10));
@@ -245,13 +287,13 @@ public class PdfReportService {
 
         Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         summaryTable.addCell("Total Ventes");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalSales()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalSales()));
         summaryTable.addCell("Nombre de Commandes");
         summaryTable.addCell(String.valueOf(report.getTotalOrders()));
         summaryTable.addCell("Valeur Moyenne Commande");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getAverageOrderValue()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getAverageOrderValue()));
         summaryTable.addCell("Total Remises");
-        summaryTable.addCell(String.format("%.0f XAF", (double) report.getTotalDiscounts()));
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalDiscounts()));
         summaryTable.addCell("Remise Moyenne");
         summaryTable.addCell(String.format("%.2f%%", report.getAverageDiscount() * 100));
 
@@ -271,7 +313,7 @@ public class PdfReportService {
             for (UserReportResponse.CashierSummary cashier : report.getCashiers()) {
                 cashiersTable.addCell(cashier.getCashierName());
                 cashiersTable.addCell(String.valueOf(cashier.getOrderCount()));
-                cashiersTable.addCell(String.format("%.0f XAF", (double) cashier.getTotalSales()));
+                cashiersTable.addCell(String.format("%.0f FCFA", (double) cashier.getTotalSales()));
             }
         }
 
@@ -291,7 +333,7 @@ public class PdfReportService {
             for (UserReportResponse.ProductSummary product : report.getTopProducts()) {
                 productsTable.addCell(product.getProductName());
                 productsTable.addCell(String.valueOf(product.getQuantity()));
-                productsTable.addCell(String.format("%.0f XAF", (double) product.getTotalAmount()));
+                productsTable.addCell(String.format("%.0f FCFA", (double) product.getTotalAmount()));
             }
         }
 

@@ -3,8 +3,8 @@
       <!-- Logo Section -->
       <div class="flex items-center justify-between h-20 px-4 border-b border-neutral-800">
         <div *ngIf="!collapsed()" class="flex items-center space-x-2">
-          <img src="/assets/logo.jpg" alt="Logo" class="w-8 h-8 rounded">
-          <span class="text-white font-bold text-sm">Sellia</span>
+          <img [src]="restaurantService.restaurantInfo().logoUrl" [alt]="restaurantService.restaurantInfo().name" class="w-8 h-8 rounded object-cover">
+          <span class="text-white font-bold text-sm">{{ restaurantService.restaurantInfo().name }}</span>
         </div>
         <button (click)="toggleCollapse()" class="text-neutral-400 hover:text-primary transition-colors">
           <svg *ngIf="!collapsed()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

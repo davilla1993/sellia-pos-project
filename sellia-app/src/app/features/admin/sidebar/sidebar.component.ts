@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdminSidebarService } from '@core/services/admin-sidebar.service';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 interface MenuItem {
   label: string;
@@ -20,10 +21,15 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   private sidebarService = inject(AdminSidebarService);
   collapsed = this.sidebarService.collapsed;
   private sanitizer = inject(DomSanitizer);
+  restaurantService = inject(RestaurantInfoService);
+
+  ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
+  }
 
   getSafeIcon(icon: string | undefined): SafeHtml {
     return icon ? this.sanitizer.bypassSecurityTrustHtml(icon) : this.sanitizer.bypassSecurityTrustHtml('');
@@ -153,6 +159,12 @@ export class SidebarComponent {
       label: 'Opérations de Caisse',
       icon: this.getIcon('cashoperations'),
       route: '/admin/cash-operations',
+      expanded: false
+    },
+    {
+      label: 'Rapports',
+      icon: this.getIcon('reports'),
+      route: '/admin/reports/sales',
       expanded: false
     }
   ];

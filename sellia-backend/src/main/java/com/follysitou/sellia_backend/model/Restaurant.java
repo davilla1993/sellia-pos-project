@@ -40,7 +40,7 @@ public class Restaurant extends BaseEntity {
 
     @NotNull(message = "Currency is required")
     @Column(name = "currency", nullable = false)
-    private String currency = "XAF";
+    private String currency = "FCFA";
 
     @Column(name = "tax_rate")
     private Double taxRate = 0.0;

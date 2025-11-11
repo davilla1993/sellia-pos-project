@@ -126,8 +126,8 @@ public class ProductService {
         // Handle image update
         if (request.getImage() != null && !request.getImage().isEmpty()) {
             // Delete old image if it exists
-            if (product.getImageUrl() != null) {
-                fileService.deleteFile(product.getImageUrl());
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                fileService.deleteProductImage(product.getImageUrl());
                 log.info("Old product image deleted: {}", product.getImageUrl());
             }
             // Upload new image
@@ -195,8 +195,8 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "publicId", publicId));
         
         // Delete associated image
-        if (product.getImageUrl() != null) {
-            fileService.deleteFile(product.getImageUrl());
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            fileService.deleteProductImage(product.getImageUrl());
             log.info("Product image deleted during product deletion: {}", product.getImageUrl());
         }
         

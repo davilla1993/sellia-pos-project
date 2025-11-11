@@ -69,17 +69,46 @@ export class CheckoutComponent implements OnInit {
     this.apiService.getRestaurant().subscribe({
       next: (response: any) => {
         const info = response.data || response;
+        // Build absolute URL for logo to work in print window
+        const logoUrl = this.buildAbsoluteLogoUrl(info.logoUrl);
+
         this.restaurantInfo.set({
           name: info.name || 'SELLIA Restaurant',
           address: info.address || '123 Rue de la Gastronomie, Douala',
           phoneNumber: info.phoneNumber || '+237 6 XX XX XX XX',
-          logoUrl: info.logoUrl || '/assets/logo.jpg'
+          logoUrl: logoUrl
         });
       },
       error: (err) => {
         console.error('Erreur chargement infos restaurant:', err);
       }
     });
+  }
+
+  private buildAbsoluteLogoUrl(logoUrl: string | null | undefined): string {
+    if (!logoUrl) {
+      // Return absolute URL for default logo
+      return `${window.location.origin}/assets/logo.jpg`;
+    }
+
+    // If already absolute, return as is
+    if (logoUrl.startsWith('http')) {
+      return logoUrl;
+    }
+
+    // Extract filename from path
+    const filename = logoUrl.includes('/') ? logoUrl.split('/').pop() : logoUrl;
+
+    // Build absolute URL using backend API URL
+    const apiUrl = this.apiService['apiUrl'];
+
+    // If apiUrl is already absolute (starts with http), use it directly
+    if (apiUrl.startsWith('http')) {
+      return `${apiUrl}/restaurant/logo/${filename}`;
+    }
+
+    // Otherwise, prepend origin
+    return `${window.location.origin}${apiUrl}/restaurant/logo/${filename}`;
   }
 
   filteredTables() {
@@ -199,9 +228,9 @@ export class CheckoutComponent implements OnInit {
   }
 
   sessionTotal(): number {
+    // totalAmount contient déjà le montant net après réduction
     return this.sessionOrders().reduce((sum, order) => {
-      const orderTotal = order.totalAmount - (order.discountAmount || 0);
-      return sum + orderTotal;
+      return sum + order.totalAmount;
     }, 0);
   }
 
@@ -223,6 +252,8 @@ export class CheckoutComponent implements OnInit {
   applyDiscount(): void {
     // discountPercent contient directement le montant en FCFA (pas un pourcentage)
     this.discountAmount.set(Math.round(this.discountPercent()));
+    // Recalculer le rendu après application de la réduction
+    this.calculateChange();
   }
 
   canProcessPayment(): boolean {
@@ -325,7 +356,7 @@ export class CheckoutComponent implements OnInit {
             body { font-family: 'Courier New', monospace; font-size: 11px; width: 80mm; margin: 0; padding: 0; }
             .receipt { padding: 10mm; text-align: center; }
             .logo { margin-bottom: 8px; }
-            .logo img { max-width: 60mm; height: auto; }
+            .logo img { max-width: 40mm; height: auto; }
             .restaurant-info { font-weight: bold; margin-bottom: 5px; }
             .restaurant-details { font-size: 9px; color: #333; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
             .header { font-weight: bold; font-size: 14px; margin-bottom: 10px; }
@@ -353,7 +384,7 @@ export class CheckoutComponent implements OnInit {
 
             <div class="section">
               <div>Table: <strong>${tableNumber}</strong></div>
-              <div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>
+              ${this.selectedSession() ? `<div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>` : ''}
             </div>
 
             <div class="section">

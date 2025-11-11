@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 @Component({
   selector: 'app-navbar-simple',
@@ -8,8 +9,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './navbar-simple.component.html',
   styleUrls: ['./navbar-simple.component.css']
 })
+export class NavbarSimpleComponent implements OnInit {
+  restaurantService = inject(RestaurantInfoService);
 
-
-export class NavbarSimpleComponent {
-  // Logout button removed from navbar
+  ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
+  }
 }

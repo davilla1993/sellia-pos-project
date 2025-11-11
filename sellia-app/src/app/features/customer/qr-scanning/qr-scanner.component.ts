@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 @Component({
   selector: 'app-qr-scanner',
@@ -11,11 +12,12 @@ import { ApiService } from '@core/services/api.service';
   templateUrl: './qr-scanner.component.html',
   styleUrls: ['./qr-scanner.component.css']
 })
-export class QrScannerComponent {
+export class QrScannerComponent implements OnInit {
   manualEntry = signal(false);
   isProcessing = signal(false);
   error = signal<string | null>(null);
   manualForm: FormGroup;
+  restaurantService = inject(RestaurantInfoService);
 
   constructor(
     private apiService: ApiService,
@@ -27,6 +29,10 @@ export class QrScannerComponent {
       customerName: [''],
       customerPhone: ['']
     });
+  }
+
+  ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
   }
 
 

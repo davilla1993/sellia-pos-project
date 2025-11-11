@@ -1,8 +1,9 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
 @Component({
   selector: 'app-login',
@@ -17,6 +18,7 @@ export class LoginComponent implements OnInit {
   error = signal<string | null>(null);
   showPassword = signal(false);
   warningMessage = signal<string | null>(null);
+  restaurantService = inject(RestaurantInfoService);
 
   constructor(
     private fb: FormBuilder,
@@ -30,6 +32,8 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.restaurantService.loadRestaurantInfo();
+
     // Check if user was logged out due to token revocation
     const logoutReason = sessionStorage.getItem('logoutReason');
     if (logoutReason === 'session_revoked') {

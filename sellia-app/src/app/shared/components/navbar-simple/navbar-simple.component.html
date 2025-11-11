@@ -3,10 +3,10 @@
       <div class="flex justify-between items-center h-20">
         <!-- Logo -->
         <div class="flex items-center space-x-3">
-          <img src="/assets/logo.jpg" alt="Maison Recla" class="h-12 w-12 rounded-lg">
+          <img [src]="restaurantService.restaurantInfo().logoUrl" [alt]="restaurantService.restaurantInfo().name" class="h-12 w-12 rounded-lg object-cover">
           <div>
             <div class="text-xs uppercase tracking-wider text-neutral-500 font-semibold">Sellia POS</div>
-            <span class="text-xl font-bold text-primary">Maison Recla</span>
+            <span class="text-xl font-bold text-primary">{{ restaurantService.restaurantInfo().name }}</span>
           </div>
         </div>
 

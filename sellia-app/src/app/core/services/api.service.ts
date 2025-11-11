@@ -480,6 +480,23 @@ export class ApiService {
     });
   }
 
+  getAllGlobalSessions(page: number = 0, size: number = 100): Observable<any[]> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/global-sessions`, { params }).pipe(
+      map(response => {
+        if (response?.content && Array.isArray(response.content)) {
+          return response.content;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      })
+    );
+  }
+
   // Cashier Sessions
   getCurrentCashierSession(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/cashier-sessions/current`);
@@ -721,7 +738,11 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/restaurant`);
   }
 
-  updateRestaurant(data: any): Observable<any> {
+  createRestaurant(data: FormData | any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/restaurant`, data);
+  }
+
+  updateRestaurant(data: FormData | any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/restaurant`, data);
   }
 

@@ -167,6 +167,20 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     return route.includes('/pos/bar');
   }
 
+  isInPendingOrdersContext(): boolean {
+    const route = this.currentRoute();
+    return route.includes('/pos/pending-orders');
+  }
+
+  shouldShowSessionControls(): boolean {
+    // Ne pas afficher les contrôles de session pour les ADMIN
+    if (this.navigationService.isAdmin()) {
+      return false;
+    }
+    // Ne pas afficher les contrôles de session sur kitchen, bar et pending-orders
+    return !this.isInKitchenContext() && !this.isInBarContext() && !this.isInPendingOrdersContext();
+  }
+
   getCurrentUserInfo(): string {
     return `${this.navigationService.getCurrentUserName()} • ${this.navigationService.getCurrentUserRole()}`;
   }
