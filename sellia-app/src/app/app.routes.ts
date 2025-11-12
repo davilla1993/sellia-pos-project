@@ -110,8 +110,13 @@ export const routes: Routes = [
           { path: 'sales', component: ReportsComponent },
           { path: 'products', component: ReportsComponent },
           { path: 'cashiers', component: ReportsComponent },
-          { path: 'staff', component: ReportsComponent }
+          { path: 'staff', component: ReportsComponent },
+          { path: 'tables', component: ReportsComponent }
         ]
+      },
+      {
+        path: 'search-invoice',
+        loadComponent: () => import('./features/admin/search-invoice/search-invoice.component').then(m => m.SearchInvoiceComponent)
       },
       { path: 'settings', component: SettingsComponent },
       {

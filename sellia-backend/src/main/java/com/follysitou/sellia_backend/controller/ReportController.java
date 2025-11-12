@@ -2,6 +2,8 @@ package com.follysitou.sellia_backend.controller;
 
 import com.follysitou.sellia_backend.dto.response.CashierReportResponse;
 import com.follysitou.sellia_backend.dto.response.GlobalSessionReportResponse;
+import com.follysitou.sellia_backend.dto.response.ProductReportResponse;
+import com.follysitou.sellia_backend.dto.response.TableReportResponse;
 import com.follysitou.sellia_backend.dto.response.UserReportResponse;
 import com.follysitou.sellia_backend.service.ReportService;
 import com.follysitou.sellia_backend.service.PdfReportService;
@@ -95,6 +97,24 @@ public class ReportController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/products")
+    public ResponseEntity<ProductReportResponse> getProductReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        ProductReportResponse report = reportService.getProductReport(startDate, endDate);
+        return ResponseEntity.ok(report);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tables")
+    public ResponseEntity<TableReportResponse> getTableReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        TableReportResponse report = reportService.getTableReport(startDate, endDate);
+        return ResponseEntity.ok(report);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/global-session/{globalSessionId}/pdf")
     public ResponseEntity<byte[]> getGlobalSessionReportPdf(
             @PathVariable String globalSessionId) {
@@ -150,6 +170,48 @@ public class ReportController {
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", 
                     "rapport-utilisateur-" + userId + ".pdf");
+            headers.setContentLength(pdfContent.length);
+
+            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/products/pdf")
+    public ResponseEntity<byte[]> getProductReportPdf(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        try {
+            ProductReportResponse report = reportService.getProductReport(startDate, endDate);
+            byte[] pdfContent = pdfReportService.generateProductReportPdf(report);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment",
+                    "rapport-produits.pdf");
+            headers.setContentLength(pdfContent.length);
+
+            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tables/pdf")
+    public ResponseEntity<byte[]> getTableReportPdf(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        try {
+            TableReportResponse report = reportService.getTableReport(startDate, endDate);
+            byte[] pdfContent = pdfReportService.generateTableReportPdf(report);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment",
+                    "rapport-tables.pdf");
             headers.setContentLength(pdfContent.length);
 
             return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);

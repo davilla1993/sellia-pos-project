@@ -1,0 +1,155 @@
+<div class="min-h-screen bg-neutral-900 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-white mb-2">🔍 Recherche de Facture</h1>
+      <p class="text-neutral-400">Entrez simplement le numéro de facture</p>
+    </div>
+
+    <!-- Search Box -->
+    <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6 mb-6">
+      <form (ngSubmit)="searchInvoice()" class="flex gap-4">
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-neutral-300 mb-2">
+            Numéro de Facture
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="invoiceNumber"
+            name="invoiceNumber"
+            placeholder="Ex: 20251030-13369"
+            class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            [disabled]="loading()"
+          />
+        </div>
+        <div class="flex items-end gap-2">
+          <button
+            type="submit"
+            [disabled]="loading() || !invoiceNumber.trim()"
+            class="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <span *ngIf="!loading()">🔍 Rechercher</span>
+            <span *ngIf="loading()">⏳ Recherche...</span>
+          </button>
+          <button
+            type="button"
+            (click)="clearSearch()"
+            *ngIf="searched()"
+            class="px-6 py-3 bg-neutral-700 text-white font-semibold rounded-lg hover:bg-neutral-600 transition-all">
+            ❌ Effacer
+          </button>
+        </div>
+      </form>
+
+      <!-- Error Message -->
+      <div *ngIf="error()" class="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+        <p class="text-red-400 font-semibold">⚠️ {{ error() }}</p>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="searched() && !loading() && searchResults().length > 0" class="space-y-4">
+      <!-- Summary Card -->
+      <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-white">📋 Résultats de Recherche</h2>
+          <span class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-semibold">
+            {{ searchResults().length }} commande(s) trouvée(s)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-neutral-900 rounded-lg p-4">
+            <p class="text-neutral-400 text-sm mb-1">Total Commandes</p>
+            <p class="text-2xl font-bold text-white">{{ searchResults().length }}</p>
+          </div>
+          <div class="bg-neutral-900 rounded-lg p-4">
+            <p class="text-neutral-400 text-sm mb-1">Montant Total</p>
+            <p class="text-2xl font-bold text-green-400">
+              {{ formatCurrency(getTotalAmount()) }}
+            </p>
+          </div>
+          <div class="bg-neutral-900 rounded-lg p-4">
+            <p class="text-neutral-400 text-sm mb-1">Remises Totales</p>
+            <p class="text-2xl font-bold text-yellow-400">
+              {{ formatCurrency(getTotalDiscounts()) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders List -->
+      <div class="space-y-4">
+        <div *ngFor="let order of searchResults(); let i = index"
+             class="bg-neutral-800 rounded-lg border border-neutral-700 p-6 hover:border-primary/50 transition-all">
+
+          <!-- Order Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+              <span class="text-2xl font-bold text-neutral-500">#{{ i + 1 }}</span>
+              <div>
+                <h3 class="text-lg font-bold text-white">{{ order.orderNumber }}</h3>
+                <p class="text-sm text-neutral-400">{{ formatDateTime(order.createdAt) }}</p>
+              </div>
+            </div>
+            <span [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+
+          <!-- Order Details -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div>
+              <p class="text-neutral-400 text-sm">Type</p>
+              <p class="text-white font-semibold">
+                {{ order.orderType === 'TABLE' ? '🪑 Table' : '📦 À Emporter' }}
+              </p>
+            </div>
+            <div *ngIf="order.table">
+              <p class="text-neutral-400 text-sm">Table</p>
+              <p class="text-white font-semibold">{{ order.table.name || order.table.number }}</p>
+            </div>
+            <div>
+              <p class="text-neutral-400 text-sm">Montant</p>
+              <p class="text-green-400 font-bold">{{ formatCurrency(order.totalAmount) }}</p>
+            </div>
+            <div *ngIf="order.discountAmount && order.discountAmount > 0">
+              <p class="text-neutral-400 text-sm">Remise</p>
+              <p class="text-yellow-400 font-semibold">{{ formatCurrency(order.discountAmount) }}</p>
+            </div>
+            <div *ngIf="order.notes">
+              <p class="text-neutral-400 text-sm">Notes</p>
+              <p class="text-white">{{ order.notes }}</p>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="border-t border-neutral-700 pt-4">
+            <h4 class="text-sm font-semibold text-neutral-300 mb-3">Articles commandés</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of order.items" class="flex items-center justify-between py-2 px-3 bg-neutral-900 rounded-lg">
+                <div class="flex items-center gap-3">
+                  <span class="px-2 py-1 bg-primary/20 text-primary rounded text-sm font-bold">
+                    × {{ item.quantity }}
+                  </span>
+                  <span class="text-white">{{ item.product.name }}</span>
+                </div>
+                <div class="text-right">
+                  <p class="text-white font-semibold">{{ formatCurrency(item.totalPrice) }}</p>
+                  <p class="text-xs text-neutral-400">{{ formatCurrency(item.unitPrice) }} / unité</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="searched() && !loading() && searchResults().length === 0 && !error()"
+         class="bg-neutral-800 rounded-lg border border-neutral-700 p-12 text-center">
+      <div class="text-6xl mb-4">🔍</div>
+      <h3 class="text-xl font-bold text-white mb-2">Aucun résultat</h3>
+      <p class="text-neutral-400">Aucune commande n'a été trouvée pour ce numéro de facture.</p>
+    </div>
+  </div>
+</div>

@@ -100,4 +100,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.cashierSession.publicId = :cashierSessionId AND o.deleted = false")
     Long countByCashierSession(@Param("cashierSessionId") String cashierSessionId);
+
+    @Query("SELECT o FROM Order o " +
+           "LEFT JOIN o.invoice inv " +
+           "WHERE o.deleted = false AND inv.invoiceNumber = :invoiceNumber " +
+           "ORDER BY o.createdAt DESC")
+    List<Order> findByInvoiceNumber(@Param("invoiceNumber") String invoiceNumber);
+
+    @Query("SELECT o FROM Order o " +
+           "WHERE o.deleted = false " +
+           "AND o.customerSession.id = (SELECT i.customerSession.id FROM Invoice i WHERE i.invoiceNumber = :invoiceNumber) " +
+           "ORDER BY o.createdAt DESC")
+    List<Order> findByInvoiceNumberViaSession(@Param("invoiceNumber") String invoiceNumber);
 }

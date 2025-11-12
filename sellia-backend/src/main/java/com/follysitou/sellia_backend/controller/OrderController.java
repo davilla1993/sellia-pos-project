@@ -5,6 +5,9 @@ import com.follysitou.sellia_backend.dto.request.OrderUpdateRequest;
 import com.follysitou.sellia_backend.dto.response.OrderResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.enums.OrderStatus;
+import com.follysitou.sellia_backend.mapper.OrderMapper;
+import com.follysitou.sellia_backend.model.Order;
+import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
+    private final OrderMapper orderMapper;
 
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {
@@ -217,5 +222,30 @@ public class OrderController {
             @RequestParam String paymentMethod) {
         OrderResponse response = orderService.checkoutAndPaySession(customerSessionPublicId, paymentMethod);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Recherche de commandes par numéro de facture
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAISSE')")
+    @GetMapping("/search/invoice/{invoiceNumber}")
+    public ResponseEntity<List<OrderResponse>> searchByInvoiceNumber(@PathVariable String invoiceNumber) {
+        // Essayer d'abord de chercher directement via invoice
+        List<Order> orders = orderRepository.findByInvoiceNumber(invoiceNumber);
+
+        // Si aucune commande trouvée, essayer via la session
+        if (orders.isEmpty()) {
+            orders = orderRepository.findByInvoiceNumberViaSession(invoiceNumber);
+        }
+
+        if (orders.isEmpty()) {
+            throw new RuntimeException("Aucune commande trouvée pour la facture: " + invoiceNumber);
+        }
+
+        List<OrderResponse> orderResponses = orders.stream()
+                .map(orderMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(orderResponses);
     }
 }

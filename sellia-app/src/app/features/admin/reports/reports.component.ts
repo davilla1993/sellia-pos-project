@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 
-type ReportType = 'sales' | 'cashiers' | 'staff' | 'products';
+type ReportType = 'sales' | 'cashiers' | 'staff' | 'products' | 'tables';
 
 @Component({
   selector: 'app-reports',
@@ -147,6 +147,10 @@ export class ReportsComponent implements OnInit {
     this.router.navigate(['/admin/reports', type]);
   }
 
+  navigateToSearch(): void {
+    this.router.navigate(['/admin/search-invoice']);
+  }
+
   applyFilter(): void {
     if (!this.filterForm.valid) {
       this.error.set('Veuillez remplir tous les champs requis');
@@ -199,9 +203,19 @@ export class ReportsComponent implements OnInit {
         }
       });
     } else if (type === 'products') {
-      // Products report would need a new backend endpoint
-      this.error.set('Rapport produits en cours de développement');
-      this.loading.set(false);
+      const startDate = this.formatDateForApi(this.filterForm.get('startDate')?.value);
+      const endDate = this.formatDateForApi(this.filterForm.get('endDate')?.value);
+
+      this.apiService.getProductReport(startDate, endDate).subscribe({
+        next: (data) => {
+          this.reportData.set(data);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur lors du chargement du rapport des produits');
+          this.loading.set(false);
+        }
+      });
     }
   }
 
@@ -244,6 +258,20 @@ export class ReportsComponent implements OnInit {
       this.apiService.downloadUserReportPdf(data.userPublicId, startDate, endDate).subscribe({
         next: (blob) => {
           this.apiService.downloadPdfFile(blob, `rapport-personnel-${data.userPublicId}.pdf`);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Erreur lors du téléchargement du PDF');
+          this.loading.set(false);
+        }
+      });
+    } else if (type === 'products') {
+      const startDate = this.formatDateForApi(this.filterForm.get('startDate')?.value);
+      const endDate = this.formatDateForApi(this.filterForm.get('endDate')?.value);
+
+      this.apiService.downloadProductReportPdf(startDate, endDate).subscribe({
+        next: (blob) => {
+          this.apiService.downloadPdfFile(blob, 'rapport-produits.pdf');
           this.loading.set(false);
         },
         error: () => {

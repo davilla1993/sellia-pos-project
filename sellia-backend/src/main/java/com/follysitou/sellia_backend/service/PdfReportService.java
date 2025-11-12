@@ -3,10 +3,17 @@ package com.follysitou.sellia_backend.service;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.events.Event;
+import com.itextpdf.kernel.events.IEventHandler;
+import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
@@ -15,6 +22,8 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.follysitou.sellia_backend.dto.response.CashierReportResponse;
 import com.follysitou.sellia_backend.dto.response.GlobalSessionReportResponse;
+import com.follysitou.sellia_backend.dto.response.ProductReportResponse;
+import com.follysitou.sellia_backend.dto.response.TableReportResponse;
 import com.follysitou.sellia_backend.dto.response.UserReportResponse;
 import com.follysitou.sellia_backend.model.Restaurant;
 import com.follysitou.sellia_backend.repository.RestaurantRepository;
@@ -40,6 +49,48 @@ public class PdfReportService {
 
     @Value("${app.restaurant-logos-dir:./uploads/restaurant}")
     private String restaurantLogosDir;
+
+    // Event handler for page numbers
+    protected static class PageNumberEventHandler implements IEventHandler {
+        protected PdfDocument pdfDoc;
+
+        public PageNumberEventHandler(PdfDocument pdfDoc) {
+            this.pdfDoc = pdfDoc;
+        }
+
+        @Override
+        public void handleEvent(Event event) {
+            PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
+            PdfPage page = docEvent.getPage();
+            int pageNumber = pdfDoc.getPageNumber(page);
+            int totalPages = pdfDoc.getNumberOfPages();
+
+            try {
+                PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                Rectangle pageSize = page.getPageSize();
+
+                PdfCanvas pdfCanvas = new PdfCanvas(page);
+                Canvas canvas = new Canvas(pdfCanvas, pageSize);
+
+                Paragraph pageNumberParagraph = new Paragraph("Page " + pageNumber + "/" + totalPages)
+                        .setFont(font)
+                        .setFontSize(10);
+
+                canvas.showTextAligned(pageNumberParagraph,
+                        pageSize.getWidth() / 2,
+                        20,
+                        TextAlignment.CENTER);
+
+                canvas.close();
+            } catch (IOException e) {
+                log.error("Error adding page numbers", e);
+            }
+        }
+    }
+
+    private void addPageNumbers(PdfDocument pdfDoc) {
+        pdfDoc.addEventHandler(PdfDocumentEvent.END_PAGE, new PageNumberEventHandler(pdfDoc));
+    }
 
     private void addRestaurantHeader(Document document, String reportTitle) throws IOException {
         Restaurant restaurant = restaurantRepository.findAll().stream()
@@ -85,6 +136,7 @@ public class PdfReportService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(outputStream);
         PdfDocument pdfDoc = new PdfDocument(writer);
+        addPageNumbers(pdfDoc);
         Document document = new Document(pdfDoc);
 
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -182,6 +234,7 @@ public class PdfReportService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(outputStream);
         PdfDocument pdfDoc = new PdfDocument(writer);
+        addPageNumbers(pdfDoc);
         Document document = new Document(pdfDoc);
 
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -265,6 +318,7 @@ public class PdfReportService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(outputStream);
         PdfDocument pdfDoc = new PdfDocument(writer);
+        addPageNumbers(pdfDoc);
         Document document = new Document(pdfDoc);
 
         PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -338,6 +392,195 @@ public class PdfReportService {
         }
 
         document.add(productsTable);
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateProductReportPdf(ProductReportResponse report) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        addPageNumbers(pdfDoc);
+        Document document = new Document(pdfDoc);
+
+        PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        // Header with logo and title
+        addRestaurantHeader(document, "RAPPORT PRODUITS");
+
+        // Period Info
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("Période du: " + report.getPeriodStart().format(DATE_FORMATTER)).setFont(regularFont));
+        document.add(new Paragraph("Au: " + report.getPeriodEnd().format(DATE_FORMATTER)).setFont(regularFont));
+
+        // Summary Section
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("RÉSUMÉ").setFont(boldFont).setFontSize(14));
+
+        Table summaryTable = new Table(2);
+        summaryTable.setWidth(UnitValue.createPercentValue(100));
+
+        summaryTable.addCell("Chiffre d'affaires total").setFont(boldFont);
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalRevenue()));
+
+        summaryTable.addCell("Quantité totale vendue").setFont(boldFont);
+        summaryTable.addCell(String.valueOf(report.getTotalQuantitySold()));
+
+        summaryTable.addCell("Nombre de commandes").setFont(boldFont);
+        summaryTable.addCell(String.valueOf(report.getTotalOrders()));
+
+        summaryTable.addCell("Nombre de produits").setFont(boldFont);
+        summaryTable.addCell(String.valueOf(report.getTotalProducts()));
+
+        document.add(summaryTable);
+
+        // Products Table
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("DÉTAILS PAR PRODUIT").setFont(boldFont).setFontSize(14));
+
+        Table productsTable = new Table(7);
+        productsTable.setWidth(UnitValue.createPercentValue(100));
+
+        // Headers
+        productsTable.addCell("#").setFont(boldFont);
+        productsTable.addCell("Produit").setFont(boldFont);
+        productsTable.addCell("Catégorie").setFont(boldFont);
+        productsTable.addCell("Quantité").setFont(boldFont);
+        productsTable.addCell("Chiffre d'affaires").setFont(boldFont);
+        productsTable.addCell("Commandes").setFont(boldFont);
+        productsTable.addCell("Prix moyen").setFont(boldFont);
+
+        if (report.getProducts() != null) {
+            int index = 1;
+            for (ProductReportResponse.ProductDetail product : report.getProducts()) {
+                productsTable.addCell(String.valueOf(index++));
+                productsTable.addCell(product.getProductName());
+                productsTable.addCell(product.getCategoryName());
+                productsTable.addCell(String.valueOf(product.getQuantitySold()));
+                productsTable.addCell(String.format("%.0f FCFA", (double) product.getTotalRevenue()));
+                productsTable.addCell(String.valueOf(product.getOrderCount()));
+                productsTable.addCell(String.format("%.0f FCFA", (double) product.getAveragePrice()));
+            }
+        }
+
+        document.add(productsTable);
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateTableReportPdf(TableReportResponse report) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        addPageNumbers(pdfDoc);
+        Document document = new Document(pdfDoc);
+
+        PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        // Header with logo and title
+        addRestaurantHeader(document, "RAPPORT TABLES ET À EMPORTER");
+
+        // Period Info
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("Période du: " + report.getPeriodStart().format(DATE_FORMATTER)).setFont(regularFont));
+        document.add(new Paragraph("Au: " + report.getPeriodEnd().format(DATE_FORMATTER)).setFont(regularFont));
+
+        // Summary Section
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("RÉSUMÉ GÉNÉRAL").setFont(boldFont).setFontSize(14));
+
+        Table summaryTable = new Table(2);
+        summaryTable.setWidth(UnitValue.createPercentValue(100));
+
+        summaryTable.addCell("Chiffre d'affaires total").setFont(boldFont);
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalRevenue()));
+
+        summaryTable.addCell("Nombre de commandes").setFont(boldFont);
+        summaryTable.addCell(String.valueOf(report.getTotalOrders()));
+
+        summaryTable.addCell("Remises totales").setFont(boldFont);
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getTotalDiscounts()));
+
+        summaryTable.addCell("Moyenne par commande").setFont(boldFont);
+        summaryTable.addCell(String.format("%.0f FCFA", (double) report.getAverageOrderValue()));
+
+        document.add(summaryTable);
+
+        // Table vs Takeaway Section
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("RÉPARTITION PAR TYPE").setFont(boldFont).setFontSize(14));
+
+        Table typeTable = new Table(3);
+        typeTable.setWidth(UnitValue.createPercentValue(100));
+
+        typeTable.addCell("Type").setFont(boldFont);
+        typeTable.addCell("Chiffre d'affaires").setFont(boldFont);
+        typeTable.addCell("Commandes").setFont(boldFont);
+
+        typeTable.addCell("Tables");
+        typeTable.addCell(String.format("%.0f FCFA", (double) report.getTableRevenue()));
+        typeTable.addCell(String.valueOf(report.getTableOrders()));
+
+        typeTable.addCell("À Emporter");
+        typeTable.addCell(String.format("%.0f FCFA", (double) report.getTakeawayRevenue()));
+        typeTable.addCell(String.valueOf(report.getTakeawayOrders()));
+
+        document.add(typeTable);
+
+        // Tables Detail Section
+        document.add(new Paragraph("").setMarginBottom(10));
+        document.add(new Paragraph("DÉTAILS PAR TABLE").setFont(boldFont).setFontSize(14));
+
+        Table tablesDetailTable = new Table(6);
+        tablesDetailTable.setWidth(UnitValue.createPercentValue(100));
+
+        tablesDetailTable.addCell("#").setFont(boldFont);
+        tablesDetailTable.addCell("N° Table").setFont(boldFont);
+        tablesDetailTable.addCell("Nom").setFont(boldFont);
+        tablesDetailTable.addCell("Commandes").setFont(boldFont);
+        tablesDetailTable.addCell("Chiffre d'affaires").setFont(boldFont);
+        tablesDetailTable.addCell("Moyenne").setFont(boldFont);
+
+        if (report.getTables() != null) {
+            int index = 1;
+            for (TableReportResponse.TableDetail table : report.getTables()) {
+                tablesDetailTable.addCell(String.valueOf(index++));
+                tablesDetailTable.addCell(table.getTableNumber());
+                tablesDetailTable.addCell(table.getTableName());
+                tablesDetailTable.addCell(String.valueOf(table.getOrderCount()));
+                tablesDetailTable.addCell(String.format("%.0f FCFA", (double) table.getTotalRevenue()));
+                tablesDetailTable.addCell(String.format("%.0f FCFA", (double) table.getAverageOrderValue()));
+            }
+        }
+
+        document.add(tablesDetailTable);
+
+        // Takeaway Summary
+        if (report.getTakeawaySummary() != null) {
+            document.add(new Paragraph("").setMarginBottom(10));
+            document.add(new Paragraph("RÉSUMÉ À EMPORTER").setFont(boldFont).setFontSize(14));
+
+            Table takeawayTable = new Table(2);
+            takeawayTable.setWidth(UnitValue.createPercentValue(100));
+
+            takeawayTable.addCell("Nombre de commandes").setFont(boldFont);
+            takeawayTable.addCell(String.valueOf(report.getTakeawaySummary().getOrderCount()));
+
+            takeawayTable.addCell("Chiffre d'affaires").setFont(boldFont);
+            takeawayTable.addCell(String.format("%.0f FCFA", (double) report.getTakeawaySummary().getTotalRevenue()));
+
+            takeawayTable.addCell("Moyenne par commande").setFont(boldFont);
+            takeawayTable.addCell(String.format("%.0f FCFA", (double) report.getTakeawaySummary().getAverageOrderValue()));
+
+            takeawayTable.addCell("Remises totales").setFont(boldFont);
+            takeawayTable.addCell(String.format("%.0f FCFA", (double) report.getTakeawaySummary().getTotalDiscounts()));
+
+            document.add(takeawayTable);
+        }
 
         document.close();
         return outputStream.toByteArray();

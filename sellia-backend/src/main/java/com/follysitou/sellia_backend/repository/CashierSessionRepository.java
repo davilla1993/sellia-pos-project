@@ -31,6 +31,9 @@ public interface CashierSessionRepository extends JpaRepository<CashierSession, 
     List<CashierSession> findActiveSessionsByGlobalSession(@Param("globalSession") GlobalSession globalSession);
 
     @Query("SELECT cs FROM CashierSession cs WHERE cs.globalSession = :globalSession AND cs.deleted = false")
+    List<CashierSession> findAllSessionsByGlobalSession(@Param("globalSession") GlobalSession globalSession);
+
+    @Query("SELECT cs FROM CashierSession cs WHERE cs.globalSession = :globalSession AND cs.deleted = false")
     Page<CashierSession> findByGlobalSession(@Param("globalSession") GlobalSession globalSession, Pageable pageable);
 
     @Query("SELECT cs FROM CashierSession cs WHERE cs.cashier.publicId = :cashierId AND cs.deleted = false")

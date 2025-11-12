@@ -570,6 +570,36 @@ export class ApiService {
     });
   }
 
+  getProductReport(startDate: string, endDate: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/products`, {
+      params: { startDate, endDate }
+    });
+  }
+
+  downloadProductReportPdf(startDate: string, endDate: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/reports/products/pdf`, {
+      params: { startDate, endDate },
+      responseType: 'blob'
+    });
+  }
+
+  getTableReport(startDate: string, endDate: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/tables`, {
+      params: { startDate, endDate }
+    });
+  }
+
+  downloadTableReportPdf(startDate: string, endDate: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/reports/tables/pdf`, {
+      params: { startDate, endDate },
+      responseType: 'blob'
+    });
+  }
+
+  searchOrdersByInvoice(invoiceNumber: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/orders/search/invoice/${invoiceNumber}`);
+  }
+
   downloadPdfFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

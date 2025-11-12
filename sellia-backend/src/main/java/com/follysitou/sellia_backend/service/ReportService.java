@@ -2,7 +2,10 @@ package com.follysitou.sellia_backend.service;
 
 import com.follysitou.sellia_backend.dto.response.CashierReportResponse;
 import com.follysitou.sellia_backend.dto.response.GlobalSessionReportResponse;
+import com.follysitou.sellia_backend.dto.response.ProductReportResponse;
+import com.follysitou.sellia_backend.dto.response.TableReportResponse;
 import com.follysitou.sellia_backend.dto.response.UserReportResponse;
+import com.follysitou.sellia_backend.enums.OrderType;
 import com.follysitou.sellia_backend.model.*;
 import com.follysitou.sellia_backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -97,7 +100,7 @@ public class ReportService {
                 .orElseThrow(() -> new RuntimeException("Global session not found"));
 
         List<CashierSession> cashierSessions = cashierSessionRepository
-                .findActiveSessionsByGlobalSession(session);
+                .findAllSessionsByGlobalSession(session);
 
         List<Order> orders = orderRepository.findAll().stream()
                 .filter(o -> o.getCashierSession() != null && 
@@ -127,11 +130,14 @@ public class ReportService {
                         .build())
                 .collect(Collectors.toList());
 
+        Map<String, Integer> productQuantities = new HashMap<>();
         Map<String, Long> productSales = new HashMap<>();
         orders.forEach(order -> {
             if (order.getItems() != null) {
                 order.getItems().forEach(item -> {
                     String productName = item.getProduct().getName();
+                    productQuantities.put(productName,
+                            productQuantities.getOrDefault(productName, 0) + item.getQuantity());
                     productSales.put(productName,
                             productSales.getOrDefault(productName, 0L) + (item.getTotalPrice() != null ? item.getTotalPrice() : 0L));
                 });
@@ -143,7 +149,7 @@ public class ReportService {
                 .limit(10)
                 .map(e -> GlobalSessionReportResponse.OrderSummary.builder()
                         .productName(e.getKey())
-                        .quantity(1)
+                        .quantity(productQuantities.getOrDefault(e.getKey(), 0))
                         .totalAmount(e.getValue())
                         .build())
                 .collect(Collectors.toList());
@@ -358,6 +364,176 @@ public class ReportService {
                 .cashiers(cashierSummaries)
                 .sessions(sessionSummaries)
                 .topProducts(topProducts)
+                .build();
+    }
+
+    public ProductReportResponse getProductReport(LocalDateTime startDate, LocalDateTime endDate) {
+        // Get all order items within the period
+        List<OrderItem> orderItems = orderItemRepository.findAll().stream()
+                .filter(item -> item.getOrder() != null &&
+                        item.getOrder().getCreatedAt().isAfter(startDate) &&
+                        item.getOrder().getCreatedAt().isBefore(endDate))
+                .collect(Collectors.toList());
+
+        // Calculate totals
+        Long totalRevenue = orderItems.stream()
+                .mapToLong(item -> item.getTotalPrice() != null ? item.getTotalPrice() : 0L)
+                .sum();
+
+        Long totalQuantitySold = orderItems.stream()
+                .mapToLong(OrderItem::getQuantity)
+                .sum();
+
+        Set<String> uniqueOrders = orderItems.stream()
+                .map(item -> item.getOrder().getPublicId())
+                .collect(Collectors.toSet());
+
+        // Group by product
+        Map<String, List<OrderItem>> productItemsMap = orderItems.stream()
+                .filter(item -> item.getProduct() != null)
+                .collect(Collectors.groupingBy(item -> item.getProduct().getPublicId()));
+
+        List<ProductReportResponse.ProductDetail> productDetails = productItemsMap.entrySet().stream()
+                .map(entry -> {
+                    List<OrderItem> items = entry.getValue();
+                    Product product = items.get(0).getProduct();
+
+                    Integer quantitySold = items.stream()
+                            .mapToInt(OrderItem::getQuantity)
+                            .sum();
+
+                    Long revenue = items.stream()
+                            .mapToLong(item -> item.getTotalPrice() != null ? item.getTotalPrice() : 0L)
+                            .sum();
+
+                    Long orderCount = items.stream()
+                            .map(item -> item.getOrder().getPublicId())
+                            .distinct()
+                            .count();
+
+                    Long averagePrice = quantitySold > 0 ? revenue / quantitySold : 0L;
+
+                    return ProductReportResponse.ProductDetail.builder()
+                            .productId(product.getPublicId())
+                            .productName(product.getName())
+                            .categoryName(product.getCategory() != null ? product.getCategory().getName() : "N/A")
+                            .quantitySold(quantitySold)
+                            .totalRevenue(revenue)
+                            .orderCount(orderCount)
+                            .averagePrice(averagePrice)
+                            .isAvailable(product.getAvailable())
+                            .build();
+                })
+                .sorted((a, b) -> Long.compare(b.getTotalRevenue(), a.getTotalRevenue()))
+                .collect(Collectors.toList());
+
+        return ProductReportResponse.builder()
+                .periodStart(startDate)
+                .periodEnd(endDate)
+                .totalRevenue(totalRevenue)
+                .totalQuantitySold(totalQuantitySold)
+                .totalOrders((long) uniqueOrders.size())
+                .totalProducts(productDetails.size())
+                .products(productDetails)
+                .build();
+    }
+
+    public TableReportResponse getTableReport(LocalDateTime startDate, LocalDateTime endDate) {
+        // Get all orders within the period
+        List<Order> orders = orderRepository.findAll().stream()
+                .filter(order -> order.getCreatedAt().isAfter(startDate) &&
+                        order.getCreatedAt().isBefore(endDate))
+                .collect(Collectors.toList());
+
+        // Calculate totals
+        Long totalRevenue = orders.stream()
+                .mapToLong(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0L)
+                .sum();
+
+        Long totalDiscounts = orders.stream()
+                .mapToLong(o -> o.getDiscountAmount() != null ? o.getDiscountAmount() : 0L)
+                .sum();
+
+        // Split by order type
+        List<Order> tableOrders = orders.stream()
+                .filter(o -> o.getOrderType() == OrderType.TABLE)
+                .collect(Collectors.toList());
+
+        List<Order> takeawayOrders = orders.stream()
+                .filter(o -> o.getOrderType() == OrderType.TAKEAWAY)
+                .collect(Collectors.toList());
+
+        Long tableRevenue = tableOrders.stream()
+                .mapToLong(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0L)
+                .sum();
+
+        Long takeawayRevenue = takeawayOrders.stream()
+                .mapToLong(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0L)
+                .sum();
+
+        // Group table orders by table
+        Map<String, List<Order>> ordersByTable = tableOrders.stream()
+                .filter(o -> o.getTable() != null)
+                .collect(Collectors.groupingBy(o -> o.getTable().getPublicId()));
+
+        List<TableReportResponse.TableDetail> tableDetails = ordersByTable.entrySet().stream()
+                .map(entry -> {
+                    List<Order> tableOrderList = entry.getValue();
+                    RestaurantTable table = tableOrderList.get(0).getTable();
+
+                    Long revenue = tableOrderList.stream()
+                            .mapToLong(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0L)
+                            .sum();
+
+                    Long discounts = tableOrderList.stream()
+                            .mapToLong(o -> o.getDiscountAmount() != null ? o.getDiscountAmount() : 0L)
+                            .sum();
+
+                    Long avgOrder = tableOrderList.size() > 0 ? revenue / tableOrderList.size() : 0L;
+
+                    return TableReportResponse.TableDetail.builder()
+                            .tableId(table.getPublicId())
+                            .tableName(table.getName())
+                            .tableNumber(table.getNumber())
+                            .totalRevenue(revenue)
+                            .orderCount((long) tableOrderList.size())
+                            .averageOrderValue(avgOrder)
+                            .totalDiscounts(discounts)
+                            .build();
+                })
+                .sorted((a, b) -> Long.compare(b.getTotalRevenue(), a.getTotalRevenue()))
+                .collect(Collectors.toList());
+
+        // Takeaway summary
+        Long takeawayDiscounts = takeawayOrders.stream()
+                .mapToLong(o -> o.getDiscountAmount() != null ? o.getDiscountAmount() : 0L)
+                .sum();
+
+        Long avgTakeaway = takeawayOrders.size() > 0 ? takeawayRevenue / takeawayOrders.size() : 0L;
+
+        TableReportResponse.TableDetail takeawaySummary = TableReportResponse.TableDetail.builder()
+                .tableId("takeaway")
+                .tableName("À Emporter")
+                .tableNumber("TAKEAWAY")
+                .totalRevenue(takeawayRevenue)
+                .orderCount((long) takeawayOrders.size())
+                .averageOrderValue(avgTakeaway)
+                .totalDiscounts(takeawayDiscounts)
+                .build();
+
+        return TableReportResponse.builder()
+                .periodStart(startDate)
+                .periodEnd(endDate)
+                .totalRevenue(totalRevenue)
+                .totalOrders((long) orders.size())
+                .totalDiscounts(totalDiscounts)
+                .averageOrderValue(orders.size() > 0 ? totalRevenue / orders.size() : 0L)
+                .tableRevenue(tableRevenue)
+                .tableOrders((long) tableOrders.size())
+                .takeawayRevenue(takeawayRevenue)
+                .takeawayOrders((long) takeawayOrders.size())
+                .tables(tableDetails)
+                .takeawaySummary(takeawaySummary)
                 .build();
     }
 
