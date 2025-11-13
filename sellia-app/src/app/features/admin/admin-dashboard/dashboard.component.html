@@ -1,47 +1,185 @@
-
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
     <div>
-      <!-- KPIs Section -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-neutral-400 text-sm font-medium">Chiffre d'affaires</p>
-          <p class="text-3xl font-bold text-primary mt-2">$0</p>
-          <p class="text-xs text-neutral-500 mt-2">Aujourd'hui</p>
-        </div>
+      <h1 class="text-3xl font-bold text-white">Tableau de Bord</h1>
+      <p class="text-neutral-400 mt-2">Vue d'ensemble des 7 derniers jours</p>
+    </div>
+    <a [routerLink]="['/admin/analytics']" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-semibold transition-colors">
+      📊 Analyses Détaillées
+    </a>
+  </div>
 
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-neutral-400 text-sm font-medium">Commandes</p>
-          <p class="text-3xl font-bold text-primary mt-2">0</p>
-          <p class="text-xs text-neutral-500 mt-2">Aujourd'hui</p>
-        </div>
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex items-center justify-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
 
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-neutral-400 text-sm font-medium">Stock Faible</p>
-          <p class="text-3xl font-bold text-red-500 mt-2">0</p>
-          <p class="text-xs text-neutral-500 mt-2">Alertes</p>
-        </div>
-
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-neutral-400 text-sm font-medium">Utilisateurs Actifs</p>
-          <p class="text-3xl font-bold text-green-600 mt-2">0</p>
-          <p class="text-xs text-neutral-500 mt-2">En ligne</p>
-        </div>
-      </div>
-
-      <!-- Modules Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Module Card Template -->
-        <div *ngFor="let module of modules" class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 shadow-sm hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-primary">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-white">{{ module.title }}</h3>
-              <p class="text-sm text-neutral-400 mt-1">{{ module.description }}</p>
-            </div>
-            <div class="text-3xl">{{ module.icon }}</div>
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading()">
+    <!-- KPIs Section - Chiffre d'affaires -->
+    <div>
+      <h3 class="text-lg font-bold text-white mb-4">💰 Chiffre d'Affaires (Commandes Encaissées)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Revenue -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-primary/50 transition-all shadow-sm hover:shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">CA Total</p>
+            <span class="text-2xl">💰</span>
           </div>
-          <a *ngIf="module.route" [routerLink]="module.route" class="inline-block text-sm text-primary hover:text-primary-dark font-medium transition-colors">
-            → {{ module.buttonText }}
-          </a>
+          <p class="text-3xl font-bold text-primary">{{ formatCurrency(totalRevenue()) }}</p>
+          <p class="text-xs text-neutral-500 mt-2">7 derniers jours</p>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-green-500/50 transition-all shadow-sm hover:shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Commandes Payées</p>
+            <span class="text-2xl">✅</span>
+          </div>
+          <p class="text-3xl font-bold text-green-500">{{ totalTransactions() }}</p>
+          <p class="text-xs text-neutral-500 mt-2">7 derniers jours</p>
+        </div>
+
+        <!-- Average Order Value -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-blue-500/50 transition-all shadow-sm hover:shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Ticket moyen</p>
+            <span class="text-2xl">🎯</span>
+          </div>
+          <p class="text-3xl font-bold text-blue-500">{{ formatCurrency(averageOrderValue()) }}</p>
+          <p class="text-xs text-neutral-500 mt-2">Par commande</p>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-yellow-500/50 transition-all shadow-sm hover:shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Sessions Actives</p>
+            <span class="text-2xl">👥</span>
+          </div>
+          <p class="text-3xl font-bold text-yellow-500">{{ activeSessions() }}</p>
+          <p class="text-xs text-neutral-500 mt-2">En ce moment</p>
         </div>
       </div>
     </div>
-  
+
+    <!-- Vue d'ensemble des commandes -->
+    <div>
+      <h3 class="text-lg font-bold text-white mb-4">📊 Vue d'Ensemble des Commandes</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Orders Placed -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Commandes Passées</p>
+            <span class="text-2xl">📋</span>
+          </div>
+          <p class="text-2xl font-bold text-white">{{ ordersPlaced() }}</p>
+          <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(ordersPlacedAmount()) }}</p>
+          <p class="text-xs text-neutral-500 mt-2">Toutes les commandes créées</p>
+        </div>
+
+        <!-- Cancelled Orders -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Commandes Annulées</p>
+            <span class="text-2xl">❌</span>
+          </div>
+          <p class="text-2xl font-bold text-red-400">{{ cancelledOrders() }}</p>
+          <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(cancelledOrdersAmount()) }}</p>
+          <p class="text-xs text-neutral-500 mt-2">Commandes non abouties</p>
+        </div>
+
+        <!-- Delivered Orders -->
+        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-neutral-400 text-sm font-medium">Commandes Livrées</p>
+            <span class="text-2xl">🚚</span>
+          </div>
+          <p class="text-2xl font-bold text-green-400">{{ deliveredOrders() }}</p>
+          <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(deliveredOrdersAmount()) }}</p>
+          <p class="text-xs text-neutral-500 mt-2">Commandes servies</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Revenue Chart -->
+      <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+        <h3 class="text-lg font-bold text-white mb-4">📈 Évolution du CA (7 jours)</h3>
+        <apx-chart
+          *ngIf="revenueChartOptions"
+          [series]="revenueChartOptions.series!"
+          [chart]="revenueChartOptions.chart!"
+          [xaxis]="revenueChartOptions.xaxis!"
+          [stroke]="revenueChartOptions.stroke!"
+          [dataLabels]="revenueChartOptions.dataLabels!"
+          [yaxis]="revenueChartOptions.yaxis!"
+          [fill]="revenueChartOptions.fill!"
+          [tooltip]="revenueChartOptions.tooltip!"
+          [colors]="revenueChartOptions.colors!">
+        </apx-chart>
+        <div *ngIf="!revenueChartOptions" class="h-[300px] flex items-center justify-center text-neutral-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+
+      <!-- Top Products Chart -->
+      <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+        <h3 class="text-lg font-bold text-white mb-4">🏆 Top 5 Produits</h3>
+        <apx-chart
+          *ngIf="topProductsChartOptions"
+          [series]="topProductsChartOptions.series!"
+          [chart]="topProductsChartOptions.chart!"
+          [xaxis]="topProductsChartOptions.xaxis!"
+          [plotOptions]="topProductsChartOptions.plotOptions!"
+          [dataLabels]="topProductsChartOptions.dataLabels!"
+          [yaxis]="topProductsChartOptions.yaxis!"
+          [tooltip]="topProductsChartOptions.tooltip!"
+          [colors]="topProductsChartOptions.colors!">
+        </apx-chart>
+        <div *ngIf="!topProductsChartOptions" class="h-[300px] flex items-center justify-center text-neutral-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+    </div>
+
+    <!-- Peak Hours Chart -->
+    <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700 mb-8">
+      <h3 class="text-lg font-bold text-white mb-4">⏰ Heures de Pointe</h3>
+      <apx-chart
+        *ngIf="peakHoursChartOptions"
+        [series]="peakHoursChartOptions.series!"
+        [chart]="peakHoursChartOptions.chart!"
+        [xaxis]="peakHoursChartOptions.xaxis!"
+        [plotOptions]="peakHoursChartOptions.plotOptions!"
+        [dataLabels]="peakHoursChartOptions.dataLabels!"
+        [yaxis]="peakHoursChartOptions.yaxis!"
+        [tooltip]="peakHoursChartOptions.tooltip!"
+        [colors]="peakHoursChartOptions.colors!">
+      </apx-chart>
+      <div *ngIf="!peakHoursChartOptions" class="h-[300px] flex items-center justify-center text-neutral-500">
+        Aucune donnée disponible
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+      <h3 class="text-xl font-bold text-white mb-4">🚀 Actions Rapides</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a *ngFor="let action of quickActions" [routerLink]="action.route"
+          class="group bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-primary transition-all shadow-sm hover:shadow-md cursor-pointer">
+          <div class="flex items-center gap-4">
+            <div [class]="'w-12 h-12 rounded-lg flex items-center justify-center text-2xl ' + action.color">
+              {{ action.icon }}
+            </div>
+            <div>
+              <h4 class="text-white font-semibold group-hover:text-primary transition-colors">{{ action.title }}</h4>
+              <p class="text-neutral-400 text-sm mt-1">{{ action.description }}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

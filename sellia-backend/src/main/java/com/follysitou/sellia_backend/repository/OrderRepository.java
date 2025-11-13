@@ -75,24 +75,45 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate")
     Long getTotalRevenue(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate")
     Long sumRevenueByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate")
     Long countByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT SUM(o.discountAmount) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT SUM(o.discountAmount) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate")
     Long sumDiscountsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate AND HOUR(o.createdAt) = :hour")
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.isPaid = true AND o.paidAt BETWEEN :startDate AND :endDate AND HOUR(o.paidAt) = :hour")
     Long countByHourRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("hour") int hour);
 
-    @Query(value = "SELECT CONCAT(u.firstName, ' ', u.lastName) as cashierName, SUM(o.totalAmount) as revenue, COUNT(o) as transactions " +
+    // Commandes passées (toutes les commandes créées)
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long countOrdersPlaced(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long sumOrdersPlacedAmount(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    // Commandes annulées
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.status = 'ANNULEE' AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long countCancelledOrders(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.status = 'ANNULEE' AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long sumCancelledOrdersAmount(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    // Commandes livrées
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.status = 'LIVREE' AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long countDeliveredOrders(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.deleted = false AND o.status = 'LIVREE' AND o.createdAt BETWEEN :startDate AND :endDate")
+    Long sumDeliveredOrdersAmount(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query(value = "SELECT CONCAT(u.first_name, ' ', u.last_name) as cashierName, COALESCE(SUM(o.total_amount), 0) as revenue, COUNT(o) as transactions " +
             "FROM orders o " +
             "LEFT JOIN cashier_sessions cs ON o.cashier_session_id = cs.id " +
             "LEFT JOIN users u ON cs.user_id = u.id " +
-            "WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate " +
-            "GROUP BY cs.id, u.id " +
+            "WHERE o.deleted = false AND o.is_paid = true AND o.paid_at BETWEEN :startDate AND :endDate " +
+            "GROUP BY cs.id, u.id, u.first_name, u.last_name " +
             "ORDER BY revenue DESC", nativeQuery = true)
     List<Object[]> getCashierPerformanceStats(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 

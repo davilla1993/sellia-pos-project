@@ -27,4 +27,20 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("SELECT COUNT(oi) FROM OrderItem oi WHERE oi.order.id = :orderId")
     long countByOrderId(@Param("orderId") Long orderId);
+
+    // Top products by revenue for analytics
+    @Query(value = "SELECT p.name as productName, " +
+            "SUM(oi.quantity) as totalQuantity, " +
+            "SUM(oi.total_price) as totalRevenue " +
+            "FROM order_items oi " +
+            "INNER JOIN orders o ON oi.order_id = o.id " +
+            "INNER JOIN products p ON oi.product_id = p.id " +
+            "WHERE o.deleted = false AND o.is_paid = true " +
+            "AND o.paid_at BETWEEN :startDate AND :endDate " +
+            "GROUP BY p.id, p.name " +
+            "ORDER BY totalRevenue DESC " +
+            "LIMIT :limit", nativeQuery = true)
+    List<Object[]> getTopProductsByRevenue(@Param("startDate") java.time.LocalDateTime startDate,
+                                           @Param("endDate") java.time.LocalDateTime endDate,
+                                           @Param("limit") int limit);
 }

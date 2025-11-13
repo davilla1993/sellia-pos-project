@@ -12,11 +12,25 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnalyticsSummaryResponse {
+    // Chiffre d'affaires (commandes encaissées)
     private long totalRevenue;
     private long totalTransactions;
     private long averageOrderValue;
     private long totalDiscounts;
     private double discountPercentage;
+
+    // Commandes passées (toutes les commandes créées)
+    private long ordersPlaced;
+    private long ordersPlacedAmount;
+
+    // Commandes annulées
+    private long cancelledOrders;
+    private long cancelledOrdersAmount;
+
+    // Commandes livrées
+    private long deliveredOrders;
+    private long deliveredOrdersAmount;
+
     private List<TopProductResponse> topProducts;
     private List<CashierPerformanceResponse> cashierPerformance;
     private List<RevenueByDayResponse> revenueByDay;

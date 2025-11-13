@@ -57,36 +57,64 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
       </div>
 
-      <!-- KPIs Row -->
-      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <p class="text-neutral-400 text-sm mb-2">Chiffre d'Affaires</p>
-          <p class="text-3xl font-bold text-orange-400">{{ formatCurrency(kpis().revenue) }}</p>
-          <p class="text-xs text-neutral-500 mt-2">+12% vs période précédente</p>
+      <!-- KPIs Row - Chiffre d'Affaires -->
+      <div *ngIf="!isLoading()">
+        <h3 class="text-lg font-bold text-white mb-4">💰 Chiffre d'Affaires (Commandes Encaissées)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">CA Total</p>
+            <p class="text-3xl font-bold text-orange-400">{{ formatCurrency(kpis().revenue) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Commandes payées</p>
+          </div>
+
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Nombre de Transactions</p>
+            <p class="text-3xl font-bold text-blue-400">{{ kpis().transactions }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Commandes encaissées</p>
+          </div>
+
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Panier Moyen</p>
+            <p class="text-3xl font-bold text-green-400">{{ formatCurrency(kpis().averageOrder) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Par transaction</p>
+          </div>
+
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Remises Totales</p>
+            <p class="text-3xl font-bold text-red-400">{{ formatCurrency(kpis().discounts) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">{{ kpis().discountPercent.toFixed(1) }}% du CA</p>
+          </div>
         </div>
 
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <p class="text-neutral-400 text-sm mb-2">Nombre de Transactions</p>
-          <p class="text-3xl font-bold text-blue-400">{{ kpis().transactions }}</p>
-          <p class="text-xs text-neutral-500 mt-2">Moyenne: {{ formatCurrency(kpis().averageOrder) }}</p>
-        </div>
+        <!-- Vue d'ensemble des commandes -->
+        <h3 class="text-lg font-bold text-white mb-4">📊 Vue d'Ensemble des Commandes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Commandes Passées</p>
+            <p class="text-2xl font-bold text-white">{{ ordersStats().placed }}</p>
+            <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(ordersStats().placedAmount) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Toutes les commandes créées</p>
+          </div>
 
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <p class="text-neutral-400 text-sm mb-2">Panier Moyen</p>
-          <p class="text-3xl font-bold text-green-400">{{ formatCurrency(kpis().averageOrder) }}</p>
-          <p class="text-xs text-neutral-500 mt-2">Par transaction</p>
-        </div>
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Commandes Annulées</p>
+            <p class="text-2xl font-bold text-red-400">{{ ordersStats().cancelled }}</p>
+            <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(ordersStats().cancelledAmount) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Commandes non abouties</p>
+          </div>
 
-        <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
-          <p class="text-neutral-400 text-sm mb-2">Remises Totales</p>
-          <p class="text-3xl font-bold text-red-400">{{ formatCurrency(kpis().discounts) }}</p>
-          <p class="text-xs text-neutral-500 mt-2">{{ kpis().discountPercent }}% du CA</p>
+          <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+            <p class="text-neutral-400 text-sm mb-2">Commandes Livrées</p>
+            <p class="text-2xl font-bold text-green-400">{{ ordersStats().delivered }}</p>
+            <p class="text-lg text-neutral-300 mt-1">{{ formatCurrency(ordersStats().deliveredAmount) }}</p>
+            <p class="text-xs text-neutral-500 mt-2">Commandes servies</p>
+          </div>
         </div>
       </div>
 
       <!-- Interactive Charts -->
       <div *ngIf="!isLoading()" class="space-y-6">
-        <app-analytics-charts 
+        <app-analytics-charts
           [revenueData]="revenueByDay()"
           [productsData]="topProducts()"
           [cashierData]="cashierPerformance()"

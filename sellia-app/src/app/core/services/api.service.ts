@@ -781,14 +781,15 @@ export class ApiService {
   }
 
   // Analytics
-  getAnalyticsSummary(dateStart: string, dateEnd: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/analytics/summary`, {
-      params: { dateStart, dateEnd }
-    });
-  }
-
   getActiveSessions(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/analytics/active-sessions`);
+  }
+
+  getAnalyticsSummary(dateStart: string, dateEnd: string): Observable<any> {
+    const params = new HttpParams()
+      .set('dateStart', dateStart)
+      .set('dateEnd', dateEnd);
+    return this.http.get<any>(`${this.apiUrl}/analytics/summary`, { params });
   }
 
   // Roles

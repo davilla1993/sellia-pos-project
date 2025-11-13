@@ -1,6 +1,7 @@
 package com.follysitou.sellia_backend.service;
 
 import com.follysitou.sellia_backend.dto.response.*;
+import com.follysitou.sellia_backend.enums.CashierSessionStatus;
 import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.repository.OrderItemRepository;
 import com.follysitou.sellia_backend.repository.CashierSessionRepository;
@@ -31,12 +32,32 @@ public class AnalyticsService {
         LocalDateTime startDateTime = dateStart.atStartOfDay();
         LocalDateTime endDateTime = dateEnd.atTime(23, 59, 59);
 
-        // Calculate KPIs
-        long totalRevenue = orderRepository.sumRevenueByDateRange(startDateTime, endDateTime);
+        // Calculate KPIs for paid orders (Chiffre d'affaires) - handle null returns
+        Long revenueResult = orderRepository.sumRevenueByDateRange(startDateTime, endDateTime);
+        long totalRevenue = revenueResult != null ? revenueResult : 0L;
+
         long totalTransactions = orderRepository.countByDateRange(startDateTime, endDateTime);
-        long totalDiscounts = orderRepository.sumDiscountsByDateRange(startDateTime, endDateTime);
+
+        Long discountsResult = orderRepository.sumDiscountsByDateRange(startDateTime, endDateTime);
+        long totalDiscounts = discountsResult != null ? discountsResult : 0L;
+
         long averageOrderValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
         double discountPercentage = totalRevenue > 0 ? (totalDiscounts * 100.0 / (totalRevenue + totalDiscounts)) : 0;
+
+        // Calculate orders placed (all created orders)
+        long ordersPlaced = orderRepository.countOrdersPlaced(startDateTime, endDateTime);
+        Long ordersPlacedAmountResult = orderRepository.sumOrdersPlacedAmount(startDateTime, endDateTime);
+        long ordersPlacedAmount = ordersPlacedAmountResult != null ? ordersPlacedAmountResult : 0L;
+
+        // Calculate cancelled orders
+        long cancelledOrders = orderRepository.countCancelledOrders(startDateTime, endDateTime);
+        Long cancelledOrdersAmountResult = orderRepository.sumCancelledOrdersAmount(startDateTime, endDateTime);
+        long cancelledOrdersAmount = cancelledOrdersAmountResult != null ? cancelledOrdersAmountResult : 0L;
+
+        // Calculate delivered orders
+        long deliveredOrders = orderRepository.countDeliveredOrders(startDateTime, endDateTime);
+        Long deliveredOrdersAmountResult = orderRepository.sumDeliveredOrdersAmount(startDateTime, endDateTime);
+        long deliveredOrdersAmount = deliveredOrdersAmountResult != null ? deliveredOrdersAmountResult : 0L;
 
         // Get top products
         List<TopProductResponse> topProducts = getTopProducts(startDateTime, endDateTime);
@@ -56,6 +77,12 @@ public class AnalyticsService {
                 .averageOrderValue(averageOrderValue)
                 .totalDiscounts(totalDiscounts)
                 .discountPercentage(discountPercentage)
+                .ordersPlaced(ordersPlaced)
+                .ordersPlacedAmount(ordersPlacedAmount)
+                .cancelledOrders(cancelledOrders)
+                .cancelledOrdersAmount(cancelledOrdersAmount)
+                .deliveredOrders(deliveredOrders)
+                .deliveredOrdersAmount(deliveredOrdersAmount)
                 .topProducts(topProducts)
                 .cashierPerformance(cashierPerformance)
                 .revenueByDay(revenueByDay)
@@ -64,10 +91,22 @@ public class AnalyticsService {
     }
 
     private List<TopProductResponse> getTopProducts(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        // Query top products by revenue - join order_items with orders to filter by date range
-        // This will be implemented when we have the proper repository method
-        // For now, return empty list - to be implemented with custom @Query in OrderItemRepository
-        return new ArrayList<>();
+        List<Object[]> results = orderItemRepository.getTopProductsByRevenue(startDateTime, endDateTime, 10);
+        List<TopProductResponse> topProducts = new ArrayList<>();
+
+        for (Object[] row : results) {
+            String productName = (String) row[0];
+            long quantity = ((Number) row[1]).longValue();
+            long revenue = ((Number) row[2]).longValue();
+
+            topProducts.add(TopProductResponse.builder()
+                    .name(productName)
+                    .quantity(quantity)
+                    .revenue(revenue)
+                    .build());
+        }
+
+        return topProducts;
     }
 
     private List<CashierPerformanceResponse> getCashierPerformance(LocalDateTime startDateTime, LocalDateTime endDateTime) {
@@ -107,19 +146,20 @@ public class AnalyticsService {
 
     private List<RevenueByDayResponse> getRevenueByDay(LocalDate dateStart, LocalDate dateEnd) {
         List<RevenueByDayResponse> result = new ArrayList<>();
-        
+
         for (LocalDate date = dateStart; !date.isAfter(dateEnd); date = date.plusDays(1)) {
             LocalDateTime dayStart = date.atStartOfDay();
             LocalDateTime dayEnd = date.atTime(23, 59, 59);
-            long revenue = orderRepository.sumRevenueByDateRange(dayStart, dayEnd);
-            
+            Long revenueResult = orderRepository.sumRevenueByDateRange(dayStart, dayEnd);
+            long revenue = revenueResult != null ? revenueResult : 0L;
+
             String dayName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.FRENCH);
             result.add(RevenueByDayResponse.builder()
                     .date(dayName)
                     .amount(revenue)
                     .build());
         }
-        
+
         return result;
     }
 
@@ -151,6 +191,6 @@ public class AnalyticsService {
     }
 
     public long getActiveSessions() {
-        return cashierSessionRepository.countByStatus("OPEN");
+        return cashierSessionRepository.countOpenSessions();
     }
 }
