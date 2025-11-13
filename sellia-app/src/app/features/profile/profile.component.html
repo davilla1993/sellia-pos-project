@@ -1,0 +1,159 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-3xl font-bold text-white">Mon profil</h1>
+    <p class="text-neutral-400 mt-2">Gérez vos informations personnelles et votre sécurité</p>
+  </div>
+
+  <!-- User Info Card -->
+  <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6">
+    <h2 class="text-xl font-bold text-white mb-4">Informations personnelles</h2>
+
+    <div *ngIf="currentUser()" class="space-y-3">
+      <div class="flex items-center gap-3">
+        <span class="text-neutral-400 w-32">Nom d'utilisateur:</span>
+        <span class="text-white font-medium">{{ currentUser().username }}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-neutral-400 w-32">Email:</span>
+        <span class="text-white font-medium">{{ currentUser().email }}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-neutral-400 w-32">Nom complet:</span>
+        <span class="text-white font-medium">{{ currentUser().firstName }} {{ currentUser().lastName }}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-neutral-400 w-32">Rôle:</span>
+        <span class="px-3 py-1 rounded-full text-sm font-medium bg-primary/20 text-primary">
+          {{ currentUser().role }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Card -->
+  <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6">
+    <h2 class="text-xl font-bold text-white mb-4">Changer le mot de passe</h2>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage()" class="p-4 bg-green-900/20 border border-green-500 rounded-lg text-green-200 mb-4">
+      {{ successMessage() }}
+    </div>
+
+    <!-- Global Error -->
+    <div *ngIf="globalError()" class="p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-200 mb-4">
+      {{ globalError() }}
+    </div>
+
+    <!-- Field Validation Errors -->
+    <div *ngIf="fieldErrors().size > 0" class="p-4 bg-red-900/20 border border-red-500 rounded-lg mb-4">
+      <p class="text-red-200 font-semibold mb-2">Erreurs de validation:</p>
+      <ul class="text-red-200 text-sm space-y-1">
+        <li *ngFor="let error of getFieldErrorsList()" class="flex items-start gap-2">
+          <span class="text-red-400 mt-0.5">•</span>
+          <span>{{ error }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()" class="space-y-4 max-w-xl">
+      <!-- Current Password -->
+      <div>
+        <label class="block text-sm font-semibold text-white mb-2">Mot de passe actuel *</label>
+        <div class="relative">
+          <input
+            formControlName="currentPassword"
+            [type]="showCurrentPassword() ? 'text' : 'password'"
+            class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500 pr-12"
+            placeholder="••••••••">
+          <button
+            type="button"
+            (click)="showCurrentPassword.set(!showCurrentPassword())"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+            title="Afficher/Masquer">
+            <svg *ngIf="!showCurrentPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <svg *ngIf="showCurrentPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.921 19.402A8.971 8.971 0 0020 16m.94-9m-16 6c1.274-4.057 5.065-7 9.541-7 1.52 0 2.997.255 4.406.744M3 3l18 18"></path>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('currentPassword')" class="text-red-400 text-sm mt-1">Requis</p>
+      </div>
+
+      <!-- New Password -->
+      <div>
+        <label class="block text-sm font-semibold text-white mb-2">Nouveau mot de passe *</label>
+        <div class="relative">
+          <input
+            formControlName="newPassword"
+            [type]="showNewPassword() ? 'text' : 'password'"
+            class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500 pr-12"
+            placeholder="••••••••">
+          <button
+            type="button"
+            (click)="showNewPassword.set(!showNewPassword())"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+            title="Afficher/Masquer">
+            <svg *ngIf="!showNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <svg *ngIf="showNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.921 19.402A8.971 8.971 0 0020 16m.94-9m-16 6c1.274-4.057 5.065-7 9.541-7 1.52 0 2.997.255 4.406.744M3 3l18 18"></path>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('newPassword')" class="text-red-400 text-sm mt-1">
+          {{ getPasswordErrorMessage() }}
+        </p>
+        <p class="text-neutral-400 text-xs mt-2">Minimum 6 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial</p>
+      </div>
+
+      <!-- Confirm New Password -->
+      <div>
+        <label class="block text-sm font-semibold text-white mb-2">Confirmer le nouveau mot de passe *</label>
+        <div class="relative">
+          <input
+            formControlName="confirmPassword"
+            [type]="showConfirmPassword() ? 'text' : 'password'"
+            class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500 pr-12"
+            placeholder="••••••••">
+          <button
+            type="button"
+            (click)="showConfirmPassword.set(!showConfirmPassword())"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+            title="Afficher/Masquer">
+            <svg *ngIf="!showConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <svg *ngIf="showConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.921 19.402A8.971 8.971 0 0020 16m.94-9m-16 6c1.274-4.057 5.065-7 9.541-7 1.52 0 2.997.255 4.406.744M3 3l18 18"></path>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('confirmPassword')" class="text-red-400 text-sm mt-1">Requis</p>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-2">
+        <button
+          type="submit"
+          [disabled]="isSubmitting() || changePasswordForm.invalid"
+          class="btn-primary"
+          [class.opacity-50]="isSubmitting() || changePasswordForm.invalid">
+          {{ isSubmitting() ? "En cours..." : "Changer le mot de passe" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

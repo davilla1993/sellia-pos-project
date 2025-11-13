@@ -9,6 +9,7 @@ import com.follysitou.sellia_backend.exception.ResourceNotFoundException;
 import com.follysitou.sellia_backend.mapper.UserMapper;
 import com.follysitou.sellia_backend.model.Role;
 import com.follysitou.sellia_backend.model.User;
+import com.follysitou.sellia_backend.repository.ActiveTokenRepository;
 import com.follysitou.sellia_backend.repository.UserRepository;
 import com.follysitou.sellia_backend.util.PasswordValidator;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -26,6 +29,7 @@ public class UserService {
     private final RoleService roleService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ActiveTokenRepository activeTokenRepository;
 
     @Transactional
     public UserResponse createUser(UserRegistrationRequest request) {
@@ -142,7 +146,15 @@ public class UserService {
         PasswordValidator.validate(newPassword);
 
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setFirstLogin(true); // Force password change on next login
         userRepository.save(user);
+
+        // Revoke all active tokens to force logout
+        activeTokenRepository.revokeAllUserTokens(
+            publicId,
+            LocalDateTime.now(),
+            "Password reset by administrator"
+        );
     }
 
     @Transactional

@@ -25,6 +25,7 @@ import { ReportsComponent } from './features/admin/reports/reports.component';
 import { SettingsComponent } from './features/admin/settings.component';
 import { GlobalSessionComponent } from './features/admin/global-session/global-session.component';
 import { CashiersComponent } from './features/admin/cashiers/cashiers.component';
+import { ProfileComponent } from './features/profile/profile.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 import { cashierSessionGuard } from './core/guards/cashier-session.guard';
 
@@ -143,6 +144,7 @@ export const routes: Routes = [
         path: 'analytics',
         loadComponent: () => import('./features/admin/analytics/analytics.component').then(m => m.AnalyticsComponent)
       },
+      { path: 'profile', component: ProfileComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -191,6 +193,10 @@ export const routes: Routes = [
             path: 'bar',
             canActivate: [roleGuard(['CUISINE', 'BAR', 'ADMIN'])],
             component: BarComponent
+          },
+          {
+            path: 'profile',
+            component: ProfileComponent
           },
           { path: '', redirectTo: 'order-entry', pathMatch: 'full' }
         ]

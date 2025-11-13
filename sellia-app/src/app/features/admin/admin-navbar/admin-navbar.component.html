@@ -82,7 +82,10 @@
             </svg>
           </button>
           <div class="absolute right-0 mt-0 w-40 bg-neutral-700 border border-neutral-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-            <button (click)="logout()" class="w-full text-left px-4 py-3 text-sm text-neutral-400 hover:text-red-500 hover:bg-neutral-600/50 transition-colors rounded-lg">
+            <a [routerLink]="['/admin/profile']" class="block px-4 py-3 text-sm text-neutral-400 hover:text-primary hover:bg-neutral-600/50 transition-colors rounded-t-lg">
+              👤 Mon profil
+            </a>
+            <button (click)="logout()" class="w-full text-left px-4 py-3 text-sm text-neutral-400 hover:text-red-500 hover:bg-neutral-600/50 transition-colors rounded-b-lg">
               🚪 Déconnexion
             </button>
           </div>

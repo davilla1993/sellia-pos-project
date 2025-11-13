@@ -224,6 +224,10 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/users/${publicId}/reset-password`, { newPassword, confirmPassword });
   }
 
+  changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users/change-password`, { currentPassword, newPassword, confirmPassword });
+  }
+
   // Products (Management)
   getAllProductsAdmin(page: number = 0, size: number = 20): Observable<any> {
     const params = new HttpParams()

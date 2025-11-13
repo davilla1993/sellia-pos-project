@@ -103,8 +103,103 @@
           <button type="submit" [disabled]="isSubmitting() || form.invalid" class="btn-primary" [class.opacity-50]="isSubmitting() || form.invalid">
             {{ isSubmitting() ? "En cours..." : isEditMode() ? "Mettre à jour" : "Créer" }}
           </button>
+          <button *ngIf="isEditMode()" type="button" (click)="openResetPasswordModal()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+            Réinitialiser le mot de passe
+          </button>
           <a routerLink="/admin/users" class="btn-outline">Annuler</a>
         </div>
       </form>
+
+      <!-- Reset Password Modal -->
+      <div *ngIf="showResetPasswordModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6 max-w-md w-full mx-4">
+          <h2 class="text-xl font-bold text-white mb-4">Réinitialiser le mot de passe</h2>
+
+          <!-- Global Error -->
+          <div *ngIf="globalError()" class="p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-200 mb-4">
+            {{ globalError() }}
+          </div>
+
+          <!-- Field Validation Errors -->
+          <div *ngIf="fieldErrors().size > 0" class="p-4 bg-red-900/20 border border-red-500 rounded-lg mb-4">
+            <p class="text-red-200 font-semibold mb-2">Erreurs de validation:</p>
+            <ul class="text-red-200 text-sm space-y-1">
+              <li *ngFor="let error of getFieldErrorsList()" class="flex items-start gap-2">
+                <span class="text-red-400 mt-0.5">•</span>
+                <span>{{ error }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <form [formGroup]="resetPasswordForm" (ngSubmit)="onResetPassword()" class="space-y-4">
+            <!-- New Password -->
+            <div>
+              <label class="block text-sm font-semibold text-white mb-2">Nouveau mot de passe *</label>
+              <div class="relative">
+                <input formControlName="newPassword" [type]="showResetNewPassword() ? 'text' : 'password'" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500 pr-12" placeholder="••••••••">
+                <button type="button" (click)="showResetNewPassword.set(!showResetNewPassword())" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors" title="Afficher/Masquer">
+                  <svg *ngIf="!showResetNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showResetNewPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.921 19.402A8.971 8.971 0 0020 16m.94-9m-16 6c1.274-4.057 5.065-7 9.541-7 1.52 0 2.997.255 4.406.744M3 3l18 18"></path>
+                  </svg>
+                </button>
+              </div>
+              <p *ngIf="hasResetPasswordError('newPassword')" class="text-red-400 text-sm mt-1">
+                {{ getResetPasswordErrorMessage() }}
+              </p>
+              <p class="text-neutral-400 text-xs mt-2">Minimum 6 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial</p>
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+              <label class="block text-sm font-semibold text-white mb-2">Confirmer le mot de passe *</label>
+              <div class="relative">
+                <input formControlName="confirmPassword" [type]="showResetConfirmPassword() ? 'text' : 'password'" class="input-field bg-neutral-700 border-neutral-600 text-white placeholder-neutral-500 pr-12" placeholder="••••••••">
+                <button type="button" (click)="showResetConfirmPassword.set(!showResetConfirmPassword())" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors" title="Afficher/Masquer">
+                  <svg *ngIf="!showResetConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <svg *ngIf="showResetConfirmPassword()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.921 19.402A8.971 8.971 0 0020 16m.94-9m-16 6c1.274-4.057 5.065-7 9.541-7 1.52 0 2.997.255 4.406.744M3 3l18 18"></path>
+                  </svg>
+                </button>
+              </div>
+              <p *ngIf="hasResetPasswordError('confirmPassword')" class="text-red-400 text-sm mt-1">Requis</p>
+            </div>
+
+            <div class="bg-blue-900/20 border border-blue-500 rounded-lg p-3">
+              <p class="text-blue-200 text-sm font-semibold mb-2">Actions automatiques :</p>
+              <ul class="text-blue-200 text-sm space-y-1">
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-400 mt-0.5">•</span>
+                  <span>L'utilisateur sera <strong>déconnecté immédiatement</strong> s'il est connecté</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-400 mt-0.5">•</span>
+                  <span>Il devra <strong>changer ce mot de passe</strong> lors de sa prochaine connexion</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-4 pt-2">
+              <button type="submit" [disabled]="isResettingPassword() || resetPasswordForm.invalid" class="btn-primary" [class.opacity-50]="isResettingPassword() || resetPasswordForm.invalid">
+                {{ isResettingPassword() ? "En cours..." : "Réinitialiser" }}
+              </button>
+              <button type="button" (click)="closeResetPasswordModal()" class="btn-outline" [disabled]="isResettingPassword()">
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   

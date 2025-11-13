@@ -29,6 +29,11 @@ export class UserFormComponent implements OnInit {
   fieldErrors = signal<Map<string, string>>(new Map());
   roles = signal<any[]>([]);
   userId: string | null = null;
+  showResetPasswordModal = signal(false);
+  isResettingPassword = signal(false);
+  showResetNewPassword = signal(false);
+  showResetConfirmPassword = signal(false);
+  resetPasswordForm: FormGroup;
 
   constructor() {
     this.form = this.fb.group({
@@ -40,6 +45,11 @@ export class UserFormComponent implements OnInit {
       phoneNumber: ['', PhoneValidator.validFormat()],
       password: ['', [Validators.required, PasswordValidator.strong()]]
     });
+
+    this.resetPasswordForm = this.fb.group({
+      newPassword: ['', [Validators.required, PasswordValidator.strong()]],
+      confirmPassword: ['', Validators.required]
+    });
   }
 
   ngOnInit(): void {
@@ -49,7 +59,6 @@ export class UserFormComponent implements OnInit {
     this.loadRoles(() => {
       if (this.userId) {
         this.isEditMode.set(true);
-        this.form.get('username')?.disable();
         this.form.get('password')?.clearValidators();
         this.form.get('password')?.updateValueAndValidity();
         this.loadUser();
@@ -133,7 +142,7 @@ export class UserFormComponent implements OnInit {
   private handleError(err: any): void {
     this.isSubmitting.set(false);
 
-    if (err.error?.validationErrors) {
+    if (err.error?.validationErrors && Object.keys(err.error.validationErrors).length > 0) {
       const errorMap = new Map<string, string>();
       for (const [field, message] of Object.entries(err.error.validationErrors)) {
         errorMap.set(field, message as string);
@@ -176,5 +185,67 @@ export class UserFormComponent implements OnInit {
   hasError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  hasResetPasswordError(fieldName: string): boolean {
+    const field = this.resetPasswordForm.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  getResetPasswordErrorMessage(): string {
+    const control = this.resetPasswordForm.get('newPassword');
+    if (!control || !control.errors) return 'Requis';
+    return PasswordValidator.getErrorMessage(control.errors);
+  }
+
+  openResetPasswordModal(): void {
+    this.resetPasswordForm.reset();
+    this.showResetPasswordModal.set(true);
+    this.globalError.set(null);
+    this.fieldErrors.set(new Map());
+  }
+
+  closeResetPasswordModal(): void {
+    this.showResetPasswordModal.set(false);
+    this.showResetNewPassword.set(false);
+    this.showResetConfirmPassword.set(false);
+    this.resetPasswordForm.reset();
+  }
+
+  onResetPassword(): void {
+    if (this.resetPasswordForm.invalid || !this.userId) return;
+
+    const { newPassword, confirmPassword } = this.resetPasswordForm.value;
+
+    if (newPassword !== confirmPassword) {
+      this.globalError.set('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    this.isResettingPassword.set(true);
+    this.globalError.set(null);
+    this.fieldErrors.set(new Map());
+
+    this.apiService.resetPassword(this.userId, newPassword, confirmPassword).subscribe({
+      next: () => {
+        this.isResettingPassword.set(false);
+        this.closeResetPasswordModal();
+        alert('Mot de passe réinitialisé avec succès.\n\nL\'utilisateur a été déconnecté immédiatement et devra changer ce mot de passe lors de sa prochaine connexion.');
+      },
+      error: (err) => {
+        this.isResettingPassword.set(false);
+        if (err.error?.validationErrors && Object.keys(err.error.validationErrors).length > 0) {
+          const errorMap = new Map<string, string>();
+          for (const [field, message] of Object.entries(err.error.validationErrors)) {
+            errorMap.set(field, message as string);
+          }
+          this.fieldErrors.set(errorMap);
+        } else if (err.error?.message) {
+          this.globalError.set(err.error.message);
+        } else {
+          this.globalError.set('Erreur lors de la réinitialisation du mot de passe');
+        }
+      }
+    });
   }
 }
