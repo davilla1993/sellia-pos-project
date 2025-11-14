@@ -205,7 +205,7 @@ public class CustomerSessionService {
         RestaurantTable table = restaurantTableRepository.findByPublicId(tablePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
-        CustomerSession session = customerSessionRepository.findActiveByTable(tablePublicId)
+        CustomerSession session = customerSessionRepository.findActiveByTableWithCashierInfo(tablePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("No active session found for this table"));
 
         return customerSessionMapper.toResponse(session);

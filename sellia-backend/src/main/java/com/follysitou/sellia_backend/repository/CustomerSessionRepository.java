@@ -17,4 +17,11 @@ public interface CustomerSessionRepository extends JpaRepository<CustomerSession
 
     @Query("SELECT cs FROM CustomerSession cs WHERE cs.table.publicId = :tablePublicId AND cs.active = true")
     Optional<CustomerSession> findActiveByTable(@Param("tablePublicId") String tablePublicId);
+
+    @Query("SELECT cs FROM CustomerSession cs " +
+           "LEFT JOIN FETCH cs.orders o " +
+           "LEFT JOIN FETCH o.cashierSession cashSess " +
+           "LEFT JOIN FETCH cashSess.cashier " +
+           "WHERE cs.table.publicId = :tablePublicId AND cs.active = true")
+    Optional<CustomerSession> findActiveByTableWithCashierInfo(@Param("tablePublicId") String tablePublicId);
 }
