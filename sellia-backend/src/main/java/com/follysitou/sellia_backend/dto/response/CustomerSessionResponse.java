@@ -21,4 +21,5 @@ public class CustomerSessionResponse {
     private LocalDateTime finalizedAt;
     private Integer numberOfCustomers;
     private String notes;
+    private String cashierNumber;
 }

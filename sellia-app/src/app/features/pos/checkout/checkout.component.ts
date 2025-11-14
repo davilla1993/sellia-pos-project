@@ -384,6 +384,7 @@ export class CheckoutComponent implements OnInit {
 
             <div class="section">
               <div>Table: <strong>${tableNumber}</strong></div>
+              ${this.selectedSession()?.cashierNumber ? `<div>Caisse: <strong>${this.selectedSession().cashierNumber}</strong></div>` : ''}
               ${this.selectedSession() ? `<div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>` : ''}
             </div>
 

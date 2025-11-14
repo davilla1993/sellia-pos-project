@@ -28,6 +28,17 @@ public class CustomerSessionMapper {
         response.setNumberOfCustomers(session.getNumberOfCustomers());
         response.setNotes(session.getNotes());
 
+        // Get cashier number from first order's cashier session
+        if (session.getOrders() != null && !session.getOrders().isEmpty()) {
+            var firstOrder = session.getOrders().get(0);
+            if (firstOrder.getCashierSession() != null) {
+                var cashierSession = firstOrder.getCashierSession();
+                if (cashierSession.getCashier() != null) {
+                    response.setCashierNumber(cashierSession.getCashier().getCashierNumber());
+                }
+            }
+        }
+
         return response;
     }
 }
