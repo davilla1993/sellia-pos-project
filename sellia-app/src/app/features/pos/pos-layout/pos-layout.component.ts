@@ -9,12 +9,13 @@ import { OrderNotificationService } from '@core/services/order-notification.serv
 import { CashierSessionService } from '@core/services/cashier-session.service';
 import { CashOperationService, CashOperation, CashOperationTotals } from '@core/services/cash-operation.service';
 import { AudioNotificationControlComponent } from '@shared/components/audio-notification-control/audio-notification-control.component';
+import { SessionReportComponent } from '@shared/components/session-report/session-report';
 import { ToastService } from '@shared/services/toast.service';
 
 @Component({
   selector: 'app-pos-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, AudioNotificationControlComponent, FormsModule],
+  imports: [CommonModule, RouterOutlet, AudioNotificationControlComponent, SessionReportComponent, FormsModule],
   templateUrl: './pos-layout.component.html',
   styleUrls: ['./pos-layout.component.css']
 })
@@ -55,6 +56,10 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
   closeNotes = signal('');
   closingSession = signal(false);
   closeSessionError = signal('');
+
+  // Session Report Modal (after closing)
+  showSessionReportModal = signal(false);
+  closedSessionId = signal<string | null>(null);
 
   // Cash Operations Modal
   showCashOperationsModal = signal(false);
@@ -422,8 +427,11 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     this.closingSession.set(true);
     this.closeSessionError.set('');
 
+    // Store session ID before closing
+    const sessionId = session.publicId;
+
     this.cashierSessionService.closeSession(
-      session.publicId,
+      sessionId,
       finalAmount,
       notes
     ).subscribe({
@@ -431,10 +439,9 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
         this.toast.success('Session fermée avec succès');
         this.closeCloseSessionModal();
         this.closingSession.set(false);
-        // Redirection vers la page de connexion
-        setTimeout(() => {
-          this.router.navigate(['/auth/login']);
-        }, 1000);
+        // Show session report instead of redirecting immediately
+        this.closedSessionId.set(sessionId);
+        this.showSessionReportModal.set(true);
       },
       error: (err) => {
         this.closingSession.set(false);
@@ -448,6 +455,15 @@ export class PosLayoutComponent implements OnInit, OnDestroy {
     this.closeFinalAmount.set(0);
     this.closeNotes.set('');
     this.closeSessionError.set('');
+  }
+
+  closeSessionReportModal(): void {
+    this.showSessionReportModal.set(false);
+    this.closedSessionId.set(null);
+    // Redirect to login after closing the report
+    setTimeout(() => {
+      this.router.navigate(['/auth/login']);
+    }, 500);
   }
 
   // Cash Operations Methods

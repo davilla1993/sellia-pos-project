@@ -529,6 +529,10 @@ export class ApiService {
     });
   }
 
+  getSessionReport(sessionId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/cashier-sessions/${sessionId}/report`);
+  }
+
   updateCashierSessionActivity(sessionId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/cashier-sessions/${sessionId}/activity`, {});
   }

@@ -1,0 +1,186 @@
+<div class="session-report-container">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !loading()" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    {{ error() }}
+  </div>
+
+  <!-- Report Content -->
+  <div *ngIf="report() && !loading()" class="report-content">
+    <!-- Print Button (hidden when printing) -->
+    <div class="print-hide mb-4 flex justify-end">
+      <button
+        (click)="print()"
+        class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2">
+        <span>🖨️</span>
+        <span>Imprimer le Rapport</span>
+      </button>
+    </div>
+
+    <!-- Report Header -->
+    <div class="report-header">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-neutral-800 mb-2">{{ report().restaurantName }}</h1>
+        <p class="text-neutral-600">{{ report().restaurantAddress }}</p>
+        <p class="text-neutral-600">{{ report().restaurantPhone }}</p>
+      </div>
+
+      <div class="border-t-2 border-b-2 border-neutral-300 py-4 mb-6">
+        <h2 class="text-2xl font-bold text-center text-neutral-800">RAPPORT DE SESSION DE CAISSE</h2>
+      </div>
+
+      <!-- Session Info -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <p class="text-sm text-neutral-600">Session N°</p>
+          <p class="font-semibold text-neutral-800">{{ report().sessionId }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600">Caisse</p>
+          <p class="font-semibold text-neutral-800">{{ report().cashierName }} ({{ report().cashierNumber }})</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600">Caissier</p>
+          <p class="font-semibold text-neutral-800">{{ report().userName }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600">Durée</p>
+          <p class="font-semibold text-neutral-800">{{ calculateDuration() }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600">Ouverture</p>
+          <p class="font-semibold text-neutral-800">{{ formatDateTime(report().openedAt) }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600">Fermeture</p>
+          <p class="font-semibold text-neutral-800">{{ formatDateTime(report().closedAt) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="mb-6">
+      <h3 class="text-xl font-bold text-neutral-800 mb-4 border-b pb-2">RÉSUMÉ FINANCIER</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Montant Initial</p>
+          <p class="text-xl font-bold text-neutral-800">{{ formatCurrency(report().initialAmount) }}</p>
+        </div>
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Ventes (CA)</p>
+          <p class="text-xl font-bold text-green-600">{{ formatCurrency(report().totalSales) }}</p>
+        </div>
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Entrées de Caisse</p>
+          <p class="text-xl font-bold text-blue-600">{{ formatCurrency(report().totalCashEntrees) }}</p>
+          <p class="text-xs text-neutral-500 mt-1">{{ report().cashEntreesCount }} opération(s)</p>
+        </div>
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Sorties de Caisse</p>
+          <p class="text-xl font-bold text-red-600">{{ formatCurrency(report().totalCashSorties) }}</p>
+          <p class="text-xs text-neutral-500 mt-1">{{ report().cashSortiesCount }} opération(s)</p>
+        </div>
+      </div>
+
+      <!-- Expected vs Actual -->
+      <div class="mt-6 border-t-2 border-neutral-200 pt-4">
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-blue-50 p-4 rounded border border-blue-200">
+            <p class="text-sm text-blue-600 mb-1">Montant Attendu</p>
+            <p class="text-2xl font-bold text-blue-700">{{ formatCurrency(report().expectedAmount) }}</p>
+          </div>
+          <div class="bg-orange-50 p-4 rounded border border-orange-200">
+            <p class="text-sm text-orange-600 mb-1">Montant Réel (Compté)</p>
+            <p class="text-2xl font-bold text-orange-700">{{ formatCurrency(report().finalAmount) }}</p>
+          </div>
+          <div [class]="'p-4 rounded border ' + (report().discrepancy > 0 ? 'bg-green-50 border-green-200' : report().discrepancy < 0 ? 'bg-red-50 border-red-200' : 'bg-neutral-50 border-neutral-200')">
+            <p class="text-sm" [class]="getDiscrepancyClass() + ' mb-1'">Écart ({{ getDiscrepancyLabel() }})</p>
+            <p class="text-2xl font-bold" [class]="getDiscrepancyClass()">{{ formatCurrency(report().discrepancy) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Summary -->
+    <div class="mb-6">
+      <h3 class="text-xl font-bold text-neutral-800 mb-4 border-b pb-2">RÉSUMÉ DES VENTES</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Nombre de Commandes</p>
+          <p class="text-xl font-bold text-neutral-800">{{ report().ordersCount }}</p>
+        </div>
+        <div class="bg-neutral-50 p-4 rounded">
+          <p class="text-sm text-neutral-600 mb-1">Chiffre d'Affaires</p>
+          <p class="text-xl font-bold text-green-600">{{ formatCurrency(report().totalSales) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cash Operations Details -->
+    <div *ngIf="report().cashOperations && report().cashOperations.length > 0" class="mb-6">
+      <h3 class="text-xl font-bold text-neutral-800 mb-4 border-b pb-2">DÉTAIL DES OPÉRATIONS DE CAISSE</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-neutral-100 border-b-2 border-neutral-300">
+              <th class="text-left p-2 font-semibold text-neutral-700">Date/Heure</th>
+              <th class="text-left p-2 font-semibold text-neutral-700">Type</th>
+              <th class="text-left p-2 font-semibold text-neutral-700">Description</th>
+              <th class="text-left p-2 font-semibold text-neutral-700">Référence</th>
+              <th class="text-left p-2 font-semibold text-neutral-700">Autorisé par</th>
+              <th class="text-right p-2 font-semibold text-neutral-700">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let op of report().cashOperations" class="border-b border-neutral-200">
+              <td class="p-2 text-neutral-700">{{ formatDateTime(op.operationDate) }}</td>
+              <td class="p-2">
+                <span [class]="'px-2 py-1 rounded text-xs font-semibold ' + (op.type === 'ENTREE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')">
+                  {{ op.type === 'ENTREE' ? 'ENTRÉE' : 'SORTIE' }}
+                </span>
+              </td>
+              <td class="p-2 text-neutral-700">{{ op.description }}</td>
+              <td class="p-2 text-neutral-600 text-xs">{{ op.reference || '-' }}</td>
+              <td class="p-2 text-neutral-700">{{ op.authorizedBy }}</td>
+              <td class="p-2 text-right font-semibold" [class]="op.type === 'ENTREE' ? 'text-green-600' : 'text-red-600'">
+                {{ formatCurrency(op.amount) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Closing Notes -->
+    <div *ngIf="report().closingNotes" class="mb-6">
+      <h3 class="text-xl font-bold text-neutral-800 mb-4 border-b pb-2">NOTES DE CLÔTURE</h3>
+      <div class="bg-neutral-50 p-4 rounded border border-neutral-200">
+        <p class="text-neutral-700 whitespace-pre-wrap">{{ report().closingNotes }}</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="report-footer mt-8 pt-6 border-t-2 border-neutral-300">
+      <div class="grid grid-cols-2 gap-8">
+        <div>
+          <p class="text-sm text-neutral-600 mb-2">Signature du Caissier</p>
+          <div class="border-b-2 border-neutral-400 h-16"></div>
+          <p class="text-xs text-neutral-500 mt-1">{{ report().userName }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-600 mb-2">Signature du Responsable</p>
+          <div class="border-b-2 border-neutral-400 h-16"></div>
+          <p class="text-xs text-neutral-500 mt-1">Date: {{ formatDate(report().closedAt) }}</p>
+        </div>
+      </div>
+
+      <div class="text-center mt-6 text-xs text-neutral-500">
+        <p>Document généré automatiquement le {{ getCurrentDateTime() }}</p>
+      </div>
+    </div>
+  </div>
+</div>

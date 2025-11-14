@@ -56,6 +56,14 @@
         🪑 Tables
       </button>
       <button
+        (click)="navigateToTab('sessions')"
+        [class.bg-primary]="currentReportType() === 'sessions'"
+        [class.text-white]="currentReportType() === 'sessions'"
+        [class.text-neutral-400]="currentReportType() !== 'sessions'"
+        class="flex-1 px-4 py-3 rounded-lg font-semibold transition-all hover:bg-primary/80 hover:text-white">
+        📋 Sessions
+      </button>
+      <button
         (click)="navigateToSearch()"
         class="flex-1 px-4 py-3 rounded-lg font-semibold transition-all bg-neutral-700 text-white hover:bg-primary/80">
         🔍 Recherche Facture
@@ -389,6 +397,91 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions Report -->
+      <div *ngIf="currentReportType() === 'sessions'" class="space-y-6">
+        <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6">
+          <h2 class="text-2xl font-bold text-white mb-6">📋 Rapports de Session de Caisse</h2>
+
+          <!-- Session ID Input -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-neutral-300 mb-2">ID de Session</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="sessionIdInput"
+                placeholder="Entrez l'ID de la session (ex: S-..."
+                class="flex-1 bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
+              <button
+                (click)="viewSessionReport()"
+                [disabled]="!sessionIdInput()"
+                class="px-6 py-3 bg-primary hover:bg-primary/90 disabled:bg-neutral-600 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors">
+                Afficher le Rapport
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Sessions List -->
+          <div *ngIf="!selectedSessionId() && cashierSessions().length > 0">
+            <h3 class="text-lg font-bold text-white mb-4">Sessions Récentes</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-neutral-700">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">ID Session</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Caisse</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Caissier</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Ouverture</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Fermeture</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-300">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let session of cashierSessions()"
+                      class="border-t border-neutral-700 hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-sm text-white font-mono">{{ session.publicId }}</td>
+                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.cashierName || 'N/A' }}</td>
+                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.userName || 'N/A' }}</td>
+                    <td class="px-4 py-3 text-sm text-neutral-400">{{ formatDateTime(session.openedAt) }}</td>
+                    <td class="px-4 py-3 text-sm text-neutral-400">{{ session.closedAt ? formatDateTime(session.closedAt) : '-' }}</td>
+                    <td class="px-4 py-3 text-sm">
+                      <span *ngIf="session.status === 'OPEN'" class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Ouverte</span>
+                      <span *ngIf="session.status === 'LOCKED'" class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs">Verrouillée</span>
+                      <span *ngIf="session.status === 'CLOSED'" class="px-2 py-1 bg-neutral-500/20 text-neutral-400 rounded text-xs">Fermée</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                      <button
+                        *ngIf="session.status === 'CLOSED'"
+                        (click)="selectSessionFromList(session.publicId)"
+                        class="px-3 py-1 bg-primary hover:bg-primary/90 text-white rounded text-xs transition-colors">
+                        Voir Rapport
+                      </button>
+                      <span *ngIf="session.status !== 'CLOSED'" class="text-neutral-500 text-xs">-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Session Report Display -->
+          <div *ngIf="selectedSessionId()">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold text-white">Rapport de Session: {{ selectedSessionId() }}</h3>
+              <button
+                (click)="clearSessionReport()"
+                class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+                ← Retour
+              </button>
+            </div>
+            <app-session-report
+              [sessionId]="selectedSessionId()!"
+              [autoLoad]="true">
+            </app-session-report>
           </div>
         </div>
       </div>

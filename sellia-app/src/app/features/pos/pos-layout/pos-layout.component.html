@@ -735,3 +735,36 @@
       </div>
     </div>
   </div>
+
+  <!-- Session Report Modal (after closing session) -->
+  <div *ngIf="showSessionReportModal()" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full my-8">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-neutral-200 bg-neutral-50 rounded-t-xl flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-neutral-800">Rapport de Session de Caisse</h2>
+        <button
+          (click)="closeSessionReportModal()"
+          class="text-neutral-500 hover:text-neutral-800 text-3xl font-bold transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="px-6 py-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <app-session-report
+          *ngIf="closedSessionId()"
+          [sessionId]="closedSessionId()!"
+          [autoLoad]="true">
+        </app-session-report>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-neutral-200 bg-neutral-50 rounded-b-xl flex gap-3 justify-end">
+        <button
+          (click)="closeSessionReportModal()"
+          class="px-6 py-3 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg font-semibold transition-colors">
+          Fermer et Se Déconnecter
+        </button>
+      </div>
+    </div>
+  </div>

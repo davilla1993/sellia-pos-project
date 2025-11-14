@@ -4,13 +4,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
+import { SessionReportComponent } from '@shared/components/session-report/session-report';
 
-type ReportType = 'sales' | 'cashiers' | 'staff' | 'products' | 'tables';
+type ReportType = 'sales' | 'cashiers' | 'staff' | 'products' | 'tables' | 'sessions';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SessionReportComponent],
   templateUrl: './reports.component.html',
   styleUrls: []
 })
@@ -28,6 +29,11 @@ export class ReportsComponent implements OnInit {
   users = signal<any[]>([]);
 
   loadingLists = signal(false);
+
+  // Session report
+  selectedSessionId = signal<string | null>(null);
+  sessionIdInput = signal('');
+  cashierSessions = signal<any[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -108,6 +114,19 @@ export class ReportsComponent implements OnInit {
         },
         error: () => {
           this.users.set([]);
+          this.loadingLists.set(false);
+        }
+      });
+    } else if (type === 'sessions') {
+      // Load all cashier sessions
+      this.apiService.getAllCashierSessions(0, 100).subscribe({
+        next: (response: any) => {
+          const sessions = response?.content || response || [];
+          this.cashierSessions.set(sessions);
+          this.loadingLists.set(false);
+        },
+        error: () => {
+          this.cashierSessions.set([]);
           this.loadingLists.set(false);
         }
       });
@@ -300,6 +319,18 @@ export class ReportsComponent implements OnInit {
     });
   }
 
+  formatDateTime(dateString: string): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   calculateDuration(start: string, end: string): string {
     if (!start || !end) return 'N/A';
     const startDate = new Date(start);
@@ -320,5 +351,25 @@ export class ReportsComponent implements OnInit {
   private formatDateForApi(dateString: string): string {
     if (!dateString) return '';
     return new Date(dateString).toISOString();
+  }
+
+  // Session report methods
+  viewSessionReport(): void {
+    const sessionId = this.sessionIdInput().trim();
+    if (!sessionId) {
+      this.error.set('Veuillez entrer un ID de session');
+      return;
+    }
+    this.selectedSessionId.set(sessionId);
+  }
+
+  selectSessionFromList(sessionId: string): void {
+    this.selectedSessionId.set(sessionId);
+    this.sessionIdInput.set(sessionId);
+  }
+
+  clearSessionReport(): void {
+    this.selectedSessionId.set(null);
+    this.sessionIdInput.set('');
   }
 }

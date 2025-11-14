@@ -1,0 +1,58 @@
+.session-report-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+}
+
+.report-content {
+  background: white;
+  color: #000;
+}
+
+/* Print Styles */
+@media print {
+  .session-report-container {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  .report-content {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Print black and white optimization */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Screen-only styles for better visibility */
+@media screen {
+  .session-report-container {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border-radius: 8px;
+  }
+}

@@ -7,7 +7,10 @@
       "Bash(npm run build:*)",
       "Bash(./mvnw clean:*)",
       "Bash(git commit:*)",
-      "Bash(./mvnw compile:*)"
+      "Bash(./mvnw compile:*)",
+      "Bash(npm install:*)",
+      "Bash(git push:*)",
+      "Bash(npx ng generate:*)"
     ],
     "deny": [],
     "ask": []
