@@ -138,10 +138,10 @@
     </div>
 
     <!-- Report Display -->
-    <div *ngIf="reportData() && !loading()" class="space-y-6">
+    <div *ngIf="(reportData() && !loading()) || currentReportType() === 'sessions'" class="space-y-6">
 
       <!-- Download PDF Button -->
-      <div class="flex justify-end">
+      <div *ngIf="currentReportType() !== 'sessions'" class="flex justify-end">
         <button (click)="downloadPdf()"
                 class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2">
           📥 Télécharger PDF
@@ -416,9 +416,74 @@
             </div>
           </div>
 
+          <!-- Advanced Search -->
+          <div class="mb-6 border-t border-neutral-700 pt-6">
+            <h3 class="text-lg font-bold text-white mb-4">🔍 Recherche Avancée</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <!-- Date Début -->
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Date Début</label>
+                <input
+                  type="date"
+                  [(ngModel)]="searchStartDate"
+                  class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
+              </div>
+
+              <!-- Date Fin -->
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Date Fin</label>
+                <input
+                  type="date"
+                  [(ngModel)]="searchEndDate"
+                  class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
+              </div>
+
+              <!-- Caisse -->
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Caisse</label>
+                <select
+                  [(ngModel)]="searchCashierId"
+                  class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="">-- Toutes les caisses --</option>
+                  <option *ngFor="let cashier of cashiersForSearch()" [value]="cashier.publicId">
+                    {{ cashier.name }} ({{ cashier.cashierNumber }})
+                  </option>
+                </select>
+              </div>
+
+              <!-- Numéro de Caisse -->
+              <div>
+                <label class="block text-sm font-semibold text-neutral-300 mb-2">Numéro de Caisse</label>
+                <input
+                  type="text"
+                  [(ngModel)]="searchCashierNumber"
+                  placeholder="Ex: C001"
+                  class="w-full bg-neutral-700 text-white rounded-lg p-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary">
+              </div>
+            </div>
+
+            <!-- Search Buttons -->
+            <div class="flex gap-2">
+              <button
+                (click)="applySessionSearch()"
+                class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-semibold transition-colors">
+                🔍 Rechercher
+              </button>
+              <button
+                (click)="resetSessionSearch()"
+                class="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-semibold transition-colors">
+                🔄 Réinitialiser
+              </button>
+            </div>
+          </div>
+
           <!-- Recent Sessions List -->
           <div *ngIf="!selectedSessionId() && cashierSessions().length > 0">
-            <h3 class="text-lg font-bold text-white mb-4">Sessions Récentes</h3>
+            <h3 class="text-lg font-bold text-white mb-4">📊 Résultats de la Recherche</h3>
+            <div class="mb-4 text-sm text-neutral-400">
+              {{ totalElements() }} session(s) trouvée(s)
+            </div>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead class="bg-neutral-700">
@@ -436,8 +501,8 @@
                   <tr *ngFor="let session of cashierSessions()"
                       class="border-t border-neutral-700 hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-sm text-white font-mono">{{ session.publicId }}</td>
-                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.cashierName || 'N/A' }}</td>
-                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.userName || 'N/A' }}</td>
+                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.cashier?.name || 'N/A' }} ({{ session.cashier?.cashierNumber || '-' }})</td>
+                    <td class="px-4 py-3 text-sm text-neutral-300">{{ session.user?.firstName || '' }} {{ session.user?.lastName || 'N/A' }}</td>
                     <td class="px-4 py-3 text-sm text-neutral-400">{{ formatDateTime(session.openedAt) }}</td>
                     <td class="px-4 py-3 text-sm text-neutral-400">{{ session.closedAt ? formatDateTime(session.closedAt) : '-' }}</td>
                     <td class="px-4 py-3 text-sm">
@@ -458,6 +523,47 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Pagination Controls -->
+            <div *ngIf="totalPages() > 1" class="flex justify-between items-center mt-6">
+              <div class="text-sm text-neutral-400">
+                Page {{ currentPage() + 1 }} sur {{ totalPages() }}
+              </div>
+              <div class="flex gap-2">
+                <!-- Previous Button -->
+                <button
+                  (click)="previousPage()"
+                  [disabled]="currentPage() === 0"
+                  class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:bg-neutral-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                  ← Précédent
+                </button>
+
+                <!-- Page Numbers -->
+                <div class="flex gap-1">
+                  <button
+                    *ngFor="let page of getPageNumbers()"
+                    (click)="goToPage(page)"
+                    [class.bg-primary]="page === currentPage()"
+                    [class.bg-neutral-700]="page !== currentPage()"
+                    class="px-3 py-2 hover:bg-primary/80 text-white rounded-lg transition-colors">
+                    {{ page + 1 }}
+                  </button>
+                </div>
+
+                <!-- Next Button -->
+                <button
+                  (click)="nextPage()"
+                  [disabled]="currentPage() === totalPages() - 1"
+                  class="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:bg-neutral-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                  Suivant →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Sessions Message -->
+          <div *ngIf="!selectedSessionId() && !loadingLists() && cashierSessions().length === 0" class="bg-neutral-700/50 border border-neutral-600 rounded-lg p-8 text-center">
+            <p class="text-neutral-400 text-lg">Aucune session trouvée pour le dernier mois.</p>
           </div>
 
           <!-- Session Report Display -->

@@ -13,11 +13,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -101,9 +103,18 @@ public class CashierSessionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<CashierSessionResponse>> getAllSessions(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<CashierSessionResponse> sessions = cashierSessionService.getAllSessions(pageable);
+        Page<CashierSessionResponse> sessions;
+
+        if (startDate != null || endDate != null) {
+            sessions = cashierSessionService.getAllSessions(startDate, endDate, pageable);
+        } else {
+            sessions = cashierSessionService.getAllSessions(pageable);
+        }
+
         PagedResponse<CashierSessionResponse> response = PagedResponse.of(sessions);
         return ResponseEntity.ok(response);
     }

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,4 +54,12 @@ public interface CashierSessionRepository extends JpaRepository<CashierSession, 
 
     @Query("SELECT cs FROM CashierSession cs WHERE cs.cashier.publicId = :cashierId AND cs.status = 'CLOSED' AND cs.deleted = false AND cs.closedAt IS NOT NULL ORDER BY cs.closedAt DESC LIMIT 1")
     Optional<CashierSession> findLastClosedByCashier(@Param("cashierId") String cashierId);
+
+    @Query("SELECT cs FROM CashierSession cs WHERE cs.deleted = false " +
+            "AND cs.openedAt >= :startDate " +
+            "AND cs.openedAt <= :endDate")
+    Page<CashierSession> findAllActiveWithDateFilter(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 }

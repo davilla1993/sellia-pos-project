@@ -35,6 +35,19 @@ export class ReportsComponent implements OnInit {
   sessionIdInput = ''; // Non-signal property for ngModel
   cashierSessions = signal<any[]>([]);
 
+  // Pagination for sessions
+  currentPage = signal(0);
+  pageSize = 10;
+  totalPages = signal(0);
+  totalElements = signal(0);
+
+  // Advanced search for sessions
+  searchCashierId = '';
+  searchCashierNumber = '';
+  searchStartDate = '';
+  searchEndDate = '';
+  cashiersForSearch = signal<any[]>([]);
+
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
@@ -118,18 +131,25 @@ export class ReportsComponent implements OnInit {
         }
       });
     } else if (type === 'sessions') {
-      // Load all cashier sessions
-      this.apiService.getAllCashierSessions(0, 100).subscribe({
-        next: (response: any) => {
-          const sessions = response?.content || response || [];
-          this.cashierSessions.set(sessions);
-          this.loadingLists.set(false);
+      // Load cashiers for search dropdown
+      this.apiService.getAllCashiers().subscribe({
+        next: (cashiers) => {
+          this.cashiersForSearch.set(cashiers);
         },
         error: () => {
-          this.cashierSessions.set([]);
-          this.loadingLists.set(false);
+          this.cashiersForSearch.set([]);
         }
       });
+
+      // Initialize search dates to last month
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
+      this.searchStartDate = this.formatDateForInput(startDate);
+      this.searchEndDate = this.formatDateForInput(endDate);
+
+      // Load cashier sessions
+      this.loadSessionsPage(0);
     } else {
       this.loadingLists.set(false);
     }
@@ -371,5 +391,104 @@ export class ReportsComponent implements OnInit {
   clearSessionReport(): void {
     this.selectedSessionId.set(null);
     this.sessionIdInput = '';
+  }
+
+  // Pagination methods for sessions
+  loadSessionsPage(page: number): void {
+    this.loadingLists.set(true);
+    this.currentPage.set(page);
+
+    // Use search dates
+    const startDateStr = this.searchStartDate ? this.formatDateForApi(this.searchStartDate) : '';
+    const endDateStr = this.searchEndDate ? this.formatDateForApi(this.searchEndDate) : '';
+
+    this.apiService.getAllCashierSessions(page, this.pageSize, startDateStr, endDateStr).subscribe({
+      next: (response: any) => {
+        let sessions = response?.content || [];
+
+        // Filter by cashier if specified (client-side filtering since backend doesn't support it yet)
+        if (this.searchCashierId) {
+          sessions = sessions.filter((s: any) => s.cashier?.publicId === this.searchCashierId);
+        }
+
+        // Filter by cashier number if specified (client-side filtering)
+        if (this.searchCashierNumber) {
+          sessions = sessions.filter((s: any) =>
+            s.cashier?.cashierNumber && s.cashier.cashierNumber.toLowerCase().includes(this.searchCashierNumber.toLowerCase())
+          );
+        }
+
+        this.cashierSessions.set(sessions);
+
+        // Note: When client-side filtering is applied, pagination info becomes approximate
+        if (this.searchCashierId || this.searchCashierNumber) {
+          // Recalculate pagination for filtered results
+          this.totalElements.set(sessions.length);
+          this.totalPages.set(1); // All results on one page after filtering
+        } else {
+          this.totalPages.set(response?.totalPages || 0);
+          this.totalElements.set(response?.totalElements || 0);
+        }
+
+        this.loadingLists.set(false);
+      },
+      error: () => {
+        this.cashierSessions.set([]);
+        this.totalPages.set(0);
+        this.totalElements.set(0);
+        this.loadingLists.set(false);
+      }
+    });
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 0) {
+      this.loadSessionsPage(this.currentPage() - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.loadSessionsPage(this.currentPage() + 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.loadSessionsPage(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2; // Number of pages to show on each side of current page
+
+    const pages: number[] = [];
+    const start = Math.max(0, current - delta);
+    const end = Math.min(total - 1, current + delta);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  // Search methods for sessions
+  applySessionSearch(): void {
+    this.loadSessionsPage(0); // Reset to first page when applying search
+  }
+
+  resetSessionSearch(): void {
+    // Reset to last month
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    this.searchStartDate = this.formatDateForInput(startDate);
+    this.searchEndDate = this.formatDateForInput(endDate);
+    this.searchCashierId = '';
+    this.searchCashierNumber = '';
+    this.loadSessionsPage(0);
   }
 }

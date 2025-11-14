@@ -740,10 +740,18 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/cashier-sessions/active`);
   }
 
-  getAllCashierSessions(page: number = 0, size: number = 20): Observable<any> {
-    const params = new HttpParams()
+  getAllCashierSessions(page: number = 0, size: number = 20, startDate?: string, endDate?: string): Observable<any> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
     return this.http.get<any>(`${this.apiUrl}/cashier-sessions`, { params });
   }
 

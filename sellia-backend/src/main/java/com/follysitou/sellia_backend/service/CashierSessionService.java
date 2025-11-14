@@ -242,6 +242,30 @@ public class CashierSessionService {
         return sessions.map(cashierSessionMapper::toResponse);
     }
 
+    public Page<CashierSessionResponse> getAllSessions(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        // If both dates are null, use the standard method
+        if (startDate == null && endDate == null) {
+            return getAllSessions(pageable);
+        }
+
+        // If one date is null, set reasonable defaults
+        if (startDate == null) {
+            startDate = LocalDateTime.of(2000, 1, 1, 0, 0); // Very old date
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now().plusYears(1); // Future date
+        }
+
+        // If endDate is at midnight (00:00:00), extend it to end of day (23:59:59)
+        // This handles the case where user selects the same date for start and end
+        if (endDate.getHour() == 0 && endDate.getMinute() == 0 && endDate.getSecond() == 0) {
+            endDate = endDate.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        }
+
+        Page<CashierSession> sessions = cashierSessionRepository.findAllActiveWithDateFilter(startDate, endDate, pageable);
+        return sessions.map(cashierSessionMapper::toResponse);
+    }
+
     public Page<CashierSessionResponse> getSessionsByGlobalSession(String globalSessionId, Pageable pageable) {
         GlobalSession globalSession = getGlobalSessionById(globalSessionId);
         Page<CashierSession> sessions = cashierSessionRepository.findByGlobalSession(globalSession, pageable);
