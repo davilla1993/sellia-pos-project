@@ -62,6 +62,12 @@ export class DashboardComponent implements OnInit {
   deliveredOrders = signal(0);
   deliveredOrdersAmount = signal(0);
 
+  // Opérations de caisse
+  totalCashEntrees = signal(0);
+  countCashEntrees = signal(0);
+  totalCashSorties = signal(0);
+  countCashSorties = signal(0);
+
   // Charts
   revenueChartOptions!: Partial<ChartOptions>;
   topProductsChartOptions!: Partial<ChartOptions>;
@@ -121,6 +127,12 @@ export class DashboardComponent implements OnInit {
         this.cancelledOrdersAmount.set(data.cancelledOrdersAmount || 0);
         this.deliveredOrders.set(data.deliveredOrders || 0);
         this.deliveredOrdersAmount.set(data.deliveredOrdersAmount || 0);
+
+        // Opérations de caisse
+        this.totalCashEntrees.set(data.totalCashEntrees || 0);
+        this.countCashEntrees.set(data.countCashEntrees || 0);
+        this.totalCashSorties.set(data.totalCashSorties || 0);
+        this.countCashSorties.set(data.countCashSorties || 0);
 
         this.initializeCharts(data);
         this.loading.set(false);

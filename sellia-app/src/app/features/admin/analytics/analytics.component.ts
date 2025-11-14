@@ -30,6 +30,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   kpis = signal({ revenue: 0, transactions: 0, averageOrder: 0, discounts: 0, discountPercent: 0 });
   ordersStats = signal({ placed: 0, placedAmount: 0, cancelled: 0, cancelledAmount: 0, delivered: 0, deliveredAmount: 0 });
+  cashOps = signal({ totalEntrees: 0, countEntrees: 0, totalSorties: 0, countSorties: 0 });
   topProducts = signal<any[]>([]);
   revenueByDay = signal<any[]>([]);
   cashierPerformance = signal<any[]>([]);
@@ -80,6 +81,12 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
           cancelledAmount: data.cancelledOrdersAmount,
           delivered: data.deliveredOrders,
           deliveredAmount: data.deliveredOrdersAmount
+        });
+        this.cashOps.set({
+          totalEntrees: data.totalCashEntrees || 0,
+          countEntrees: data.countCashEntrees || 0,
+          totalSorties: data.totalCashSorties || 0,
+          countSorties: data.countCashSorties || 0
         });
         this.topProducts.set(data.topProducts || []);
         this.revenueByDay.set(data.revenueByDay || []);
