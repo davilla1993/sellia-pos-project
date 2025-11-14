@@ -112,7 +112,6 @@ export const routes: Routes = [
           { path: 'products', component: ReportsComponent },
           { path: 'cashiers', component: ReportsComponent },
           { path: 'staff', component: ReportsComponent },
-          { path: 'tables', component: ReportsComponent },
           { path: 'sessions', component: ReportsComponent }
         ]
       },

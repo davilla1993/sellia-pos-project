@@ -6,7 +6,7 @@ import { ApiService } from '@core/services/api.service';
 import { RestaurantInfoService } from '@shared/services/restaurant-info.service';
 import { SessionReportComponent } from '@shared/components/session-report/session-report';
 
-type ReportType = 'sales' | 'cashiers' | 'staff' | 'products' | 'tables' | 'sessions';
+type ReportType = 'sales' | 'cashiers' | 'staff' | 'products' | 'sessions';
 
 @Component({
   selector: 'app-reports',
@@ -32,7 +32,7 @@ export class ReportsComponent implements OnInit {
 
   // Session report
   selectedSessionId = signal<string | null>(null);
-  sessionIdInput = signal('');
+  sessionIdInput = ''; // Non-signal property for ngModel
   cashierSessions = signal<any[]>([]);
 
   constructor(
@@ -56,7 +56,7 @@ export class ReportsComponent implements OnInit {
     // Detect route and set report type
     this.route.url.subscribe(urlSegments => {
       const lastSegment = urlSegments[urlSegments.length - 1]?.path;
-      if (lastSegment && ['sales', 'cashiers', 'staff', 'products', 'tables', 'sessions'].includes(lastSegment)) {
+      if (lastSegment && ['sales', 'cashiers', 'staff', 'products', 'sessions'].includes(lastSegment)) {
         this.currentReportType.set(lastSegment as ReportType);
       } else {
         this.currentReportType.set('sales');
@@ -355,7 +355,7 @@ export class ReportsComponent implements OnInit {
 
   // Session report methods
   viewSessionReport(): void {
-    const sessionId = this.sessionIdInput().trim();
+    const sessionId = this.sessionIdInput.trim();
     if (!sessionId) {
       this.error.set('Veuillez entrer un ID de session');
       return;
@@ -365,11 +365,11 @@ export class ReportsComponent implements OnInit {
 
   selectSessionFromList(sessionId: string): void {
     this.selectedSessionId.set(sessionId);
-    this.sessionIdInput.set(sessionId);
+    this.sessionIdInput = sessionId;
   }
 
   clearSessionReport(): void {
     this.selectedSessionId.set(null);
-    this.sessionIdInput.set('');
+    this.sessionIdInput = '';
   }
 }
