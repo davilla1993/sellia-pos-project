@@ -56,7 +56,7 @@ export class ReportsComponent implements OnInit {
     // Detect route and set report type
     this.route.url.subscribe(urlSegments => {
       const lastSegment = urlSegments[urlSegments.length - 1]?.path;
-      if (lastSegment && ['sales', 'cashiers', 'staff', 'products'].includes(lastSegment)) {
+      if (lastSegment && ['sales', 'cashiers', 'staff', 'products', 'tables', 'sessions'].includes(lastSegment)) {
         this.currentReportType.set(lastSegment as ReportType);
       } else {
         this.currentReportType.set('sales');
