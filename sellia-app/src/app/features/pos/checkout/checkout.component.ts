@@ -277,8 +277,10 @@ export class CheckoutComponent implements OnInit {
   }
 
   private processSessionPayment(paymentMethod: string): void {
+    const sessionId = this.selectedSession()!.publicId;
+
     // Use the checkout session endpoint which handles payment and returns invoice
-    this.apiService.checkoutSession(this.selectedSession()!.publicId, paymentMethod).subscribe({
+    this.apiService.checkoutSession(sessionId, paymentMethod).subscribe({
       next: (response: any) => {
         // Extract invoice number from the response
         if (response?.invoice?.invoiceNumber) {
@@ -288,7 +290,7 @@ export class CheckoutComponent implements OnInit {
         }
 
         // Finalize the session
-        this.apiService.finalizeSession(this.selectedSession()!.publicId).subscribe({
+        this.apiService.finalizeSession(sessionId).subscribe({
           next: () => {
             this.isProcessing.set(false);
             this.printReceipt();
@@ -339,12 +341,27 @@ export class CheckoutComponent implements OnInit {
     const printWindow = window.open('', '', 'width=300,height=600');
     if (printWindow) {
       let tableNumber = 'TAKEAWAY';
+      let cashierNumber = '';
+
       if (this.selectedSession()?.tableNumber) {
         tableNumber = this.selectedSession().tableNumber;
+        // Get cashier number from session or from first order
+        cashierNumber = this.selectedSession()?.cashierNumber || '';
+        if (!cashierNumber && this.sessionOrders().length > 0) {
+          // Fallback: try to get from first order's cashierSession
+          const firstOrder = this.sessionOrders()[0];
+          if (firstOrder?.cashierSession?.cashier?.cashierNumber) {
+            cashierNumber = firstOrder.cashierSession.cashier.cashierNumber;
+          }
+        }
       } else if (this.selectedTakeawayOrder()) {
         // Use customer name if available
         const order = this.selectedTakeawayOrder();
         tableNumber = order.customerName || 'TAKEAWAY';
+        // Get cashier number from takeaway order
+        if (order?.cashierSession?.cashier?.cashierNumber) {
+          cashierNumber = order.cashierSession.cashier.cashierNumber;
+        }
       }
       const restaurant = this.restaurantInfo();
       
@@ -384,7 +401,7 @@ export class CheckoutComponent implements OnInit {
 
             <div class="section">
               <div>Table: <strong>${tableNumber}</strong></div>
-              ${this.selectedSession()?.cashierNumber ? `<div>Caisse: <strong>${this.selectedSession().cashierNumber}</strong></div>` : ''}
+              ${cashierNumber ? `<div>Caisse: <strong>${cashierNumber}</strong></div>` : ''}
               ${this.selectedSession() ? `<div style="font-size: 9px; color: #666;">Session: ${this.selectedSession()?.publicId?.substring(0, 8)}</div>` : ''}
             </div>
 
