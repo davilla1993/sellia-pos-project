@@ -2,9 +2,11 @@ package com.follysitou.sellia_backend.service;
 
 import com.follysitou.sellia_backend.dto.response.*;
 import com.follysitou.sellia_backend.enums.CashierSessionStatus;
+import com.follysitou.sellia_backend.enums.CashOperationType;
 import com.follysitou.sellia_backend.repository.OrderRepository;
 import com.follysitou.sellia_backend.repository.OrderItemRepository;
 import com.follysitou.sellia_backend.repository.CashierSessionRepository;
+import com.follysitou.sellia_backend.repository.CashOperationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class AnalyticsService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CashierSessionRepository cashierSessionRepository;
+    private final CashOperationRepository cashOperationRepository;
 
     public AnalyticsSummaryResponse getSummary(LocalDate dateStart, LocalDate dateEnd) {
         log.info("Fetching analytics summary from {} to {}", dateStart, dateEnd);
@@ -71,6 +74,12 @@ public class AnalyticsService {
         // Get peak hours
         List<PeakHourResponse> peakHours = getPeakHours(startDateTime, endDateTime);
 
+        // Get cash operations totals
+        long totalCashEntrees = cashOperationRepository.getTotalByTypeAndDateRange(CashOperationType.ENTREE, startDateTime, endDateTime);
+        long countCashEntrees = cashOperationRepository.getCountByTypeAndDateRange(CashOperationType.ENTREE, startDateTime, endDateTime);
+        long totalCashSorties = cashOperationRepository.getTotalByTypeAndDateRange(CashOperationType.SORTIE, startDateTime, endDateTime);
+        long countCashSorties = cashOperationRepository.getCountByTypeAndDateRange(CashOperationType.SORTIE, startDateTime, endDateTime);
+
         return AnalyticsSummaryResponse.builder()
                 .totalRevenue(totalRevenue)
                 .totalTransactions(totalTransactions)
@@ -83,6 +92,10 @@ public class AnalyticsService {
                 .cancelledOrdersAmount(cancelledOrdersAmount)
                 .deliveredOrders(deliveredOrders)
                 .deliveredOrdersAmount(deliveredOrdersAmount)
+                .totalCashEntrees(totalCashEntrees)
+                .countCashEntrees(countCashEntrees)
+                .totalCashSorties(totalCashSorties)
+                .countCashSorties(countCashSorties)
                 .topProducts(topProducts)
                 .cashierPerformance(cashierPerformance)
                 .revenueByDay(revenueByDay)

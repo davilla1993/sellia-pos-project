@@ -31,6 +31,12 @@ public class AnalyticsSummaryResponse {
     private long deliveredOrders;
     private long deliveredOrdersAmount;
 
+    // Opérations de caisse
+    private long totalCashEntrees;      // Total des entrées de caisse
+    private long countCashEntrees;      // Nombre d'entrées
+    private long totalCashSorties;      // Total des sorties de caisse
+    private long countCashSorties;      // Nombre de sorties
+
     private List<TopProductResponse> topProducts;
     private List<CashierPerformanceResponse> cashierPerformance;
     private List<RevenueByDayResponse> revenueByDay;

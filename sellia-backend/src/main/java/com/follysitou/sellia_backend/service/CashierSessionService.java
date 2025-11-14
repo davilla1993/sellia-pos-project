@@ -103,6 +103,14 @@ public class CashierSessionService {
             );
         }
 
+        // Get suggested initial amount from last closed session if not provided
+        // If user explicitly sets 0, respect that choice (empty cash register)
+        Long initialAmount = request.getInitialAmount();
+        if (initialAmount == null) {
+            Long lastSessionFinalAmount = getLastClosedSessionFinalAmount(request.getCashierId());
+            initialAmount = (lastSessionFinalAmount != null) ? lastSessionFinalAmount : 0L;
+        }
+
         CashierSession session = CashierSession.builder()
                 .globalSession(globalSession)
                 .cashier(cashier)
@@ -110,7 +118,7 @@ public class CashierSessionService {
                 .status(CashierSessionStatus.OPEN)
                 .openedAt(LocalDateTime.now())
                 .lastActivityAt(LocalDateTime.now())
-                .initialAmount(request.getInitialAmount())
+                .initialAmount(initialAmount)
                 .totalSales(0L)
                 .inactivityLockMinutes(15)
                 .build();

@@ -38,4 +38,11 @@ public interface CashOperationRepository extends JpaRepository<CashOperation, Lo
 
     @Query("SELECT COUNT(co) FROM CashOperation co WHERE co.cashierSession.publicId = :sessionId AND co.type = :type AND co.deleted = false")
     Integer getCountBySessionAndType(@Param("sessionId") String sessionId, @Param("type") CashOperationType type);
+
+    // Analytics queries for cash operations by date range
+    @Query("SELECT COALESCE(SUM(co.amount), 0) FROM CashOperation co WHERE co.deleted = false AND co.type = :type AND co.operationDate BETWEEN :startDate AND :endDate")
+    Long getTotalByTypeAndDateRange(@Param("type") CashOperationType type, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(co) FROM CashOperation co WHERE co.deleted = false AND co.type = :type AND co.operationDate BETWEEN :startDate AND :endDate")
+    Long getCountByTypeAndDateRange(@Param("type") CashOperationType type, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
