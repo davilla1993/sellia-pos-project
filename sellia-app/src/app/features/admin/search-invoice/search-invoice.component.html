@@ -47,7 +47,7 @@
     </div>
 
     <!-- Results -->
-    <div *ngIf="searched() && !loading() && searchResults().length > 0" class="space-y-4">
+    <div *ngIf="searched() && !loading() && groupedInvoices().length > 0" class="space-y-4">
       <!-- Summary Card -->
       <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-6">
         <div class="flex items-center justify-between mb-4">
@@ -77,65 +77,76 @@
         </div>
       </div>
 
-      <!-- Orders List -->
+      <!-- Invoices List -->
       <div class="space-y-4">
-        <div *ngFor="let order of searchResults(); let i = index"
+        <div *ngFor="let invoice of groupedInvoices(); let i = index"
              class="bg-neutral-800 rounded-lg border border-neutral-700 p-6 hover:border-primary/50 transition-all">
 
-          <!-- Order Header -->
+          <!-- Invoice Header -->
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-4">
               <span class="text-2xl font-bold text-neutral-500">#{{ i + 1 }}</span>
               <div>
-                <h3 class="text-lg font-bold text-white">{{ order.orderNumber }}</h3>
-                <p class="text-sm text-neutral-400">{{ formatDateTime(order.createdAt) }}</p>
+                <h3 class="text-lg font-bold text-white">{{ invoice.invoiceNumber }}</h3>
+                <p class="text-sm text-neutral-400">{{ invoice.orders.length }} commande(s) • {{ formatDateTime(invoice.createdAt) }}</p>
               </div>
             </div>
-            <span [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + getStatusColor(order.status)">
-              {{ getStatusLabel(order.status) }}
-            </span>
+            <div class="flex items-center gap-3">
+              <button
+                (click)="printInvoice(invoice)"
+                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all text-sm font-semibold">
+                🖨️ Imprimer
+              </button>
+            </div>
           </div>
 
-          <!-- Order Details -->
+          <!-- Invoice Details -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div>
               <p class="text-neutral-400 text-sm">Type</p>
               <p class="text-white font-semibold">
-                {{ order.orderType === 'TABLE' ? '🪑 Table' : '📦 À Emporter' }}
+                {{ invoice.orderType === 'TABLE' ? '🪑 Table' : '📦 À Emporter' }}
               </p>
             </div>
-            <div *ngIf="order.table">
+            <div *ngIf="invoice.table">
               <p class="text-neutral-400 text-sm">Table</p>
-              <p class="text-white font-semibold">{{ order.table.name || order.table.number }}</p>
+              <p class="text-white font-semibold">{{ invoice.table.name || invoice.table.number }}</p>
+            </div>
+            <div *ngIf="invoice.cashierNumber">
+              <p class="text-neutral-400 text-sm">Caisse</p>
+              <p class="text-white font-semibold">{{ invoice.cashierNumber }}</p>
             </div>
             <div>
-              <p class="text-neutral-400 text-sm">Montant</p>
-              <p class="text-green-400 font-bold">{{ formatCurrency(order.totalAmount) }}</p>
+              <p class="text-neutral-400 text-sm">Montant Total</p>
+              <p class="text-green-400 font-bold">{{ formatCurrency(invoice.totalAmount) }}</p>
             </div>
-            <div *ngIf="order.discountAmount && order.discountAmount > 0">
-              <p class="text-neutral-400 text-sm">Remise</p>
-              <p class="text-yellow-400 font-semibold">{{ formatCurrency(order.discountAmount) }}</p>
-            </div>
-            <div *ngIf="order.notes">
-              <p class="text-neutral-400 text-sm">Notes</p>
-              <p class="text-white">{{ order.notes }}</p>
+            <div *ngIf="invoice.totalDiscount && invoice.totalDiscount > 0">
+              <p class="text-neutral-400 text-sm">Remise Totale</p>
+              <p class="text-yellow-400 font-semibold">{{ formatCurrency(invoice.totalDiscount) }}</p>
             </div>
           </div>
 
-          <!-- Order Items -->
+          <!-- Orders and Items -->
           <div class="border-t border-neutral-700 pt-4">
-            <h4 class="text-sm font-semibold text-neutral-300 mb-3">Articles commandés</h4>
-            <div class="space-y-2">
-              <div *ngFor="let item of order.items" class="flex items-center justify-between py-2 px-3 bg-neutral-900 rounded-lg">
-                <div class="flex items-center gap-3">
-                  <span class="px-2 py-1 bg-primary/20 text-primary rounded text-sm font-bold">
-                    × {{ item.quantity }}
+            <h4 class="text-sm font-semibold text-neutral-300 mb-3">Commandes</h4>
+            <div class="space-y-4">
+              <div *ngFor="let order of invoice.orders" class="bg-neutral-900 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <h5 class="text-white font-semibold">#{{ order.orderNumber }}</h5>
+                  <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusColor(order.status)">
+                    {{ getStatusLabel(order.status) }}
                   </span>
-                  <span class="text-white">{{ item.product.name }}</span>
                 </div>
-                <div class="text-right">
-                  <p class="text-white font-semibold">{{ formatCurrency(item.totalPrice) }}</p>
-                  <p class="text-xs text-neutral-400">{{ formatCurrency(item.unitPrice) }} / unité</p>
+                <div class="space-y-1">
+                  <div *ngFor="let item of order.items" class="flex items-center justify-between py-1">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 py-0.5 bg-primary/20 text-primary rounded text-xs font-bold">
+                        × {{ item.quantity }}
+                      </span>
+                      <span class="text-neutral-300 text-sm">{{ item.product.name }}</span>
+                    </div>
+                    <span class="text-white text-sm font-semibold">{{ formatCurrency(item.totalPrice) }}</span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -76,6 +76,7 @@ export interface Invoice {
   tax: number;
   status: 'PENDING' | 'PAID';
   createdAt: Date;
+  cashRegisterNumber?: string;
 }
 
 export interface Stock {

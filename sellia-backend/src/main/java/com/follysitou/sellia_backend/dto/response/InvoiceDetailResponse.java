@@ -20,6 +20,7 @@ public class InvoiceDetailResponse {
     private String customerName;
     private String customerPhone;
     private String tableNumber;
+    private String cashRegisterNumber;
     private LocalDateTime createdAt;
     private LocalDateTime paidAt;
 

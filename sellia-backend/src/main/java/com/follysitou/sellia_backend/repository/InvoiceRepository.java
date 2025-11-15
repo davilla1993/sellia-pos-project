@@ -36,4 +36,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT COUNT(i) FROM Invoice i WHERE i.deleted = false AND i.status = com.follysitou.sellia_backend.model.Invoice.InvoiceStatus.PENDING")
     long countPendingInvoices();
+
+    @Query("SELECT DISTINCT i FROM Invoice i " +
+           "LEFT JOIN FETCH i.orders o " +
+           "LEFT JOIN FETCH o.cashierSession cs " +
+           "LEFT JOIN FETCH cs.cashier c " +
+           "WHERE i.deleted = false AND i.customerSession.publicId = :sessionPublicId")
+    Optional<Invoice> findByCustomerSessionPublicIdWithCashierInfo(@Param("sessionPublicId") String sessionPublicId);
 }

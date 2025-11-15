@@ -289,17 +289,44 @@ export class CheckoutComponent implements OnInit {
           this.invoiceNumber.set('N/A');
         }
 
-        // Finalize the session
-        this.apiService.finalizeSession(sessionId).subscribe({
-          next: () => {
-            this.isProcessing.set(false);
-            this.printReceipt();
-            this.resetCheckout();
-            this.loadTables();
+        // Get full invoice details including cashRegisterNumber
+        this.apiService.getSessionInvoiceDetail(sessionId).subscribe({
+          next: (invoice: any) => {
+            // Store cashRegisterNumber in session for printReceipt
+            const session = this.selectedSession();
+            if (session) {
+              session.cashRegisterNumber = invoice.cashRegisterNumber;
+              this.selectedSession.set({...session});
+            }
+
+            // Finalize the session
+            this.apiService.finalizeSession(sessionId).subscribe({
+              next: () => {
+                this.isProcessing.set(false);
+                this.printReceipt();
+                this.resetCheckout();
+                this.loadTables();
+              },
+              error: () => {
+                this.errorMessage.set('Erreur lors de la finalisation');
+                this.isProcessing.set(false);
+              }
+            });
           },
           error: () => {
-            this.errorMessage.set('Erreur lors de la finalisation');
-            this.isProcessing.set(false);
+            // Continue even if invoice detail fails
+            this.apiService.finalizeSession(sessionId).subscribe({
+              next: () => {
+                this.isProcessing.set(false);
+                this.printReceipt();
+                this.resetCheckout();
+                this.loadTables();
+              },
+              error: () => {
+                this.errorMessage.set('Erreur lors de la finalisation');
+                this.isProcessing.set(false);
+              }
+            });
           }
         });
       },
@@ -324,6 +351,12 @@ export class CheckoutComponent implements OnInit {
           this.invoiceNumber.set('N/A');
         }
 
+        // Get cashRegisterNumber from payment response
+        if (response?.cashierSession?.cashier?.cashierNumber) {
+          order.cashRegisterNumber = response.cashierSession.cashier.cashierNumber;
+          this.selectedTakeawayOrder.set({...order});
+        }
+
         this.isProcessing.set(false);
         this.printReceipt();
         this.resetCheckout();
@@ -345,23 +378,14 @@ export class CheckoutComponent implements OnInit {
 
       if (this.selectedSession()?.tableNumber) {
         tableNumber = this.selectedSession().tableNumber;
-        // Get cashier number from session or from first order
-        cashierNumber = this.selectedSession()?.cashierNumber || '';
-        if (!cashierNumber && this.sessionOrders().length > 0) {
-          // Fallback: try to get from first order's cashierSession
-          const firstOrder = this.sessionOrders()[0];
-          if (firstOrder?.cashierSession?.cashier?.cashierNumber) {
-            cashierNumber = firstOrder.cashierSession.cashier.cashierNumber;
-          }
-        }
+        // Get cashier number from session (set during payment)
+        cashierNumber = this.selectedSession()?.cashRegisterNumber || '';
       } else if (this.selectedTakeawayOrder()) {
         // Use customer name if available
         const order = this.selectedTakeawayOrder();
         tableNumber = order.customerName || 'TAKEAWAY';
-        // Get cashier number from takeaway order
-        if (order?.cashierSession?.cashier?.cashierNumber) {
-          cashierNumber = order.cashierSession.cashier.cashierNumber;
-        }
+        // Get cashier number from takeaway order (set during payment)
+        cashierNumber = order?.cashRegisterNumber || '';
       }
       const restaurant = this.restaurantInfo();
       

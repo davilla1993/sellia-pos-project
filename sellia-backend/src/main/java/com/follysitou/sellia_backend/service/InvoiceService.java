@@ -126,14 +126,21 @@ public class InvoiceService {
      * Récupère les détails de la facture avec les items groupés par WorkStation (CUISINE & BAR)
      */
     public InvoiceDetailResponse getInvoiceDetailBySession(String sessionPublicId) {
-        // Récupérer la facture de la session
-        Invoice invoice = invoiceRepository.findAll().stream()
-                .filter(inv -> inv.getCustomerSession().getPublicId().equals(sessionPublicId))
-                .findFirst()
+        // Récupérer la facture de la session avec les informations de caisse chargées
+        Invoice invoice = invoiceRepository.findByCustomerSessionPublicIdWithCashierInfo(sessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found for session: " + sessionPublicId));
 
         // Récupérer toutes les commandes de la facture
         List<Order> orders = invoice.getOrders();
+
+        // Récupérer le numéro de caisse depuis la première commande qui a une cashierSession
+        String cashRegisterNumber = null;
+        for (Order order : orders) {
+            if (order.getCashierSession() != null && order.getCashierSession().getCashier() != null) {
+                cashRegisterNumber = order.getCashierSession().getCashier().getCashierNumber();
+                break;
+            }
+        }
 
         // Regrouper tous les OrderItems par WorkStation
         Map<String, List<InvoiceDetailResponse.InvoiceItemDetail>> itemsByStation = new LinkedHashMap<>();
@@ -166,6 +173,7 @@ public class InvoiceService {
                 .customerPhone(invoice.getCustomerPhone())
                 .tableNumber(invoice.getCustomerSession().getTable() != null ?
                         invoice.getCustomerSession().getTable().getNumber() : "N/A")
+                .cashRegisterNumber(cashRegisterNumber)
                 .createdAt(invoice.getCreatedAt())
                 .paidAt(invoice.getPaidAt())
                 .itemsByStation(itemsByStation)

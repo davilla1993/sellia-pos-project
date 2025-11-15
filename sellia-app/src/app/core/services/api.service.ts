@@ -608,6 +608,10 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/orders/search/invoice/${invoiceNumber}`);
   }
 
+  getSessionInvoiceDetail(sessionPublicId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/customer-sessions/${sessionPublicId}/invoice`);
+  }
+
   downloadPdfFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
