@@ -124,7 +124,7 @@ public class CustomerSessionService {
         CustomerSession session = customerSessionRepository.findByPublicId(sessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
 
-        return orderRepository.findByCustomerSessionId(sessionPublicId, pageable);
+        return orderRepository.findByCustomerSessionIdWithCashierInfo(sessionPublicId, pageable);
     }
 
     public CustomerSessionResponse finalizeSession(String sessionPublicId) {

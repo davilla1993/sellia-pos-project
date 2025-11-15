@@ -559,7 +559,7 @@ public class OrderService {
         customerSessionRepository.findByPublicId(customerSessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
 
-        Page<Order> orders = orderRepository.findByCustomerSessionId(customerSessionPublicId, pageable);
+        Page<Order> orders = orderRepository.findByCustomerSessionIdWithCashierInfo(customerSessionPublicId, pageable);
         return PagedResponse.of(orders.map(orderMapper::toResponse));
     }
 

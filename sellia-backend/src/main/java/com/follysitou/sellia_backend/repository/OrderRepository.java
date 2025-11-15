@@ -37,6 +37,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.customerSession.publicId = :customerSessionId ORDER BY o.createdAt DESC")
     Page<Order> findByCustomerSessionId(@Param("customerSessionId") String customerSessionId, Pageable pageable);
 
+    @Query("SELECT o FROM Order o " +
+           "LEFT JOIN FETCH o.cashierSession cs " +
+           "LEFT JOIN FETCH cs.cashier c " +
+           "WHERE o.deleted = false AND o.customerSession.publicId = :customerSessionId " +
+           "ORDER BY o.createdAt DESC")
+    Page<Order> findByCustomerSessionIdWithCashierInfo(@Param("customerSessionId") String customerSessionId, Pageable pageable);
+
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.createdAt BETWEEN :startDate AND :endDate ORDER BY o.createdAt DESC")
     Page<Order> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
