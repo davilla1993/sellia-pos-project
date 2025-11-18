@@ -93,6 +93,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                        // Actuator endpoints for monitoring (AUDITOR role)
+                        .requestMatchers("/actuator/**").hasAnyRole("ADMIN", "AUDITOR")
                         // Static files (uploads)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         // Angular SPA - Allow all static resources

@@ -817,4 +817,57 @@ export class ApiService {
   markFirstLoginComplete(publicId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/users/${publicId}/mark-first-login-complete`, {});
   }
+
+  // Audit Logs
+  getAuditLogs(page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs`, { params });
+  }
+
+  getAuditLogsByUser(userEmail: string, page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/user/${userEmail}`, { params });
+  }
+
+  getAuditLogsByAction(action: string, page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/action/${action}`, { params });
+  }
+
+  getAuditLogsByEntityType(entityType: string, page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/entity-type/${entityType}`, { params });
+  }
+
+  getAuditLogsByDateRange(startDate: string, endDate: string, page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('startDate', startDate)
+      .set('endDate', endDate)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/date-range`, { params });
+  }
+
+  getAuditLogsByStatus(status: string, page: number = 0, size: number = 50): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/status/${status}`, { params });
+  }
+
+  getAuditLogsByEntity(entityType: string, entityId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/audit-logs/entity/${entityType}/${entityId}`);
+  }
+
+  getAuditStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/stats`);
+  }
 }
