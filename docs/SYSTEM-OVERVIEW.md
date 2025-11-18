@@ -207,7 +207,7 @@
 
 **Caractéristiques :**
 - Authentification JWT avec tokens expirables
-- 4 rôles : ADMIN, CAISSE, CUISINE, BAR
+- 5 rôles : ADMIN, CAISSE, CUISINE, BAR, AUDITOR
 - Protection PIN pour les caisses (4 chiffres, bcrypt)
 - Protection brute-force (3 tentatives = 15 min blocage)
 - Auto-déconnexion après 15 min d'inactivité
@@ -1148,6 +1148,9 @@ docker-compose up --build
 # En arrière-plan
 docker-compose up -d
 
+# Lancer avec monitoring (Prometheus/Grafana/Loki)
+docker-compose --profile monitoring up -d
+
 # Voir les logs
 docker-compose logs -f app
 
@@ -1158,7 +1161,29 @@ docker-compose down
 docker-compose down -v
 ```
 
-### 10.2 Production (Coolify)
+### 10.2 Monitoring & Audit
+
+Le système inclut une stack complète de monitoring accessible au rôle **AUDITOR** :
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Dashboard Audit | http://localhost:8080/auditor | Logs d'audit applicatifs |
+| Grafana | http://localhost:3001 | Dashboards et visualisations |
+| Prometheus | http://localhost:9090 | Métriques et alertes |
+| Loki | http://localhost:3100 | Logs centralisés |
+
+**Identifiants Grafana par défaut :**
+- Utilisateur : `admin`
+- Mot de passe : `admin`
+
+**Fonctionnalités AUDITOR :**
+- Consultation des logs d'audit (actions utilisateurs)
+- Filtrage par date, utilisateur, type d'entité, statut
+- Statistiques de succès/échec
+- Accès aux métriques Actuator
+- Lien direct vers Grafana et Prometheus
+
+### 10.3 Production (Coolify)
 
 1. **Créer service PostgreSQL** dans Coolify
 2. **Configurer les variables** d'environnement
@@ -1166,7 +1191,7 @@ docker-compose down -v
 4. **Configurer le domaine** et SSL
 5. **Configurer les volumes** persistants
 
-### 10.3 Vérification Post-Déploiement
+### 10.4 Vérification Post-Déploiement
 
 ```bash
 # Health check

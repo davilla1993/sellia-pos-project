@@ -648,6 +648,34 @@ GET /api/reports/cashier/{id}/pdf?startDate=2024-01-01&endDate=2024-01-31
 GET /api/reports/user/{id}?startDate=2024-01-01&endDate=2024-01-31
 ```
 
+### Audit Logs (AUDITOR/ADMIN)
+
+```http
+# Liste paginée des logs
+GET /api/audit-logs?page=0&size=50
+
+# Logs par utilisateur
+GET /api/audit-logs/user/{email}?page=0&size=50
+
+# Logs par action
+GET /api/audit-logs/action/{action}?page=0&size=50
+
+# Logs par type d'entité
+GET /api/audit-logs/entity-type/{entityType}?page=0&size=50
+
+# Logs par plage de dates
+GET /api/audit-logs/date-range?startDate=2024-01-01T00:00:00&endDate=2024-01-31T23:59:59
+
+# Logs par statut (SUCCESS/FAILED)
+GET /api/audit-logs/status/{status}?page=0&size=50
+
+# Logs d'une entité spécifique
+GET /api/audit-logs/entity/{entityType}/{entityId}
+
+# Statistiques d'audit
+GET /api/audit-logs/stats
+```
+
 ---
 
 ## Sécurité
@@ -664,8 +692,10 @@ GET /api/reports/user/{id}?startDate=2024-01-01&endDate=2024-01-31
 | Rôle | Permissions |
 |------|-------------|
 | ADMIN | Toutes les permissions |
-| CAISSIER | Commandes, session caissier, rapports propres |
-| CUISINIER | Vue cuisine uniquement |
+| CAISSE | Commandes, session caissier, rapports propres |
+| CUISINE | Vue cuisine uniquement |
+| BAR | Vue bar uniquement |
+| AUDITOR | Logs d'audit, métriques, monitoring (Grafana/Prometheus) |
 
 ### Protection des caisses
 

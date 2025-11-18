@@ -155,8 +155,23 @@ npm test
 ### Docker Compose (développement/test)
 
 ```bash
+# Lancer l'application
 docker-compose up -d
+
+# Lancer avec monitoring (Prometheus/Grafana/Loki)
+docker-compose --profile monitoring up -d
 ```
+
+### Accès Monitoring & Audit
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Application | http://localhost:8080 | Frontend & API |
+| Dashboard Audit | http://localhost:8080/auditor | Logs d'audit (AUDITOR) |
+| Grafana | http://localhost:3001 | Dashboards visualisation |
+| Prometheus | http://localhost:9090 | Métriques et alertes |
+
+**Grafana** : admin / admin (par défaut)
 
 ### Coolify (production)
 
