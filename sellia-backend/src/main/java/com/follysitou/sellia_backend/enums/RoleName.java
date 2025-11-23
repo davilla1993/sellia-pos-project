@@ -7,7 +7,8 @@ public enum RoleName {
     ADMIN("Administrateur"),
     CAISSE("Caisse"),
     CUISINE("Cuisine"),
-    BAR("Bar");
+    BAR("Bar"),
+    AUDITOR("Auditeur");
 
     private final String displayName;
 

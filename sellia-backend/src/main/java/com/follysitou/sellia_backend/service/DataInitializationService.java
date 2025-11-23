@@ -73,6 +73,19 @@ public class DataInitializationService {
             log.info("✓ BAR role already exists");
         }
 
+        // Check and create AUDITOR role
+        if (roleRepository.findByName(RoleName.AUDITOR).isEmpty()) {
+            Role auditorRole = Role.builder()
+                    .name(RoleName.AUDITOR)
+                    .description("Accès aux logs d'audit, métriques et monitoring de l'application. Diagnostique les problèmes et surveille les performances.")
+                    .active(true)
+                    .build();
+            roleRepository.save(auditorRole);
+            log.info("✓ AUDITOR role created");
+        } else {
+            log.info("✓ AUDITOR role already exists");
+        }
+
         log.info("Default roles initialization completed");
     }
 }

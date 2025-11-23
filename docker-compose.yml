@@ -68,10 +68,77 @@ services:
     networks:
       - sellia-network
 
+  # Monitoring Stack - Prometheus
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: sellia-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - sellia-network
+    profiles:
+      - monitoring
+
+  # Monitoring Stack - Loki
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: sellia-loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - sellia-network
+    profiles:
+      - monitoring
+
+  # Monitoring Stack - Grafana
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: sellia-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:3001}
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    networks:
+      - sellia-network
+    profiles:
+      - monitoring
+
 volumes:
   postgres_data:
     driver: local
   uploads_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  loki_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

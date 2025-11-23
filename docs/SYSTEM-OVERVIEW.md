@@ -1,506 +1,1322 @@
-# SELLIA POS - Complete System Overview
+# SELLIA POS - Vue d'Ensemble Complète du Système
 
-## System Architecture
+---
+
+## Table des matières
+
+1. [Architecture Système](#1-architecture-système)
+2. [Stack Technologique](#2-stack-technologique)
+3. [Fonctionnalités Principales](#3-fonctionnalités-principales)
+4. [Modèle de Données](#4-modèle-de-données)
+5. [API REST Complète](#5-api-rest-complète)
+6. [Workflows Métier](#6-workflows-métier)
+7. [Sécurité](#7-sécurité)
+8. [Configuration](#8-configuration)
+9. [Monitoring](#9-monitoring)
+10. [Déploiement](#10-déploiement)
+11. [Tests](#11-tests)
+
+---
+
+## 1. Architecture Système
+
+### 1.1 Vue d'ensemble
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         SELLIA POS PLATFORM                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌─────────────────────────┐         ┌─────────────────────────┐        │
+│  │   FRONTEND (Angular 20) │         │  BACKEND (Spring Boot)  │        │
+│  ├─────────────────────────┤         ├─────────────────────────┤        │
+│  │                         │         │                         │        │
+│  │  ┌─────────────────┐    │  HTTP   │  ┌─────────────────┐    │        │
+│  │  │ Admin Module    │    │ ──────► │  │ Controllers     │    │        │
+│  │  │ • Dashboard     │    │  REST   │  │ • 21 endpoints  │    │        │
+│  │  │ • Users/Roles   │    │         │  │ • Validation    │    │        │
+│  │  │ • Products      │    │         │  └────────┬────────┘    │        │
+│  │  │ • Reports       │    │         │           │             │        │
+│  │  └─────────────────┘    │         │  ┌────────▼────────┐    │        │
+│  │                         │         │  │ Services        │    │        │
+│  │  ┌─────────────────┐    │         │  │ • Business Logic│    │        │
+│  │  │ POS Module      │    │         │  │ • 27 services   │    │        │
+│  │  │ • Order Entry   │    │ ◄────── │  └────────┬────────┘    │        │
+│  │  │ • Checkout      │    │  JSON   │           │             │        │
+│  │  │ • Kitchen/Bar   │    │         │  ┌────────▼────────┐    │        │
+│  │  └─────────────────┘    │         │  │ Repositories    │    │        │
+│  │                         │         │  │ • JPA/Hibernate │    │        │
+│  │  ┌─────────────────┐    │         │  └────────┬────────┘    │        │
+│  │  │ Auth Module     │    │         │           │             │        │
+│  │  │ • Login/Logout  │    │         └───────────┼─────────────┘        │
+│  │  │ • PIN Entry     │    │                     │                      │
+│  │  └─────────────────┘    │                     │ JDBC                 │
+│  │                         │                     │                      │
+│  └─────────────────────────┘                     ▼                      │
+│                                      ┌─────────────────────────┐        │
+│                                      │  PostgreSQL Database    │        │
+│                                      │  • 25 tables            │        │
+│                                      │  • Soft delete          │        │
+│                                      │  • Audit logging        │        │
+│                                      └─────────────────────────┘        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Architecture en couches (Backend)
+
+```
+┌─────────────────────────────────────────┐
+│           PRESENTATION LAYER            │
+│  Controllers (REST API Endpoints)       │
+│  • Request validation                   │
+│  • Response formatting                  │
+│  • Exception handling                   │
+├─────────────────────────────────────────┤
+│           BUSINESS LAYER                │
+│  Services (Business Logic)              │
+│  • Transaction management               │
+│  • Business rules                       │
+│  • Data transformation                  │
+├─────────────────────────────────────────┤
+│           PERSISTENCE LAYER             │
+│  Repositories (Data Access)             │
+│  • JPA repositories                     │
+│  • Custom queries                       │
+│  • Pagination support                   │
+├─────────────────────────────────────────┤
+│           DATABASE LAYER                │
+│  PostgreSQL                             │
+│  • Relational data                      │
+│  • Indexes & constraints                │
+│  • Triggers & functions                 │
+└─────────────────────────────────────────┘
+```
+
+### 1.3 Architecture modulaire (Frontend)
+
+```
+┌─────────────────────────────────────────┐
+│              APP ROOT                    │
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌───────────┐  ┌───────────────────┐  │
+│  │   CORE    │  │     SHARED        │  │
+│  │           │  │                   │  │
+│  │ • Guards  │  │ • Components      │  │
+│  │ • Intercep│  │ • Directives      │  │
+│  │ • Services│  │ • Pipes           │  │
+│  └───────────┘  └───────────────────┘  │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │          FEATURES               │   │
+│  ├─────────────────────────────────┤   │
+│  │                                 │   │
+│  │ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐│   │
+│  │ │Admin│ │ POS │ │Auth │ │Cust.││   │
+│  │ │     │ │     │ │     │ │     ││   │
+│  │ │ 20+ │ │ 14  │ │  3  │ │  4  ││   │
+│  │ │comp.│ │comp.│ │comp.│ │comp.││   │
+│  │ └─────┘ └─────┘ └─────┘ └─────┘│   │
+│  │                                 │   │
+│  └─────────────────────────────────┘   │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 2. Stack Technologique
+
+### 2.1 Backend
+
+| Technologie | Version | Usage |
+|-------------|---------|-------|
+| **Java** | 21 | Langage principal |
+| **Spring Boot** | 3.5.6 | Framework backend |
+| **Spring Security** | 6.x | Sécurité et authentification |
+| **Spring Data JPA** | 3.x | ORM et accès données |
+| **Spring WebSocket** | 3.x | Communication temps réel |
+| **PostgreSQL** | 16 | Base de données relationnelle |
+| **JWT (jjwt)** | 0.12.3 | Tokens d'authentification |
+| **iText7** | 7.2.5 | Génération de rapports PDF |
+| **ZXing** | 3.5.2 | Génération de QR Codes |
+| **Lombok** | Latest | Réduction du boilerplate |
+| **Jackson** | 2.x | Sérialisation JSON |
+| **Maven** | 3.9+ | Build et gestion des dépendances |
+
+### 2.2 Frontend
+
+| Technologie | Version | Usage |
+|-------------|---------|-------|
+| **Angular** | 20.1.0 | Framework SPA |
+| **TypeScript** | 5.8.2 | Langage principal |
+| **TailwindCSS** | 3.4.18 | Framework CSS utilitaire |
+| **RxJS** | 7.8.0 | Programmation réactive |
+| **Chart.js** | 4.5.1 | Graphiques de base |
+| **ApexCharts** | 5.3.6 | Graphiques avancés |
+| **ng2-charts** | 8.0.0 | Intégration Chart.js |
+| **ngx-scanner** | Latest | Scan QR Code |
+
+### 2.3 DevOps & Infrastructure
+
+| Technologie | Usage |
+|-------------|-------|
+| **Docker** | Conteneurisation |
+| **Docker Compose** | Orchestration locale |
+| **Coolify** | Plateforme de déploiement |
+| **PostgreSQL 16 Alpine** | Image Docker BDD |
+| **Eclipse Temurin 21** | JRE Alpine |
+| **Node 20 Alpine** | Build frontend |
+
+---
+
+## 3. Fonctionnalités Principales
+
+### 3.1 Authentification & Autorisation
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   SELLIA POS Platform                   │
+│                  SECURITY FLOW                           │
 ├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  Frontend (Angular 19)          Backend (Spring Boot)   │
-│  ├─ Auth & Session              ├─ Authentication      │
-│  ├─ Multi-Caisse UI             ├─ Global Session Mgmt │
-│  ├─ POS Interface               ├─ Cashier Mgmt        │
-│  ├─ Bar Tickets Screen          ├─ Ticket System       │
-│  ├─ Caisse Reports              ├─ Order Processing    │
-│  ├─ Ticket Management           ├─ Reporting Engine    │
-│  └─ PDF Downloads               ├─ PDF Generation      │
-│                                 └─ Security Layers     │
-│                                                          │
-│  Database (PostgreSQL)          Message Queue (Optional)
-│  ├─ Users & Roles               ├─ Notifications       │
-│  ├─ Cashier Management          └─ Real-time Updates   │
-│  ├─ Session Tracking                                   │
-│  ├─ Order History                                      │
-│  ├─ Tickets & Workflow                                 │
-│  └─ Reporting Tables                                   │
-│                                                          │
+│                                                         │
+│  User Login                                             │
+│      │                                                  │
+│      ▼                                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐ │
+│  │ Credentials │───►│ Validation  │───►│ JWT Token   │ │
+│  │ (email/pwd) │    │ (bcrypt)    │    │ Generation  │ │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘ │
+│                                               │        │
+│                                               ▼        │
+│                     ┌─────────────────────────────┐    │
+│                     │ Access Token (1h)           │    │
+│                     │ Refresh Token (5 days)      │    │
+│                     └─────────────────────────────┘    │
+│                                                         │
+│  API Request                                            │
+│      │                                                  │
+│      ▼                                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐ │
+│  │ JWT Token   │───►│ Validation  │───►│ Role Check  │ │
+│  │ in Header   │    │ & Decode    │    │ (RBAC)      │ │
+│  └─────────────┘    └─────────────┘    └─────────────┘ │
+│                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
----
+**Caractéristiques :**
+- Authentification JWT avec tokens expirables
+- 5 rôles : ADMIN, CAISSE, CUISINE, BAR, AUDITOR
+- Protection PIN pour les caisses (4 chiffres, bcrypt)
+- Protection brute-force (3 tentatives = 15 min blocage)
+- Auto-déconnexion après 15 min d'inactivité
+- Protection XSS, SQL Injection, CSRF
 
-## Core Features
+### 3.2 Gestion Multi-Caisses
 
-### 1. Authentication & Security
-- JWT Token-based authentication
-- Role-based access control (ADMIN, CAISSIER, CUISINIER)
-- PIN-based cashier session (4 digits)
-- Brute-force protection (3 attempts = 15 min lock)
-- Auto-logout after 15 minutes inactivity
-- XSS/SQL injection prevention
-- CSRF token validation
+```
+┌─────────────────────────────────────────────────────────┐
+│              MULTI-CASHIER HIERARCHY                     │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  GlobalSession (1 par jour)                             │
+│      │                                                  │
+│      ├─── CashierSession (Caisse 1, User A)            │
+│      │        └─── Orders [#1001, #1002, #1003]        │
+│      │                                                  │
+│      ├─── CashierSession (Caisse 1, User B)            │
+│      │        └─── Orders [#1004, #1005]               │
+│      │                                                  │
+│      ├─── CashierSession (Caisse 2, User C)            │
+│      │        └─── Orders [#1006, #1007, #1008]        │
+│      │                                                  │
+│      └─── CashierSession (Caisse 3, User D)            │
+│               └─── Orders [#1009]                       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
 
-### 2. Multi-Cashier Management
-- **GlobalSession** - Admin opens/closes daily session
-- **Cashier** - Physical cash drawers with PIN
-- **CashierSession** - Individual session per cashier/user
-- **Multiple users per cashier** for shift rotations
-- Automatic order tracking by cashier session
-- Complete audit trail
+**Entités :**
+- **GlobalSession** : Session journalière (Admin ouvre/ferme)
+- **Cashier** : Caisse physique avec PIN
+- **CashierSession** : Session utilisateur sur une caisse
+- **CashierUsers** : Assignation utilisateurs ↔ caisses (N:N)
 
-### 3. Menu & Product System
-- **Menu** - Grouped offerings (Menu du Jour, Menu VIP)
-- **MenuItem** - Sellable items within menu
-- **Product** - Base items with WorkStation assignment
-- WorkStation routing (KITCHEN, BAR, PASTRY, CHECKOUT)
-- Pricing flexibility (menu overrides)
+### 3.3 Système de Menus & Produits
 
-### 4. Ticket System (Dual-Mode)
-**Mode A: Separated Tickets**
-- One ticket per WorkStation
-- BAR prioritized (served first)
-- KITCHEN waits for BAR ready
-- Each station prints their own ticket
+```
+┌─────────────────────────────────────────────────────────┐
+│              PRODUCT HIERARCHY                           │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Category                                               │
+│      │                                                  │
+│      ├─── Product (workStation: KITCHEN)               │
+│      │        ├─── name: "Pizza Margherita"            │
+│      │        ├─── price: 5500                         │
+│      │        └─── imageUrl: "/uploads/pizza.jpg"      │
+│      │                                                  │
+│      └─── Product (workStation: BAR)                   │
+│               ├─── name: "Coca-Cola"                    │
+│               └─── price: 1000                          │
+│                                                         │
+│  Menu                                                   │
+│      │                                                  │
+│      └─── MenuItem                                      │
+│               ├─── displayOrder: 1                      │
+│               ├─── priceOverride: 8000                  │
+│               └─── Products: [Pizza, Salade, Coca]      │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
 
-**Mode B: Unified Tickets**
-- Single receipt for caisse
-- All items grouped by station
-- Print once at checkout
-- Complete order view
+**Stations de travail (WorkStation) :**
+- `KITCHEN` : Plats chauds, entrées
+- `BAR` : Boissons, cocktails
+- `PASTRY` : Desserts, pâtisseries
+- `CHECKOUT` : Articles vendus directement
 
-### 5. Order Management
-- Orders automatically link to active CashierSession
-- Support for multiple order types (TABLE, TAKEAWAY)
-- Customer session tracking
-- Real-time order status
-- Discount/adjustment support
+### 3.4 Système de Tickets (Dual-Mode)
 
-### 6. Reporting & Analytics
-- **JSON Reports** - Structured data export
-  - Global Session summary
-  - Per-Cashier breakdown
-  - Per-User performance
-  - Top products
-  - Revenue analytics
+```
+┌─────────────────────────────────────────────────────────┐
+│              TICKET SYSTEM                               │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  MODE A: SEPARATED TICKETS                              │
+│  ─────────────────────────                              │
+│                                                         │
+│  Order #1234                                            │
+│      │                                                  │
+│      ├─── Ticket BAR (priority: 1)                     │
+│      │        └─── [Coca x2, Bière x1]                 │
+│      │                                                  │
+│      └─── Ticket KITCHEN (priority: 2)                 │
+│               └─── [Pizza x1, Salade x1]               │
+│                                                         │
+│  → Bar prépare en premier                               │
+│  → Cuisine attend que le bar soit prêt                  │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  MODE B: UNIFIED TICKET                                 │
+│  ──────────────────────                                 │
+│                                                         │
+│  Order #1234                                            │
+│      │                                                  │
+│      └─── Ticket UNIFIED                               │
+│               ├─── [BAR] Coca x2, Bière x1             │
+│               └─── [KITCHEN] Pizza x1, Salade x1       │
+│                                                         │
+│  → Un seul ticket imprimé à la caisse                  │
+│  → Vue complète de la commande                          │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
 
-- **PDF Reports** - Professional printable format
-  - Formatted tables
-  - Currency formatting (XAF)
-  - Date range filtering
-  - Summary statistics
+### 3.5 Gestion des Commandes
 
----
+**Types de commandes :**
+- `TABLE` : Service en salle
+- `TAKEAWAY` : À emporter
+- `DELIVERY` : Livraison (futur)
 
-## Database Schema
+**Statuts de commande :**
 
-### Core Entities
-```sql
--- Authentication
-users (id, public_id, email, password_hash, role, deleted)
-roles (id, name, permissions)
+```
+ACCEPTEE ──► EN_PREPARATION ──► PRETE ──► LIVREE
+    │
+    └──────────────► ANNULEE
+```
 
--- Session Management
-global_sessions (id, public_id, status, initial_amount, final_amount, opened_at, closed_at, deleted)
-cashiers (id, public_id, name, number, pin_hash, status, failed_attempts, locked_until, deleted)
-cashier_sessions (id, public_id, global_session_id, cashier_id, user_id, status, last_activity, deleted)
-cashier_users (cashier_id, user_id, assigned_at) -- Many-to-Many
+| Statut | Description | Couleur |
+|--------|-------------|---------|
+| `ACCEPTEE` | Nouvelle commande | Orange |
+| `EN_PREPARATION` | En cours de préparation | Jaune |
+| `PRETE` | Prête à servir | Vert |
+| `LIVREE` | Servie au client | Bleu |
+| `ANNULEE` | Annulée | Rouge |
 
--- Menu & Products
-menus (id, public_id, name, type, active, deleted)
-menu_items (id, public_id, menu_id, display_order, price_override, bundle_price, deleted)
-menu_item_products (menu_item_id, product_id) -- Many-to-Many
-products (id, public_id, name, price, category_id, work_station, deleted)
+### 3.6 Rapports & Analytics
 
--- Orders & Items
-customer_sessions (id, public_id, table_id, active, deleted)
-orders (id, public_id, number, table_id, customer_session_id, cashier_session_id, status, total_amount, discount, deleted)
-order_items (id, public_id, order_id, menu_item_id, product_id, quantity, unit_price, total_price, work_station, status, deleted)
+**Types de rapports :**
 
--- Tickets
-tickets (id, public_id, customer_session_id, work_station, status, priority, printed_at, ready_at, deleted)
-ticket_items (ticket_id, order_item_id) -- Link to order items
+| Type | Contenu | Format |
+|------|---------|--------|
+| **Session Globale** | CA total, commandes, top produits | JSON/PDF |
+| **Par Caissier** | Performance d'une caisse | JSON/PDF |
+| **Par Utilisateur** | Performance individuelle | JSON/PDF |
 
--- Reporting
-inventory_movements (id, type, product_id, quantity, reference, date)
-audit_logs (id, entity_type, entity_id, action, user_id, timestamp)
+**Données incluses :**
+- Résumé financier (CA, entrées, sorties, écart)
+- Détail des commandes
+- Top 10 produits vendus
+- Heures de pointe
+- Performance par utilisateur
+
+### 3.7 Opérations de Caisse
+
+**Types d'opérations :**
+- `ENTREE` : Dépôt d'argent (fond de caisse, appoint)
+- `SORTIE` : Retrait d'argent (achats, remboursements)
+
+**Calcul de la trésorerie :**
+```
+Trésorerie = Solde Initial + Ventes + Entrées - Sorties
 ```
 
 ---
 
-## API Endpoints
+## 4. Modèle de Données
 
-### Authentication (8 endpoints)
+### 4.1 Diagramme Entité-Relation
+
 ```
-POST   /api/auth/login                      - User login
-POST   /api/auth/logout                     - User logout
-POST   /api/auth/register                   - New user registration
-POST   /api/auth/refresh-token              - Refresh JWT
-GET    /api/auth/me                         - Current user info
-POST   /api/auth/change-password            - Change password
-POST   /api/auth/forgot-password            - Password reset
-POST   /api/auth/reset-password             - Complete password reset
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│    User     │       │    Role     │       │ ActiveToken │
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │───────│ id          │       │ id          │
+│ publicId    │       │ name        │       │ token       │
+│ email       │       │ permissions │       │ userId      │
+│ password    │       └─────────────┘       │ expiresAt   │
+│ firstName   │                             └─────────────┘
+│ lastName    │
+│ roleId (FK) │
+└──────┬──────┘
+       │
+       │ N:N
+       ▼
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│   Cashier   │───────│CashierUsers │───────│    User     │
+├─────────────┤       ├─────────────┤       └─────────────┘
+│ id          │       │ cashierId   │
+│ publicId    │       │ userId      │
+│ name        │       │ assignedAt  │
+│ number      │       └─────────────┘
+│ pinHash     │
+│ status      │
+│ failedAttempts│
+│ lockedUntil │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐       ┌─────────────┐
+│GlobalSession│◄──────│CashierSession│
+├─────────────┤       ├─────────────┤
+│ id          │       │ id          │
+│ publicId    │       │ publicId    │
+│ status      │       │ globalSessionId│
+│ initialAmount│      │ cashierId   │
+│ finalAmount │       │ userId      │
+│ openedAt    │       │ status      │
+│ closedAt    │       │ openedAt    │
+│ openedBy    │       │ closedAt    │
+│ closedBy    │       │ lastActivity│
+│ totalSales  │       └──────┬──────┘
+└─────────────┘              │
+                             │
+                             ▼
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│   Order     │───────│  OrderItem  │───────│  MenuItem   │
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │       │ id          │       │ id          │
+│ publicId    │       │ publicId    │       │ publicId    │
+│ orderNumber │       │ orderId     │       │ menuId      │
+│ type        │       │ menuItemId  │       │ displayOrder│
+│ tableId     │       │ productId   │       │ priceOverride│
+│ customerSessionId│  │ quantity    │       │ bundlePrice │
+│ cashierSessionId│   │ unitPrice   │       └──────┬──────┘
+│ status      │       │ totalPrice  │              │
+│ totalAmount │       │ workStation │              │ N:N
+│ discount    │       │ status      │              ▼
+│ notes       │       │ notes       │       ┌─────────────┐
+│ createdAt   │       └─────────────┘       │   Product   │
+└─────────────┘                             ├─────────────┤
+                                            │ id          │
+┌─────────────┐       ┌─────────────┐       │ publicId    │
+│  Category   │◄──────│   Product   │       │ name        │
+├─────────────┤       ├─────────────┤       │ description │
+│ id          │       │ categoryId  │       │ price       │
+│ publicId    │       │ ...         │       │ workStation │
+│ name        │       └─────────────┘       │ imageUrl    │
+│ description │                             │ active      │
+│ displayOrder│                             └─────────────┘
+└─────────────┘
+
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│    Menu     │───────│  MenuItem   │───────│MenuItemProduct│
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │       │ menuId      │       │ menuItemId  │
+│ publicId    │       │ ...         │       │ productId   │
+│ name        │       └─────────────┘       └─────────────┘
+│ type        │
+│ active      │
+└─────────────┘
+
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│ Restaurant  │───────│RestaurantTable│─────│CustomerSession│
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │       │ id          │       │ id          │
+│ publicId    │       │ publicId    │       │ publicId    │
+│ name        │       │ restaurantId│       │ tableId     │
+│ address     │       │ number      │       │ active      │
+│ phone       │       │ name        │       │ createdAt   │
+│ taxId       │       │ capacity    │       └─────────────┘
+└─────────────┘       │ qrCodeUrl   │
+                      │ zone        │
+                      └─────────────┘
+
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│   Invoice   │       │CashOperation│       │   Ticket    │
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │       │ id          │       │ id          │
+│ publicId    │       │ publicId    │       │ publicId    │
+│ invoiceNumber│      │ cashierSessionId│   │ customerSessionId│
+│ orderId     │       │ type (IN/OUT)│      │ workStation │
+│ totalAmount │       │ amount      │       │ status      │
+│ createdAt   │       │ notes       │       │ priority    │
+└─────────────┘       │ createdAt   │       │ printedAt   │
+                      └─────────────┘       │ readyAt     │
+                                            └─────────────┘
+
+┌─────────────┐       ┌─────────────┐
+│   Stock     │       │InventoryMovement│
+├─────────────┤       ├─────────────┤
+│ id          │       │ id          │
+│ productId   │       │ productId   │
+│ quantity    │       │ type        │
+│ minLevel    │       │ quantity    │
+│ updatedAt   │       │ reference   │
+└─────────────┘       │ createdAt   │
+                      └─────────────┘
+
+┌─────────────┐
+│  AuditLog   │
+├─────────────┤
+│ id          │
+│ entityType  │
+│ entityId    │
+│ action      │
+│ userId      │
+│ timestamp   │
+│ details     │
+└─────────────┘
 ```
 
-### Global Sessions (5 endpoints) - Admin Only
-```
-POST   /api/global-sessions/open            - Open daily session
-GET    /api/global-sessions/current         - Get current session
-POST   /api/global-sessions/{id}/close      - Close session
-GET    /api/global-sessions/{id}            - Get session details
-GET    /api/global-sessions                 - List all sessions
+### 4.2 Liste complète des entités (25)
+
+| Entité | Description | Soft Delete |
+|--------|-------------|-------------|
+| `User` | Utilisateurs du système | Oui |
+| `Role` | Rôles et permissions | Non |
+| `ActiveToken` | Tokens JWT actifs | Non |
+| `GlobalSession` | Sessions journalières | Oui |
+| `Cashier` | Caisses physiques | Oui |
+| `CashierSession` | Sessions caissier | Oui |
+| `Restaurant` | Configuration restaurant | Oui |
+| `RestaurantTable` | Tables du restaurant | Oui |
+| `Category` | Catégories de produits | Oui |
+| `Product` | Produits individuels | Oui |
+| `Menu` | Menus groupés | Oui |
+| `MenuItem` | Articles de menu | Oui |
+| `CustomerSession` | Sessions client (table) | Oui |
+| `Order` | Commandes | Oui |
+| `OrderItem` | Lignes de commande | Oui |
+| `Ticket` | Tickets de préparation | Oui |
+| `Invoice` | Factures | Oui |
+| `Payment` | Paiements | Non |
+| `CashOperation` | Opérations de caisse | Oui |
+| `Stock` | Niveaux de stock | Non |
+| `InventoryMovement` | Mouvements de stock | Non |
+| `AuditLog` | Journal d'audit | Non |
+| `Notification` | Notifications | Non |
+| `Setting` | Paramètres système | Non |
+
+---
+
+## 5. API REST Complète
+
+### 5.1 Authentification (8 endpoints)
+
+```http
+POST   /api/auth/login                      # Connexion utilisateur
+POST   /api/auth/logout                     # Déconnexion
+POST   /api/auth/register                   # Inscription
+POST   /api/auth/refresh-token              # Rafraîchir le JWT
+GET    /api/auth/me                         # Info utilisateur courant
+POST   /api/auth/change-password            # Changer mot de passe
+POST   /api/auth/forgot-password            # Demande reset password
+POST   /api/auth/reset-password             # Réinitialiser password
 ```
 
-### Cashiers (8 endpoints) - Admin Only
-```
-POST   /api/cashiers                        - Create cashier
-GET    /api/cashiers                        - List all cashiers
-GET    /api/cashiers/{id}                   - Get cashier details
-PUT    /api/cashiers/{id}                   - Update cashier
-DELETE /api/cashiers/{id}                   - Soft delete cashier
-POST   /api/cashiers/{id}/change-pin        - Change PIN
-POST   /api/cashiers/{id}/assign-user       - Assign user to cashier
-POST   /api/cashiers/{id}/remove-user       - Remove user from cashier
+### 5.2 Sessions Globales (5 endpoints) - Admin
+
+```http
+POST   /api/global-sessions/open            # Ouvrir la session
+GET    /api/global-sessions/current         # Session courante
+POST   /api/global-sessions/{id}/close      # Fermer la session
+GET    /api/global-sessions/{id}            # Détails session
+GET    /api/global-sessions                 # Liste des sessions
 ```
 
-### Cashier Sessions (10 endpoints) - Caissier
-```
-POST   /api/cashier-sessions/open           - Open cashier session
-GET    /api/cashier-sessions/current        - Get current session
-POST   /api/cashier-sessions/{id}/lock      - Lock session
-POST   /api/cashier-sessions/{id}/unlock    - Unlock with PIN
-POST   /api/cashier-sessions/{id}/close     - Close session
-POST   /api/cashier-sessions/{id}/activity  - Update activity
-GET    /api/cashier-sessions/{id}           - Get session details
-PUT    /api/cashier-sessions/{id}           - Update session
-DELETE /api/cashier-sessions/{id}           - Soft delete
-GET    /api/cashier-sessions                - List all sessions
+### 5.3 Caisses (8 endpoints) - Admin
+
+```http
+POST   /api/cashiers                        # Créer une caisse
+GET    /api/cashiers                        # Liste des caisses
+GET    /api/cashiers/{id}                   # Détails caisse
+PUT    /api/cashiers/{id}                   # Modifier caisse
+DELETE /api/cashiers/{id}                   # Supprimer caisse
+POST   /api/cashiers/{id}/change-pin        # Changer le PIN
+POST   /api/cashiers/{id}/assign-user       # Assigner utilisateur
+POST   /api/cashiers/{id}/remove-user       # Retirer utilisateur
 ```
 
-### Orders (12 endpoints)
-```
-POST   /api/orders                          - Create order
-GET    /api/orders/{id}                     - Get order details
-GET    /api/orders                          - List orders (paginated)
-PUT    /api/orders/{id}                     - Update order
-PUT    /api/orders/{id}/status/{status}     - Update status
-PUT    /api/orders/{id}/discount            - Add discount
-PUT    /api/orders/{id}/payment             - Mark as paid
-GET    /api/orders/pending/unpaid           - Get unpaid orders
-GET    /api/orders/kitchen/active           - Get kitchen queue
-GET    /api/orders/table/{tableId}          - Get table orders
-GET    /api/orders/customer-session/{id}    - Get session orders
-DELETE /api/orders/{id}                     - Cancel order
+### 5.4 Sessions Caissier (10 endpoints)
+
+```http
+POST   /api/cashier-sessions/open           # Ouvrir session
+GET    /api/cashier-sessions/current        # Session courante
+POST   /api/cashier-sessions/{id}/lock      # Verrouiller
+POST   /api/cashier-sessions/{id}/unlock    # Déverrouiller (PIN)
+POST   /api/cashier-sessions/{id}/close     # Fermer session
+POST   /api/cashier-sessions/{id}/activity  # Mettre à jour activité
+GET    /api/cashier-sessions/{id}           # Détails session
+PUT    /api/cashier-sessions/{id}           # Modifier session
+DELETE /api/cashier-sessions/{id}           # Supprimer session
+GET    /api/cashier-sessions                # Liste des sessions
 ```
 
-### Tickets (7 endpoints)
-```
-POST   /api/tickets/session/{id}/generate/separated   - Generate separated tickets
-POST   /api/tickets/session/{id}/generate/unified     - Generate unified ticket
-GET    /api/tickets/station/{station}/active          - Get station tickets
-GET    /api/tickets/session/{id}/status               - Get session overview
-PUT    /api/tickets/{id}/print                        - Mark printed
-PUT    /api/tickets/{id}/ready                        - Mark ready
-PUT    /api/tickets/{id}/served                       - Mark served
+### 5.5 Utilisateurs (7 endpoints) - Admin
+
+```http
+POST   /api/users                           # Créer utilisateur
+GET    /api/users                           # Liste utilisateurs
+GET    /api/users/{id}                      # Détails utilisateur
+PUT    /api/users/{id}                      # Modifier utilisateur
+DELETE /api/users/{id}                      # Désactiver utilisateur
+GET    /api/users/me                        # Utilisateur courant
+PUT    /api/users/{id}/password             # Changer password
 ```
 
-### Reports (6 endpoints) - Admin Only
+### 5.6 Produits (8 endpoints) - Admin
+
+```http
+POST   /api/products                        # Créer produit
+GET    /api/products                        # Liste produits
+GET    /api/products/{id}                   # Détails produit
+PUT    /api/products/{id}                   # Modifier produit
+DELETE /api/products/{id}                   # Supprimer produit
+POST   /api/products/{id}/image             # Upload image
+GET    /api/products/category/{id}          # Produits par catégorie
+GET    /api/products/station/{station}      # Produits par station
 ```
-GET    /api/reports/global-session/{id}               - JSON report
-GET    /api/reports/cashier/{id}?startDate=...        - JSON report
-GET    /api/reports/user/{id}?startDate=...           - JSON report
-GET    /api/reports/global-session/{id}/pdf           - PDF download
-GET    /api/reports/cashier/{id}/pdf?startDate=...    - PDF download
-GET    /api/reports/user/{id}/pdf?startDate=...       - PDF download
+
+### 5.7 Catégories (5 endpoints) - Admin
+
+```http
+POST   /api/categories                      # Créer catégorie
+GET    /api/categories                      # Liste catégories
+GET    /api/categories/{id}                 # Détails catégorie
+PUT    /api/categories/{id}                 # Modifier catégorie
+DELETE /api/categories/{id}                 # Supprimer catégorie
+```
+
+### 5.8 Menus (8 endpoints) - Admin
+
+```http
+POST   /api/menus                           # Créer menu
+GET    /api/menus                           # Liste menus
+GET    /api/menus/{id}                      # Détails menu
+PUT    /api/menus/{id}                      # Modifier menu
+DELETE /api/menus/{id}                      # Supprimer menu
+POST   /api/menus/{id}/items                # Ajouter article
+DELETE /api/menus/{id}/items/{itemId}       # Retirer article
+GET    /api/menus/active                    # Menus actifs
+```
+
+### 5.9 Articles Menu (5 endpoints) - Admin
+
+```http
+POST   /api/menu-items                      # Créer article
+GET    /api/menu-items/{id}                 # Détails article
+PUT    /api/menu-items/{id}                 # Modifier article
+DELETE /api/menu-items/{id}                 # Supprimer article
+GET    /api/menu-items/menu/{id}            # Articles par menu
+```
+
+### 5.10 Tables (7 endpoints) - Admin
+
+```http
+POST   /api/tables                          # Créer table
+GET    /api/tables                          # Liste tables
+GET    /api/tables/{id}                     # Détails table
+PUT    /api/tables/{id}                     # Modifier table
+DELETE /api/tables/{id}                     # Supprimer table
+GET    /api/tables/{id}/qr-code             # Télécharger QR code
+GET    /api/tables/available                # Tables disponibles
+```
+
+### 5.11 Commandes (12 endpoints)
+
+```http
+POST   /api/orders                          # Créer commande
+GET    /api/orders/{id}                     # Détails commande
+GET    /api/orders                          # Liste commandes (paginée)
+PUT    /api/orders/{id}                     # Modifier commande
+PUT    /api/orders/{id}/status/{status}     # Changer statut
+PUT    /api/orders/{id}/discount            # Appliquer remise
+PUT    /api/orders/{id}/payment             # Marquer payée
+GET    /api/orders/pending/unpaid           # Commandes non payées
+GET    /api/orders/kitchen/active           # File cuisine
+GET    /api/orders/bar/active               # File bar
+GET    /api/orders/table/{tableId}          # Commandes par table
+DELETE /api/orders/{id}                     # Annuler commande
+```
+
+### 5.12 Tickets (7 endpoints)
+
+```http
+POST   /api/tickets/session/{id}/generate/separated    # Tickets séparés
+POST   /api/tickets/session/{id}/generate/unified      # Ticket unifié
+GET    /api/tickets/station/{station}/active           # Tickets par station
+GET    /api/tickets/session/{id}/status                # Statut session
+PUT    /api/tickets/{id}/print                         # Marquer imprimé
+PUT    /api/tickets/{id}/ready                         # Marquer prêt
+PUT    /api/tickets/{id}/served                        # Marquer servi
+```
+
+### 5.13 Sessions Client (5 endpoints)
+
+```http
+POST   /api/customer-sessions               # Créer session
+GET    /api/customer-sessions/{id}          # Détails session
+GET    /api/customer-sessions/table/{id}    # Session par table
+PUT    /api/customer-sessions/{id}/close    # Fermer session
+GET    /api/customer-sessions/active        # Sessions actives
+```
+
+### 5.14 Opérations Caisse (6 endpoints)
+
+```http
+POST   /api/cash-operations                 # Créer opération
+GET    /api/cash-operations                 # Liste opérations
+GET    /api/cash-operations/{id}            # Détails opération
+PUT    /api/cash-operations/{id}            # Modifier opération
+GET    /api/cash-operations/session/{id}    # Par session
+GET    /api/cash-operations/totals          # Totaux
+```
+
+### 5.15 Stocks (6 endpoints) - Admin
+
+```http
+POST   /api/stocks                          # Créer stock
+GET    /api/stocks                          # Liste stocks
+GET    /api/stocks/{id}                     # Détails stock
+PUT    /api/stocks/{id}                     # Modifier stock
+POST   /api/stocks/movement                 # Mouvement stock
+GET    /api/stocks/alerts                   # Alertes stock bas
+```
+
+### 5.16 Rapports (6 endpoints) - Admin
+
+```http
+GET    /api/reports/global-session/{id}                 # JSON session
+GET    /api/reports/cashier/{id}?startDate=...          # JSON caissier
+GET    /api/reports/user/{id}?startDate=...             # JSON utilisateur
+GET    /api/reports/global-session/{id}/pdf             # PDF session
+GET    /api/reports/cashier/{id}/pdf?startDate=...      # PDF caissier
+GET    /api/reports/user/{id}/pdf?startDate=...         # PDF utilisateur
+```
+
+### 5.17 Analytics (5 endpoints) - Admin
+
+```http
+GET    /api/analytics/summary               # Résumé KPIs
+GET    /api/analytics/revenue-by-day        # CA par jour
+GET    /api/analytics/top-products          # Top produits
+GET    /api/analytics/peak-hours            # Heures de pointe
+GET    /api/analytics/cashier-performance   # Performance caissiers
+```
+
+### 5.18 Factures (4 endpoints)
+
+```http
+GET    /api/invoices/{id}                   # Détails facture
+GET    /api/invoices/search                 # Rechercher facture
+GET    /api/invoices/{id}/pdf               # Télécharger PDF
+GET    /api/invoices/order/{orderId}        # Facture par commande
+```
+
+### 5.19 Menu Public (2 endpoints) - Sans auth
+
+```http
+GET    /api/public/menu                     # Menu public
+GET    /api/public/menu/{tableToken}        # Menu par QR code
+```
+
+### 5.20 Restaurant (4 endpoints) - Admin
+
+```http
+GET    /api/restaurants                     # Liste restaurants
+GET    /api/restaurants/{id}                # Détails restaurant
+PUT    /api/restaurants/{id}                # Modifier restaurant
+PUT    /api/restaurants/{id}/logo           # Upload logo
 ```
 
 ---
 
-## Technology Stack
+## 6. Workflows Métier
 
-### Backend
-- **Framework**: Spring Boot 3.x
-- **Language**: Java 17+
-- **Database**: PostgreSQL
-- **Security**: JWT, bcrypt, Spring Security
-- **PDF**: iText7
-- **ORM**: JPA/Hibernate
-- **Build**: Maven
-
-### Frontend
-- **Framework**: Angular 19
-- **Language**: TypeScript
-- **Styling**: TailwindCSS
-- **HTTP**: HttpClient
-- **State**: BehaviorSubject (reactive)
-- **Build**: Angular CLI
-
----
-
-## Key Workflows
-
-### 1. Daily Opening (Admin)
-```
-1. Login as ADMIN
-2. POST /api/global-sessions/open (initialAmount: 5000)
-3. Session OPEN - cashiers can now open sessions
-4. Admin creates cashiers if needed: POST /api/cashiers
-5. Admin assigns users to cashiers: POST /api/cashiers/{id}/assign-user
-```
-
-### 2. Cashier Login (Caissier/Staff)
-```
-1. User logs in to system
-2. System checks GlobalSession is OPEN (guard)
-3. POST /api/cashier-sessions/open (cashierId, PIN)
-4. PIN validated against bcrypt hash
-5. Session OPEN - user can create orders
-6. Activity tracked every 30 seconds
-```
-
-### 3. Order Creation (POS)
-```
-1. Caissier selects items (MenuItems, not Products)
-2. POST /api/orders with menuItemPublicIds
-3. System auto-links to active CashierSession
-4. WorkStation assigned from Product.workStation
-5. Order status: EN_ATTENTE
-```
-
-### 4. Ticket Generation (Two Modes)
-```
-MODE A - SEPARATED (for busy bar/kitchen):
-1. POST /api/tickets/session/{id}/generate/separated
-2. Creates 2 tickets:
-   - BAR ticket (priority 1) - printed first
-   - KITCHEN ticket (priority 2) - waits for BAR ready
-3. Each station prints and manages their own ticket
-
-MODE B - UNIFIED (for simple caisse):
-1. POST /api/tickets/session/{id}/generate/unified
-2. Creates 1 ticket with all items
-3. Grouped by WorkStation:
-   - [BAR] Coca, Bière, Tiramisu
-   - [KITCHEN] Pizza
-4. Single receipt printed at checkout
-```
-
-### 5. Bar Workflow (Separated Tickets)
-```
-1. Bar personnel uses Bar Tickets Screen
-2. GET /api/tickets/station/BAR/active
-3. Sees BAR tickets only:
-   - Coca, Bière, Tiramisu (qty + notes)
-4. Prepares items
-5. PUT /api/tickets/{id}/ready
-6. Kitchen can now start their ticket
-```
-
-### 6. Caisse Workflow (Unified Ticket)
-```
-1. Caissier uses Caisse Tickets Screen
-2. GET /api/tickets/session/{id}/unified
-3. Sees complete receipt:
-   - [BAR] 2x Coca, 1x Bière...
-   - [KITCHEN] 2x Pizza...
-4. Print complete receipt: window.print()
-5. Mark served: PUT /api/tickets/{id}/served
-```
-
-### 7. Daily Reporting (Admin)
-```
-1. Login as ADMIN
-2. Access Reports section
-3. Select report type:
-   - Global Session (entire day)
-   - By Cashier (filter by cashier)
-   - By User (filter by staff member)
-4. Filter by date range (max 30 days)
-5. View JSON or download PDF
-6. PDF includes:
-   - Summary with totals
-   - Item breakdown
-   - User performance
-   - Top products
-```
-
-### 8. Daily Closing (Admin)
-```
-1. All cashiers close their sessions
-2. Admin views daily reports
-3. Admin reconciles amounts (expected vs actual)
-4. POST /api/global-sessions/{id}/close
-   - finalAmount: 5650
-   - reconciliationNotes: "All matched"
-5. Session CLOSED - no more orders/sessions allowed
-```
-
----
-
-## Security Measures
-
-### Authentication
-- JWT token with 15-minute expiry
-- Refresh token mechanism (5 days)
-- Logout clears tokens
-
-### PIN Protection
-- 4-digit PIN only
-- bcrypt hashing (cost 10)
-- 3 failed attempts = 15-minute lock
-- Auto-unlock by correct PIN
-
-### Session Security
-- GlobalSession must be OPEN
-- Auto-logout after 15 minutes inactivity
-- Activity tracked every 30 seconds
-- One cashier session per user/cashier combo
-
-### Role-Based Access
-- ADMIN: Global session, cashier management, reports
-- CAISSIER: Order creation, own cashier session, own reports
-- CUISINIER: Kitchen queue view only
-
-### Input Validation
-- PIN format (4 digits)
-- Quantity (positive integers)
-- Discount (≤ total amount)
-- Date ranges (≤ 30 days)
-- Injection prevention (XSS, SQL, CSV)
-
-### Data Protection
-- Soft delete (logical deletion)
-- Audit trail for all operations
-- Encrypted passwords
-- No sensitive data in logs
-
----
-
-## Testing Checklist
-
-See `docs/TESTING-GUIDE.md` for complete curl examples
+### 6.1 Workflow Journalier Complet
 
 ```
-Authentication:
-  ✅ Valid credentials
-  ✅ Invalid credentials
-  ✅ Expired token
-  ✅ Missing token
-  ✅ Invalid role access
+┌─────────────────────────────────────────────────────────────────┐
+│                    WORKFLOW JOURNALIER                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  MATIN - OUVERTURE                                              │
+│  ─────────────────                                              │
+│                                                                 │
+│  08:00  Admin arrive                                            │
+│    │                                                            │
+│    ├─► Login: POST /api/auth/login                             │
+│    │                                                            │
+│    ├─► Vérifier stocks: GET /api/stocks/alerts                 │
+│    │                                                            │
+│    └─► Ouvrir session: POST /api/global-sessions/open          │
+│                                                                 │
+│  08:30  Caissiers arrivent                                      │
+│    │                                                            │
+│    ├─► Login: POST /api/auth/login                             │
+│    │                                                            │
+│    ├─► Sélectionner caisse                                      │
+│    │                                                            │
+│    └─► Ouvrir session: POST /api/cashier-sessions/open (PIN)   │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  JOURNÉE - SERVICE                                              │
+│  ─────────────────                                              │
+│                                                                 │
+│  Client arrive → Caissier prend commande                        │
+│    │                                                            │
+│    ├─► POST /api/orders                                        │
+│    │   { tablePublicId, items: [{menuItemId, qty}] }           │
+│    │                                                            │
+│    └─► Système crée OrderItems avec workStation                │
+│                                                                 │
+│  Cuisine/Bar reçoit les commandes                               │
+│    │                                                            │
+│    ├─► GET /api/orders/kitchen/active (ou /bar/active)         │
+│    │                                                            │
+│    ├─► Préparer les plats/boissons                              │
+│    │                                                            │
+│    └─► PUT /api/orders/{id}/status/PRETE                       │
+│                                                                 │
+│  Service livre au client                                        │
+│    │                                                            │
+│    └─► PUT /api/orders/{id}/status/LIVREE                      │
+│                                                                 │
+│  Client paie                                                    │
+│    │                                                            │
+│    ├─► PUT /api/orders/{id}/payment                            │
+│    │                                                            │
+│    └─► Facture générée automatiquement                          │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  SOIR - FERMETURE                                               │
+│  ────────────────                                               │
+│                                                                 │
+│  22:00  Fin de service                                          │
+│    │                                                            │
+│    ├─► Caissiers ferment leurs sessions                         │
+│    │   POST /api/cashier-sessions/{id}/close                   │
+│    │                                                            │
+│    ├─► Admin génère rapports                                    │
+│    │   GET /api/reports/global-session/{id}                    │
+│    │                                                            │
+│    ├─► Admin compte l'argent                                    │
+│    │                                                            │
+│    └─► Admin ferme la session                                   │
+│        POST /api/global-sessions/{id}/close                    │
+│        { finalAmount, reconciliationNotes }                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-Global Session:
-  ✅ Open session
-  ✅ Close session
-  ✅ Prevent duplicate open
-  ✅ Block cashier if not open
+### 6.2 Workflow de Prise de Commande
 
-Cashier:
-  ✅ Valid PIN (4 digits)
-  ✅ Invalid PIN format
-  ✅ Brute-force lock (3 attempts)
-  ✅ Auto-lock (15 min inactivity)
-  ✅ PIN unlock
+```
+┌─────────────────────────────────────────────┐
+│           ORDER CREATION FLOW               │
+├─────────────────────────────────────────────┤
+│                                             │
+│  1. Sélection type: TABLE / TAKEAWAY        │
+│         │                                   │
+│         ▼                                   │
+│  2. Sélection table (si TABLE)              │
+│         │                                   │
+│         ▼                                   │
+│  3. Ajout articles au panier                │
+│     • Parcourir menus                       │
+│     • Filtrer par type                      │
+│     • Rechercher                            │
+│     • Cliquer pour ajouter                  │
+│         │                                   │
+│         ▼                                   │
+│  4. Ajouter notes (optionnel)               │
+│     • Allergies                             │
+│     • Préférences cuisson                   │
+│         │                                   │
+│         ▼                                   │
+│  5. Valider la commande                     │
+│         │                                   │
+│         ▼                                   │
+│  6. Système:                                │
+│     • Crée Order                            │
+│     • Crée OrderItems                       │
+│     • Assigne workStation                   │
+│     • Lie à CashierSession                  │
+│         │                                   │
+│         ▼                                   │
+│  7. Envoi en cuisine/bar                    │
+│                                             │
+└─────────────────────────────────────────────┘
+```
 
-Orders:
-  ✅ Create with MenuItems
-  ✅ Invalid MenuItem (404)
-  ✅ Discount validation
-  ✅ Auto-link to CashierSession
+### 6.3 Workflow de Réconciliation
 
-Tickets:
-  ✅ Separated tickets (2 per order type)
-  ✅ Unified ticket (1 complete)
-  ✅ Status updates
-  ✅ Station-specific view
-
-Reports:
-  ✅ JSON reports
-  ✅ PDF generation
-  ✅ Date filtering
-  ✅ Authorization checks
-
-Security:
-  ✅ SQL injection
-  ✅ XSS attacks
-  ✅ CSRF validation
-  ✅ Privilege escalation
-  ✅ Session fixation
+```
+┌─────────────────────────────────────────────┐
+│         RECONCILIATION WORKFLOW             │
+├─────────────────────────────────────────────┤
+│                                             │
+│  1. Récupérer le résumé de session          │
+│     GET /api/global-sessions/{id}/summary   │
+│         │                                   │
+│         ▼                                   │
+│  2. Afficher les totaux:                    │
+│     • Solde initial: 150 000                │
+│     • Total ventes: 850 000                 │
+│     • Entrées: +100 000                     │
+│     • Sorties: -50 000                      │
+│     ─────────────────────                   │
+│     • Montant attendu: 1 050 000            │
+│         │                                   │
+│         ▼                                   │
+│  3. Admin compte l'argent physique          │
+│         │                                   │
+│         ▼                                   │
+│  4. Saisir montant réel: 1 048 000          │
+│         │                                   │
+│         ▼                                   │
+│  5. Calcul écart: -2 000 (manque)           │
+│         │                                   │
+│         ▼                                   │
+│  6. Expliquer dans les notes:               │
+│     "Erreur de rendu monnaie table T05"     │
+│         │                                   │
+│         ▼                                   │
+│  7. Fermer la session                       │
+│                                             │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-## Deployment Steps
+## 7. Sécurité
 
-### 1. Database Setup
+### 7.1 Authentification
+
+| Mécanisme | Configuration |
+|-----------|---------------|
+| Type | JWT (JSON Web Token) |
+| Algorithme | HS256 |
+| Access Token | 1 heure (configurable) |
+| Refresh Token | 5 jours (configurable) |
+| Stockage | Authorization Header |
+
+### 7.2 Autorisation (RBAC)
+
+| Rôle | Permissions |
+|------|-------------|
+| **ADMIN** | Toutes les permissions |
+| **CAISSE** | Commandes, session caissier, rapports propres |
+| **CUISINE** | Vue cuisine uniquement |
+| **BAR** | Vue bar uniquement |
+
+### 7.3 Protection des Caisses
+
+| Protection | Configuration |
+|------------|---------------|
+| PIN | 4 chiffres uniquement |
+| Hashage | bcrypt (cost factor 10) |
+| Tentatives max | 3 |
+| Durée blocage | 15 minutes |
+| Déverrouillage | Automatique après délai |
+
+### 7.4 Protection des Sessions
+
+| Protection | Configuration |
+|------------|---------------|
+| Inactivité | Auto-logout 15 minutes |
+| Tracking | Mise à jour toutes les 30 secondes |
+| Unicité | 1 session par user/cashier |
+| Prérequis | GlobalSession doit être OPEN |
+
+### 7.5 Validation des Entrées
+
+| Champ | Validation |
+|-------|------------|
+| PIN | Exactement 4 chiffres |
+| Email | Format email valide |
+| Quantité | Entier positif |
+| Montant | Décimal positif |
+| Remise | ≤ montant total |
+| Période rapport | ≤ 30 jours |
+
+### 7.6 Protections Diverses
+
+- **XSS** : Échappement des sorties, sanitization
+- **SQL Injection** : Prepared statements (JPA)
+- **CSRF** : Token validation (Spring Security)
+- **Brute-force** : Rate limiting, account lockout
+- **Data Leakage** : Pas de données sensibles dans logs
+
+---
+
+## 8. Configuration
+
+### 8.1 Variables d'Environnement
+
 ```bash
-createdb sellia_db
-createuser sellia_user -P  # Enter password
-psql sellia_db < db/init.sql
+# ═══════════════════════════════════════════════
+# BASE DE DONNÉES
+# ═══════════════════════════════════════════════
+DATABASE_URL=jdbc:postgresql://localhost:5432/sellia_db
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=your_secure_password
+DATABASE_NAME=sellia_db
+DATABASE_PORT=5432
+
+# ═══════════════════════════════════════════════
+# HIBERNATE
+# ═══════════════════════════════════════════════
+HIBERNATE_DDL_AUTO=update
+# Options: none, validate, update, create, create-drop
+# Production: validate (après première init)
+
+# ═══════════════════════════════════════════════
+# APPLICATION
+# ═══════════════════════════════════════════════
+APP_SERVER_URL=http://localhost:8080
+APP_BASE_URL=http://localhost:8080
+BACKEND_PORT=8080
+APP_PORT=8080
+
+# ═══════════════════════════════════════════════
+# JWT - SÉCURITÉ
+# ═══════════════════════════════════════════════
+JWT_SECRET=your-256-bit-secret-key-here-must-be-secure
+JWT_ACCESS_TOKEN_EXPIRATION=3600000      # 1 heure en ms
+JWT_REFRESH_TOKEN_EXPIRATION=432000000   # 5 jours en ms
+
+# ═══════════════════════════════════════════════
+# JAVA
+# ═══════════════════════════════════════════════
+JAVA_OPTS=-Xms512m -Xmx1024m
+
+# ═══════════════════════════════════════════════
+# UPLOADS
+# ═══════════════════════════════════════════════
+UPLOAD_PATH=/app/uploads
+MAX_FILE_SIZE=10MB
 ```
 
-### 2. Backend Start
+### 8.2 Générer un JWT Secret Sécurisé
+
 ```bash
+# Linux/Mac
+openssl rand -base64 64
+
+# Windows PowerShell
+$bytes = New-Object byte[] 64
+[System.Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($bytes)
+[Convert]::ToBase64String($bytes)
+```
+
+### 8.3 Configuration Spring Boot
+
+```properties
+# application.properties
+
+# Datasource
+spring.datasource.url=${DATABASE_URL}
+spring.datasource.username=${DATABASE_USERNAME}
+spring.datasource.password=${DATABASE_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA/Hibernate
+spring.jpa.hibernate.ddl-auto=${HIBERNATE_DDL_AUTO:update}
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# Server
+server.port=${BACKEND_PORT:8080}
+
+# File Upload
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# Actuator
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=when_authorized
+```
+
+---
+
+## 9. Monitoring
+
+### 9.1 Health Check
+
+```http
+GET /actuator/health
+
+Response:
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "PostgreSQL",
+        "validationQuery": "isValid()"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 499963174912,
+        "free": 350000000000
+      }
+    }
+  }
+}
+```
+
+### 9.2 Métriques Disponibles
+
+```http
+GET /actuator/metrics
+
+Métriques principales:
+- jvm.memory.used
+- jvm.memory.max
+- http.server.requests
+- jdbc.connections.active
+- process.cpu.usage
+- system.cpu.usage
+```
+
+### 9.3 Logs
+
+```bash
+# Logs applicatifs
+/var/log/sellia/application.log
+
+# Niveaux de log
+- ERROR : Erreurs critiques
+- WARN  : Avertissements
+- INFO  : Informations générales
+- DEBUG : Débogage (dev only)
+```
+
+---
+
+## 10. Déploiement
+
+### 10.1 Docker Compose (Développement)
+
+```bash
+# Lancer tous les services
+docker-compose up --build
+
+# En arrière-plan
+docker-compose up -d
+
+# Lancer avec monitoring (Prometheus/Grafana/Loki)
+docker-compose --profile monitoring up -d
+
+# Voir les logs
+docker-compose logs -f app
+
+# Arrêter
+docker-compose down
+
+# Arrêter et supprimer les volumes
+docker-compose down -v
+```
+
+### 10.2 Monitoring & Audit
+
+Le système inclut une stack complète de monitoring accessible au rôle **AUDITOR** :
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Dashboard Audit | http://localhost:8080/auditor | Logs d'audit applicatifs |
+| Grafana | http://localhost:3001 | Dashboards et visualisations |
+| Prometheus | http://localhost:9090 | Métriques et alertes |
+| Loki | http://localhost:3100 | Logs centralisés |
+
+**Identifiants Grafana par défaut :**
+- Utilisateur : `admin`
+- Mot de passe : `admin`
+
+**Fonctionnalités AUDITOR :**
+- Consultation des logs d'audit (actions utilisateurs)
+- Filtrage par date, utilisateur, type d'entité, statut
+- Statistiques de succès/échec
+- Accès aux métriques Actuator
+- Lien direct vers Grafana et Prometheus
+
+### 10.3 Production (Coolify)
+
+1. **Créer service PostgreSQL** dans Coolify
+2. **Configurer les variables** d'environnement
+3. **Déployer l'application** depuis GitHub
+4. **Configurer le domaine** et SSL
+5. **Configurer les volumes** persistants
+
+### 10.4 Vérification Post-Déploiement
+
+```bash
+# Health check
+curl https://votre-domaine.com/actuator/health
+
+# Connexion API
+curl -X POST https://votre-domaine.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@test.com","password":"password"}'
+
+# Frontend
+curl https://votre-domaine.com
+```
+
+---
+
+## 11. Tests
+
+### 11.1 Tests Backend
+
+```bash
+# Tous les tests
 cd sellia-backend
-mvn clean install
-java -jar target/sellia-api.jar
-# Runs on http://localhost:8080
+mvn test
+
+# Tests avec rapport de couverture
+mvn test jacoco:report
+
+# Tests d'un package spécifique
+mvn test -Dtest=*ServiceTest
+
+# Tests d'intégration
+mvn verify -P integration-tests
 ```
 
-### 3. Frontend Start
+### 11.2 Tests Frontend
+
 ```bash
+# Tests unitaires
 cd sellia-app
-npm install
-npm start
-# Runs on http://localhost:4200
+npm test
+
+# Tests avec couverture
+npm test -- --code-coverage
+
+# Tests en mode watch
+npm test -- --watch
+
+# Tests e2e
+npm run e2e
 ```
 
-### 4. Verify All Services
-```bash
-curl http://localhost:8080/api/health
-curl http://localhost:4200
+### 11.3 Collection Postman
+
+Fichier disponible : `docs/Sellia_POS_API.postman_collection.json`
+
+Contient tous les endpoints avec exemples de requêtes/réponses.
+
+### 11.4 Checklist de Tests
+
+```
+✅ Authentification
+   • Login valide/invalide
+   • Token expiré
+   • Refresh token
+   • Permissions par rôle
+
+✅ Sessions
+   • Ouverture/fermeture globale
+   • Ouverture/fermeture caissier
+   • PIN valide/invalide
+   • Blocage brute-force
+
+✅ Commandes
+   • Création avec articles
+   • Changement de statut
+   • Application remise
+   • Paiement
+
+✅ Rapports
+   • Génération JSON
+   • Génération PDF
+   • Filtres par date
+   • Permissions
+
+✅ Sécurité
+   • Injection SQL
+   • XSS
+   • CSRF
+   • Escalade de privilèges
 ```
 
 ---
 
-## Commit History (Complete)
+## Annexes
 
-```
-cb97bde - Add comprehensive testing suite
-bfbe0c7 - Add frontend interfaces for dual-mode ticket system
-2d82851 - Add dual-mode ticket system: separated and unified tickets
-bac0005 - Implement ticket system with WorkStation-based routing
-387ab2f - Restructure order system: sell MenuItems instead of Products
-522d002 - Remove manual Flyway migration - let Hibernate auto-generate
-20a867d - Add admin dashboard integration for multi-cashier system
-7243a57 - Fix duplicate downloadFile function in ApiService
-d2ce9f0 - Fix JPQL query syntax errors in repositories
-ed8a5dd - Add PDF report generation with date filtering
-1603018 - Add comprehensive reporting system for sessions and cashiers
-d4dd53e - Implement frontend Angular cashier and global session management
-0b75496 - Integrate CashierSession with Order creation workflow
-ccc6578 - Implement multi-cashier management system
-```
+### A. Codes de Statut HTTP
 
----
+| Code | Signification |
+|------|---------------|
+| 200 | OK - Succès |
+| 201 | Created - Ressource créée |
+| 204 | No Content - Succès sans contenu |
+| 400 | Bad Request - Requête invalide |
+| 401 | Unauthorized - Non authentifié |
+| 403 | Forbidden - Non autorisé |
+| 404 | Not Found - Ressource introuvable |
+| 409 | Conflict - Conflit (doublon) |
+| 422 | Unprocessable Entity - Validation échouée |
+| 500 | Internal Server Error - Erreur serveur |
 
-## Quick Start
+### B. Format des Dates
 
-```bash
-# Backend
-cd sellia-backend
-mvn clean compile
-mvn spring-boot:run
+- **API** : ISO 8601 (`2024-11-18T10:30:00Z`)
+- **Affichage** : `dd/MM/yyyy HH:mm`
+- **Timezone** : UTC (serveur), locale (client)
 
-# Frontend (new terminal)
-cd sellia-app
-npm install
-npm start
+### C. Format Monétaire
 
-# Tests
-mvn test                # Backend
-npm test                # Frontend
-```
+- **Devise** : FCFA (XAF)
+- **Séparateur milliers** : espace (`1 000 000`)
+- **Décimales** : 0 (pas de centimes)
 
 ---
 
-**System Status:** ✅ PRODUCTION READY
+**Version du système** : 1.0.0
+**Dernière mise à jour** : Novembre 2024
+**Statut** : ✅ PRODUCTION READY
