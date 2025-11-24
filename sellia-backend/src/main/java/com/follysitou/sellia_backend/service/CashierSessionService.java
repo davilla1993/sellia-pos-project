@@ -67,18 +67,18 @@ public class CashierSessionService {
 
             // AUDIT LOG: Failed attempt to open session on occupied cash register
             auditLogService.logFailure(
-                    currentUser.getUsername(),
+                    currentUser.getEmail(),
                     "OPEN_CASHIER_SESSION",
                     "CASH_REGISTER",
                     request.getCashierId(),
-                    "Attempted to open session on cash register " + cashier.getName() + " already in use by " + sessionUser.getUsername(),
+                    "Attempted to open session on cash register " + cashier.getName() + " already in use by " + sessionUser.getEmail(),
                     "Cash register already in use"
             );
 
             throw new ConflictException(
                     "cash_register",
                     cashier.getName(),
-                    "This cash register is already in use by " + sessionUser.getUsername() +
+                    "This cash register is already in use by " + sessionUser.getEmail() +
                     ". Session opened at " + activeSession.getOpenedAt() + ". " +
                     "Please ask them to close their session first."
             );
@@ -88,7 +88,7 @@ public class CashierSessionService {
         if (!cashierService.validatePin(request.getPin(), request.getCashierId())) {
             // AUDIT LOG: Failed PIN validation
             auditLogService.logFailure(
-                    currentUser.getUsername(),
+                    currentUser.getEmail(),
                     "OPEN_CASHIER_SESSION",
                     "CASH_REGISTER",
                     request.getCashierId(),
@@ -127,7 +127,7 @@ public class CashierSessionService {
 
         // AUDIT LOG: Successful session opening
         auditLogService.logSuccess(
-                currentUser.getUsername(),
+                currentUser.getEmail(),
                 "OPEN_CASHIER_SESSION",
                 "CASHIER_SESSION",
                 savedSession.getPublicId(),
@@ -210,7 +210,7 @@ public class CashierSessionService {
 
         // AUDIT LOG: Session closed
         auditLogService.logSuccess(
-                currentUser.getUsername(),
+                currentUser.getEmail(),
                 "CLOSE_CASHIER_SESSION",
                 "CASHIER_SESSION",
                 updatedSession.getPublicId(),
@@ -356,7 +356,7 @@ public class CashierSessionService {
 
                 // Audit log
                 auditLogService.logSuccess(
-                        session.getUser().getUsername(),
+                        session.getUser().getEmail(),
                         "FORCE_CLOSE_CASHIER_SESSION",
                         "CASHIER_SESSION",
                         session.getPublicId(),

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { ToastService } from '@shared/services/toast.service';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-order-entry',
@@ -16,6 +17,10 @@ export class OrderEntryComponent implements OnInit {
   private apiService = inject(ApiService);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private authService = inject(AuthService);
+
+  // Check if user is ADMIN (read-only mode)
+  isAdmin = signal(this.authService.hasRole('ADMIN'));
 
   // Order Type
   orderType = 'TABLE';

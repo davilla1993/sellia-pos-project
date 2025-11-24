@@ -4,6 +4,7 @@ import com.follysitou.sellia_backend.model.AuditLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,4 +32,12 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
     @Query("SELECT al FROM AuditLog al WHERE al.status = :status AND al.deleted = false ORDER BY al.actionDate DESC")
     Page<AuditLog> findByStatus(@Param("status") AuditLog.ActionStatus status, Pageable pageable);
+
+    // Retention and archiving queries
+    @Query("SELECT al FROM AuditLog al WHERE al.actionDate < :cutoffDate AND al.deleted = false ORDER BY al.actionDate ASC")
+    List<AuditLog> findByActionDateBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    @Modifying
+    @Query("DELETE FROM AuditLog al WHERE al.actionDate < :cutoffDate AND al.deleted = false")
+    int deleteByActionDateBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
 }

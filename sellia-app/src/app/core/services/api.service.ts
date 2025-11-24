@@ -819,35 +819,35 @@ export class ApiService {
   }
 
   // Audit Logs
-  getAuditLogs(page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogs(page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     return this.http.get<any>(`${this.apiUrl}/audit-logs`, { params });
   }
 
-  getAuditLogsByUser(userEmail: string, page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogsByUser(userEmail: string, page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     return this.http.get<any>(`${this.apiUrl}/audit-logs/user/${userEmail}`, { params });
   }
 
-  getAuditLogsByAction(action: string, page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogsByAction(action: string, page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     return this.http.get<any>(`${this.apiUrl}/audit-logs/action/${action}`, { params });
   }
 
-  getAuditLogsByEntityType(entityType: string, page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogsByEntityType(entityType: string, page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     return this.http.get<any>(`${this.apiUrl}/audit-logs/entity-type/${entityType}`, { params });
   }
 
-  getAuditLogsByDateRange(startDate: string, endDate: string, page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogsByDateRange(startDate: string, endDate: string, page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -856,7 +856,7 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/audit-logs/date-range`, { params });
   }
 
-  getAuditLogsByStatus(status: string, page: number = 0, size: number = 50): Observable<any> {
+  getAuditLogsByStatus(status: string, page: number = 0, size: number = 100): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());

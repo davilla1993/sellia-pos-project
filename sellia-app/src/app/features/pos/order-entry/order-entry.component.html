@@ -3,11 +3,24 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <h1 class="text-2xl lg:text-3xl font-bold text-white">📝 Nouvelle Commande</h1>
-        <button 
+        <button
           (click)="goBack()"
           class="text-neutral-400 hover:text-white text-sm lg:text-base">
           ← Retour
         </button>
+      </div>
+
+      <!-- Admin Read-Only Notice -->
+      <div *ngIf="isAdmin()" class="bg-yellow-900/20 border border-yellow-600 text-yellow-400 rounded-lg p-4">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          <div>
+            <p class="font-bold text-base">Mode Lecture Seule</p>
+            <p class="text-sm mt-1">En tant qu'ADMIN, vous pouvez visualiser cette interface mais ne pouvez pas passer de nouvelles commandes. Cette action est réservée aux caissiers.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Main Content: Two Column Layout on Desktop, Stacked on Mobile -->
@@ -145,11 +158,12 @@
               </div>
 
               <div *ngIf="!isLoadingProducts() && filteredProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
-                <button 
+                <button
                   *ngFor="let product of filteredProducts()"
                   (click)="addProductToCart(product)"
+                  [disabled]="isAdmin()"
                   type="button"
-                  class="bg-neutral-700 hover:bg-primary hover:text-white transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
+                  class="bg-neutral-700 hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition rounded-lg p-2 text-center text-white text-xs transform hover:scale-105">
                   <div class="w-full h-16 bg-neutral-600 rounded mb-1 flex items-center justify-center overflow-hidden">
                     <img 
                       *ngIf="getImageUrl(product)" 
@@ -201,21 +215,22 @@
               <span class="text-primary font-bold text-lg">FCFA {{ cartTotal().toLocaleString('fr-FR') }}</span>
             </div>
 
-            <button 
+            <button
               (click)="clearCart()"
               type="button"
-              [disabled]="cartItems().length === 0"
+              [disabled]="cartItems().length === 0 || isAdmin()"
               class="w-full bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-neutral-300 hover:text-white font-semibold py-2 rounded-lg transition text-xs lg:text-sm">
               Vider
             </button>
 
-            <button 
+            <button
               (click)="submitOrder()"
               type="button"
-              [disabled]="!canSubmitOrder() || isSubmitting()"
+              [disabled]="!canSubmitOrder() || isSubmitting() || isAdmin()"
               class="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition text-sm lg:text-base flex items-center justify-center gap-2">
-              <span *ngIf="!isSubmitting()">✓ Enregistrer</span>
+              <span *ngIf="!isSubmitting() && !isAdmin()">✓ Enregistrer</span>
               <span *ngIf="isSubmitting()">⏳ En cours...</span>
+              <span *ngIf="isAdmin()">🔒 Réservé aux caissiers</span>
             </button>
 
             <p *ngIf="!canSubmitOrder() && cartItems().length > 0" class="text-red-400 text-xs text-center">

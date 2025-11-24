@@ -73,3 +73,12 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Audit Log Retention Configuration
+audit:
+  retention:
+    days: 90  # Keep audit logs for 90 days in database
+    cron: "0 0 3 * * SUN"  # Run every Sunday at 3:00 AM
+  archive:
+    enabled: true  # Archive logs to CSV before deletion
+    path: "archives/audit-logs"  # Path where archives will be stored

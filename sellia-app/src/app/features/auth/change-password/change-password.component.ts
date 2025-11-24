@@ -92,8 +92,10 @@ export class ChangePasswordComponent implements OnInit {
               setTimeout(() => {
                 const roleRoutes: { [key: string]: string } = {
                   'ADMIN': '/admin/dashboard',
-                  'CAISSE': '/pos/order-entry',
-                  'CUISINE': '/pos/kitchen'
+                  'CAISSE': '/auth/cashier-pin',
+                  'CUISINE': '/pos/kitchen',
+                  'BAR': '/pos/bar',
+                  'AUDITOR': '/auditor/dashboard'
                 };
                 const route = roleRoutes[user.role] || '/admin/dashboard';
                 this.router.navigate([route]);
@@ -105,8 +107,10 @@ export class ChangePasswordComponent implements OnInit {
               setTimeout(() => {
                 const roleRoutes: { [key: string]: string } = {
                   'ADMIN': '/admin/dashboard',
-                  'CAISSE': '/pos/order-entry',
-                  'CUISINE': '/pos/kitchen'
+                  'CAISSE': '/auth/cashier-pin',
+                  'CUISINE': '/pos/kitchen',
+                  'BAR': '/pos/bar',
+                  'AUDITOR': '/auditor/dashboard'
                 };
                 const route = roleRoutes[user.role] || '/admin/dashboard';
                 this.router.navigate([route]);

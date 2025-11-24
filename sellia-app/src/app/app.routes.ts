@@ -30,6 +30,8 @@ import { authGuard, roleGuard } from './core/guards/auth.guard';
 import { cashierSessionGuard } from './core/guards/cashier-session.guard';
 import { AuditorDashboardComponent } from './features/auditor/auditor-dashboard/auditor-dashboard.component';
 import { AuditLogsComponent } from './features/auditor/audit-logs/audit-logs.component';
+import { RetentionManagementComponent } from './features/auditor/retention-management/retention-management.component';
+import { ApplicationLogsComponent } from './features/auditor/application-logs/application-logs.component';
 
 export const routes: Routes = [
   // Public Routes (No Auth Required)
@@ -159,6 +161,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AuditorDashboardComponent },
       { path: 'audit-logs', component: AuditLogsComponent },
+      { path: 'application-logs', component: ApplicationLogsComponent },
+      { path: 'retention', component: RetentionManagementComponent },
       { path: 'profile', component: ProfileComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

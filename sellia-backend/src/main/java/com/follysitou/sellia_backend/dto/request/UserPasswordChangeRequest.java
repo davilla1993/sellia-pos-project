@@ -3,8 +3,10 @@ package com.follysitou.sellia_backend.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString(exclude = {"currentPassword", "newPassword", "confirmPassword"}) // SÉCURITÉ : Ne jamais logger les passwords
 public class UserPasswordChangeRequest {
 
     @NotBlank(message = "Current password is required")

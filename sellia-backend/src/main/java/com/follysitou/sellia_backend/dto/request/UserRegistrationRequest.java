@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString(exclude = "password") // SÉCURITÉ : Ne jamais logger le password
 public class UserRegistrationRequest {
 
     @NotBlank(message = "Username is required")

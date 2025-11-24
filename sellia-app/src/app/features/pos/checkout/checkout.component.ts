@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '@core/services/api.service';
 import { CurrencyService } from '@shared/services/currency.service';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-checkout',
@@ -14,6 +15,10 @@ import { CurrencyService } from '@shared/services/currency.service';
 export class CheckoutComponent implements OnInit {
   private apiService = inject(ApiService);
   public currencyService = inject(CurrencyService);
+  private authService = inject(AuthService);
+
+  // Check if user is ADMIN (read-only mode)
+  isAdmin = signal(this.authService.hasRole('ADMIN'));
 
   // Restaurant Info
   restaurantInfo = signal<any>({

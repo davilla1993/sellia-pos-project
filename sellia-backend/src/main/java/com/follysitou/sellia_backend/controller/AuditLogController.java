@@ -31,22 +31,13 @@ public class AuditLogController {
     @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
     public ResponseEntity<PagedResponse<AuditLogResponse>> getAllAuditLogs(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "actionDate"));
         Page<AuditLog> auditLogs = auditLogRepository.findAll(pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }
@@ -59,22 +50,13 @@ public class AuditLogController {
     public ResponseEntity<PagedResponse<AuditLogResponse>> getAuditLogsByUser(
             @PathVariable String userEmail,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<AuditLog> auditLogs = auditLogRepository.findByUserEmail(userEmail, pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }
@@ -87,22 +69,13 @@ public class AuditLogController {
     public ResponseEntity<PagedResponse<AuditLogResponse>> getAuditLogsByAction(
             @PathVariable String action,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<AuditLog> auditLogs = auditLogRepository.findByAction(action, pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }
@@ -115,22 +88,13 @@ public class AuditLogController {
     public ResponseEntity<PagedResponse<AuditLogResponse>> getAuditLogsByEntityType(
             @PathVariable String entityType,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<AuditLog> auditLogs = auditLogRepository.findByEntityType(entityType, pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }
@@ -144,22 +108,13 @@ public class AuditLogController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<AuditLog> auditLogs = auditLogRepository.findByDateRange(startDate, endDate, pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }
@@ -172,22 +127,13 @@ public class AuditLogController {
     public ResponseEntity<PagedResponse<AuditLogResponse>> getAuditLogsByStatus(
             @PathVariable AuditLog.ActionStatus status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<AuditLog> auditLogs = auditLogRepository.findByStatus(status, pageRequest);
 
-        List<AuditLogResponse> content = auditLogs.getContent().stream()
-                .map(AuditLogResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        PagedResponse<AuditLogResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(auditLogs.getNumber());
-        response.setSize(auditLogs.getSize());
-        response.setTotalElements(auditLogs.getTotalElements());
-        response.setTotalPages(auditLogs.getTotalPages());
-        response.setLast(auditLogs.isLast());
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
 
         return ResponseEntity.ok(response);
     }

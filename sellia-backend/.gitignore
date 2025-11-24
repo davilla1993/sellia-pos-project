@@ -37,3 +37,8 @@ build/
 .env.production
 .env.prod
 .env.*.local
+
+### Uploads and Archives ###
+uploads/
+archives/**/*.csv
+!archives/**/.gitkeep

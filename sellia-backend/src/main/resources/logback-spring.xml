@@ -10,27 +10,15 @@
         </encoder>
     </appender>
 
-    <!-- Loki Appender -->
-    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-        <http>
-            <url>http://loki:3100/loki/api/v1/push</url>
-        </http>
-        <format>
-            <label>
-                <pattern>app=${app.name},version=${app.version},host=${HOSTNAME},level=%level</pattern>
-            </label>
-            <message>
-                <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
-            </message>
-        </format>
-        <batchSize>100</batchSize>
-        <batchTimeoutMs>5000</batchTimeoutMs>
+    <!-- In-Memory Appender for Dashboard -->
+    <appender name="IN_MEMORY" class="com.follysitou.sellia_backend.logging.InMemoryLogAppender">
     </appender>
 
     <!-- Development Profile -->
     <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="IN_MEMORY"/>
         </root>
         <logger name="org.springframework.web" level="WARN"/>
         <logger name="org.hibernate" level="WARN"/>
@@ -40,7 +28,7 @@
     <springProfile name="prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="LOKI"/>
+            <appender-ref ref="IN_MEMORY"/>
         </root>
         <logger name="org.springframework.web" level="WARN"/>
         <logger name="org.hibernate" level="WARN"/>
@@ -50,7 +38,7 @@
     <springProfile name="default">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="LOKI"/>
+            <appender-ref ref="IN_MEMORY"/>
         </root>
         <logger name="org.springframework.web" level="WARN"/>
         <logger name="org.hibernate" level="WARN"/>

@@ -28,6 +28,8 @@
     "@angular/router": "^20.1.0",
     "apexcharts": "^5.3.6",
     "chart.js": "^4.5.1",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "ng-apexcharts": "^2.0.3",
     "ng2-charts": "^8.0.0",
     "ngx-scanner": "^0.0.0",

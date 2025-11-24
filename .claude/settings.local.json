@@ -10,7 +10,8 @@
       "Bash(./mvnw compile:*)",
       "Bash(npm install:*)",
       "Bash(git push:*)",
-      "Bash(npx ng generate:*)"
+      "Bash(npx ng generate:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

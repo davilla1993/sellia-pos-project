@@ -87,7 +87,8 @@ export class LoginComponent implements OnInit {
       'ADMIN': '/admin/dashboard',
       'CAISSE': '/auth/cashier-pin',  // Redirect to PIN validation for cashiers
       'CUISINE': '/pos/kitchen',
-      'BAR': '/pos/bar'
+      'BAR': '/pos/bar',
+      'AUDITOR': '/auditor/dashboard'
     };
 
     const route = roleRoutes[role] || '/admin/dashboard';
