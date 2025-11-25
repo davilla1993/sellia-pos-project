@@ -1,395 +1,365 @@
-ERROR: failed to build: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
-2025-Nov-25 13:06:54.367020
-exit status 1
-2025-Nov-25 13:06:54.438325
-Oops something is not okay, are you okay? 😢
-2025-Nov-25 13:06:54.454738
-#0 building with "default" instance using docker driver
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#1 [internal] load build definition from Dockerfile
-2025-Nov-25 13:06:54.454738
-#1 transferring dockerfile: 5.03kB done
-2025-Nov-25 13:06:54.454738
-#1 DONE 0.0s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#2 [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
-2025-Nov-25 13:06:54.454738
-#2 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#3 [internal] load metadata for docker.io/library/node:20-alpine
-2025-Nov-25 13:06:54.454738
-#3 DONE 1.3s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#4 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
-2025-Nov-25 13:06:54.454738
-#4 DONE 1.4s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#2 [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
-2025-Nov-25 13:06:54.454738
-#2 DONE 1.6s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#5 [internal] load .dockerignore
-2025-Nov-25 13:06:54.454738
-#5 transferring context: 825B done
-2025-Nov-25 13:06:54.454738
-#5 DONE 0.0s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 resolve docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237 0.0s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:463a1849665463254b2dd56e3a5b316f1596bc93d0571065c06ea05bb48ab8f4 2.91kB / 2.91kB done
-2025-Nov-25 13:06:54.454738
-#6 sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 0B / 22.96MB 0.1s
-2025-Nov-25 13:06:54.454738
-#6 sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237 6.65kB / 6.65kB done
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 0B / 29.72MB 0.1s
-2025-Nov-25 13:06:54.454738
-#6 sha256:b9611ad9b2f6ebef1c9369a32d794718fc28ebe2b9bb37b81a64b731370907bd 9.83kB / 9.83kB done
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 0B / 157.84MB 0.1s
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#7 [internal] load build context
-2025-Nov-25 13:06:54.454738
-#7 transferring context: 2.13MB 0.2s done
-2025-Nov-25 13:06:54.454738
-#7 DONE 0.2s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#8 [stage-2 1/6] FROM docker.io/library/eclipse-temurin:21-jre-alpine@sha256:326837fba06a8ff5482a17bafbd65319e64a6e997febb7c85ebe7e3f73c12b11
-2025-Nov-25 13:06:54.454738
-#8 resolve docker.io/library/eclipse-temurin:21-jre-alpine@sha256:326837fba06a8ff5482a17bafbd65319e64a6e997febb7c85ebe7e3f73c12b11 0.0s done
-2025-Nov-25 13:06:54.454738
-#8 sha256:326837fba06a8ff5482a17bafbd65319e64a6e997febb7c85ebe7e3f73c12b11 2.68kB / 2.68kB done
-2025-Nov-25 13:06:54.454738
-#8 sha256:d52fed95b86b9374fcd6f289f022b7d5ef4de6fdbe1e49a59cf7551496027090 1.94kB / 1.94kB done
-2025-Nov-25 13:06:54.454738
-#8 sha256:cb895430823c34591ae6fe71fede85189d0d344383acac20889ac0b5276a9caa 4.09kB / 4.09kB done
-2025-Nov-25 13:06:54.454738
-#8 DONE 0.3s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#9 [stage-2 2/6] WORKDIR /app
-2025-Nov-25 13:06:54.454738
-#9 DONE 0.0s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#10 [stage-2 3/6] RUN addgroup -S spring && adduser -S spring -G spring
-2025-Nov-25 13:06:54.454738
-#10 DONE 0.1s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#11 [stage-2 4/6] RUN mkdir -p /app/uploads/qrcodes /app/uploads/products /app/uploads/receipts &&     chown -R spring:spring /app/uploads
-2025-Nov-25 13:06:54.454738
-#11 DONE 0.1s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 5.24MB / 29.72MB 0.5s
-2025-Nov-25 13:06:54.454738
-#6 sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 2.10MB / 22.96MB 0.6s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 8.39MB / 29.72MB 0.6s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 12.58MB / 157.84MB 0.6s
-2025-Nov-25 13:06:54.454738
-#6 sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 11.65MB / 22.96MB 0.8s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 11.53MB / 29.72MB 0.8s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 29.36MB / 157.84MB 0.8s
-2025-Nov-25 13:06:54.454738
-#6 sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 22.96MB / 22.96MB 1.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 19.92MB / 29.72MB 1.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 46.14MB / 157.84MB 1.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 22.96MB / 22.96MB 1.0s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 22.02MB / 29.72MB 1.1s
-2025-Nov-25 13:06:54.454738
-#6 sha256:54b92ed1102d0a97c89567511b8a3e40e6283e43958991cc108b411f7eec78e4 0B / 158B 1.1s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 24.12MB / 29.72MB 1.3s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 67.11MB / 157.84MB 1.3s
-2025-Nov-25 13:06:54.454738
-#6 sha256:54b92ed1102d0a97c89567511b8a3e40e6283e43958991cc108b411f7eec78e4 158B / 158B 1.3s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:919c22d58535d0a293684e9385c199a76f0a3c4cdfdb02257191974dc2dabfa1 0B / 2.28kB 1.3s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 28.31MB / 29.72MB 1.5s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 81.79MB / 157.84MB 1.5s
-2025-Nov-25 13:06:54.454738
-#6 sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 29.72MB / 29.72MB 1.6s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:919c22d58535d0a293684e9385c199a76f0a3c4cdfdb02257191974dc2dabfa1 2.28kB / 2.28kB 1.6s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:8583823b44413993005cb4de17065cb25a621db74ca76da9e356a8cbe97a6ff9 0B / 9.24MB 1.6s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 0B / 22.54MB 1.6s
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 95.42MB / 157.84MB 1.7s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 110.10MB / 157.84MB 1.9s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8583823b44413993005cb4de17065cb25a621db74ca76da9e356a8cbe97a6ff9 1.05MB / 9.24MB 1.9s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 119.54MB / 157.84MB 2.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8583823b44413993005cb4de17065cb25a621db74ca76da9e356a8cbe97a6ff9 5.24MB / 9.24MB 2.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 4.19MB / 22.54MB 2.0s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 7.34MB / 22.54MB 2.1s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 136.31MB / 157.84MB 2.2s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8583823b44413993005cb4de17065cb25a621db74ca76da9e356a8cbe97a6ff9 9.24MB / 9.24MB 2.1s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 12.58MB / 22.54MB 2.2s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8167b4f972e8721f72bf03a1fdc669b803dfc262b27a60d62ee7486548e1c565 0B / 853B 2.2s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 149.30MB / 157.84MB 2.4s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 20.97MB / 22.54MB 2.4s
-2025-Nov-25 13:06:54.454738
-#6 sha256:8167b4f972e8721f72bf03a1fdc669b803dfc262b27a60d62ee7486548e1c565 853B / 853B 2.4s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 0B / 32B 2.4s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 157.84MB / 157.84MB 2.5s
-2025-Nov-25 13:06:54.454738
-#6 sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 157.84MB / 157.84MB 2.6s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 22.54MB / 22.54MB 2.6s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:583816d0be0cf3bcb3dfd452a52a7616ed7d9f22fe7f9c7be06c6d39baf0dd92 0B / 155B 2.6s
-2025-Nov-25 13:06:54.454738
-#6 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 2.7s done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:20043066d3d5c78b45520c5707319835ac7d1f3d7f0dded0138ea0897d6a3188 1.3s done
-2025-Nov-25 13:06:54.454738
-#6 sha256:583816d0be0cf3bcb3dfd452a52a7616ed7d9f22fe7f9c7be06c6d39baf0dd92 155B / 155B 2.8s done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 0.1s
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:b7f312f519fbac7fa8ab5e034ea3afc3f2f0e15c1b4f93c20f0ef6bdf5e3ba72 1.3s done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#12 [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
-2025-Nov-25 13:06:54.454738
-#12 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.0s done
-2025-Nov-25 13:06:54.454738
-#12 sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 7.67kB / 7.67kB done
-2025-Nov-25 13:06:54.454738
-#12 sha256:be8d32d651b3e0c9c2b28fdc1d3888408125d703232013cff955344d052027e5 1.72kB / 1.72kB done
-2025-Nov-25 13:06:54.454738
-#12 sha256:2b56f2779663b9e1a77bdb5235dc31f1a81e534ccab1c1b35c716a8db79eeab9 6.42kB / 6.42kB done
-2025-Nov-25 13:06:54.454738
-#12 sha256:60e45a9660cfaebbbac9bba98180aa28b3966b7f2462d132c46f51a1f5b25a64 42.75MB / 42.75MB 3.4s done
-2025-Nov-25 13:06:54.454738
-#12 sha256:e74e4ed823e9560b3fe51c0cab47dbfdfc4b12453604319408ec58708fb9e720 1.26MB / 1.26MB 2.9s done
-2025-Nov-25 13:06:54.454738
-#12 sha256:da04d522c98fe12816b2bcddf8413fca73645f8fa60f287c672f58bcc7f0fa38 444B / 444B 3.0s done
-2025-Nov-25 13:06:54.454738
-#12 extracting sha256:60e45a9660cfaebbbac9bba98180aa28b3966b7f2462d132c46f51a1f5b25a64 1.9s done
-2025-Nov-25 13:06:54.454738
-#12 extracting sha256:e74e4ed823e9560b3fe51c0cab47dbfdfc4b12453604319408ec58708fb9e720 0.1s done
-2025-Nov-25 13:06:54.454738
-#12 extracting sha256:da04d522c98fe12816b2bcddf8413fca73645f8fa60f287c672f58bcc7f0fa38 done
-2025-Nov-25 13:06:54.454738
-#12 DONE 5.8s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#13 [frontend-builder 2/6] WORKDIR /app/frontend
-2025-Nov-25 13:06:54.454738
-#13 DONE 0.1s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#14 [frontend-builder 3/6] COPY sellia-app/package*.json ./
-2025-Nov-25 13:06:54.454738
-#14 DONE 0.0s
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:388658fb69f54e5682104e6b0cf9b8753587e33278a43c2254254fb595999c52 3.1s done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:54b92ed1102d0a97c89567511b8a3e40e6283e43958991cc108b411f7eec78e4 done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:919c22d58535d0a293684e9385c199a76f0a3c4cdfdb02257191974dc2dabfa1 done
-2025-Nov-25 13:06:54.454738
-#6 extracting sha256:8349365ad94cf3ebc9ff663af386f8e662102fd7528d7d5638df47ab9d044df7 0.1s
-2025-Nov-25 13:06:54.454738
-#6 ...
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#15 [frontend-builder 4/6] RUN npm ci
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error code ERESOLVE
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error ERESOLVE could not resolve
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error While resolving: ng2-charts@8.0.0
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error Found: @angular/core@20.3.5
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error node_modules/@angular/core
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   @angular/core@"^20.1.0" from the root project
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   peerOptional @angular/core@"^20.0.0" from @angular/build@20.3.6
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   node_modules/@angular/build
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error     dev @angular/build@"^20.1.0" from the root project
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   6 more (@angular/common, @angular/forms, ...)
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error Could not resolve dependency:
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error peer @angular/cdk@">=19.0.0" from ng2-charts@8.0.0
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error node_modules/ng2-charts
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   ng2-charts@"^8.0.0" from the root project
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error Conflicting peer dependency: @angular/core@21.0.0
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error node_modules/@angular/core
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   peer @angular/core@"^21.0.0 || ^22.0.0" from @angular/cdk@21.0.0
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error   node_modules/@angular/cdk
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error     peer @angular/cdk@">=19.0.0" from ng2-charts@8.0.0
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error     node_modules/ng2-charts
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error       ng2-charts@"^8.0.0" from the root project
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error Fix the upstream dependency conflict, or retry
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error this command with --force or --legacy-peer-deps
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error to accept an incorrect (and potentially broken) dependency resolution.
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error For a full report see:
-2025-Nov-25 13:06:54.454738
-#15 1.860 npm error /root/.npm/_logs/2025-11-25T13_06_52_470Z-eresolve-report.txt
-2025-Nov-25 13:06:54.454738
-#15 1.863 npm notice
-2025-Nov-25 13:06:54.454738
-#15 1.863 npm notice New major version of npm available! 10.8.2 -> 11.6.3
-2025-Nov-25 13:06:54.454738
-#15 1.863 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.3
-2025-Nov-25 13:06:54.454738
-#15 1.863 npm notice To update run: npm install -g npm@11.6.3
-2025-Nov-25 13:06:54.454738
-#15 1.863 npm notice
-2025-Nov-25 13:06:54.454738
-#15 1.864 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-25T13_06_52_470Z-debug-0.log
-2025-Nov-25 13:06:54.454738
-#15 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
-2025-Nov-25 13:06:54.454738
-2025-Nov-25 13:06:54.454738
-#6 [backend-builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237
-2025-Nov-25 13:06:54.454738
-#6 CANCELED
-2025-Nov-25 13:06:54.454738
+
+2025-Nov-25 13:30:26.003954
+#22 [frontend-builder 6/6] RUN npm run build -- --configuration production
+2025-Nov-25 13:30:26.003954
+#22 ...
+2025-Nov-25 13:30:26.003954
+2025-Nov-25 13:30:26.003954
+#23 [backend-builder 7/9] COPY sellia-backend/src ./src
+2025-Nov-25 13:30:26.003954
+#23 DONE 0.2s
+2025-Nov-25 13:30:26.003954
+2025-Nov-25 13:30:26.003954
+#22 [frontend-builder 6/6] RUN npm run build -- --configuration production
+2025-Nov-25 13:30:26.003954
+#22 50.42 ✔ Building...
+2025-Nov-25 13:30:26.003954
+#22 50.42 Initial chunk files   | Names                        |  Raw size | Estimated transfer size
+2025-Nov-25 13:30:26.003954
+#22 50.42 main-T2C2JFHJ.js      | main                         |   1.10 MB |               250.78 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-CXAYKJHX.js     | -                            | 204.73 kB |                59.17 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-3EGICHLH.js     | -                            |  92.31 kB |                23.26 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 styles-WPXJFCNW.css   | styles                       |  57.97 kB |                 7.49 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-MO2MDAB7.js     | -                            |  48.86 kB |                 9.80 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 polyfills-5CFQRCPP.js | polyfills                    |  34.59 kB |                11.33 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-P2X4OO7F.js     | -                            |  16.40 kB |                 2.79 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-GNQ4MDQJ.js     | -                            |   5.22 kB |                 1.44 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-WHIE6Q2P.js     | -                            |   2.26 kB |               772 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-YNZCQHZS.js     | -                            |   1.79 kB |               695 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-37OXL44N.js     | -                            |   1.55 kB |               458 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-FDERIQAA.js     | -                            |   1.11 kB |               514 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-F7GCJQPM.js     | -                            | 647 bytes |               647 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-25Q5FSQQ.js     | -                            | 324 bytes |               324 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-FK6H3RFT.js     | -                            | 272 bytes |               272 bytes
+2025-Nov-25 13:30:26.003954
+#22 50.42
+2025-Nov-25 13:30:26.003954
+#22 50.42                       | Initial total                |   1.56 MB |               369.75 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42
+2025-Nov-25 13:30:26.003954
+#22 50.42 Lazy chunk files      | Names                        |  Raw size | Estimated transfer size
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-HXALNZ2F.js     | apexcharts-esm               | 577.87 kB |               129.44 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-KFVPZZ6B.js     | html2canvas                  | 203.21 kB |                38.50 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-IIB77BY5.js     | index-es                     | 158.67 kB |                46.74 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-W2I3BGH3.js     | menus-component              |  27.28 kB |                 6.22 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-CTFJHHKX.js     | purify-es                    |  22.30 kB |                 7.74 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-7XDFJQDJ.js     | admin-layout-component       |  20.83 kB |                 5.59 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-KNUNWWC6.js     | analytics-component          |  19.46 kB |                 5.08 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-753S5JKH.js     | active-orders-component      |  19.41 kB |                 4.80 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-7GGFC6JS.js     | stock-alerts-component       |  14.78 kB |                 3.79 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-ZEIMF3MQ.js     | search-invoice-component     |  14.71 kB |                 4.25 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-UV7524WX.js     | tables-component             |  14.29 kB |                 3.94 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-M7EYSK4D.js     | cash-operations-component    |  13.83 kB |                 3.62 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-QLD3S26W.js     | categories-list-component    |  12.52 kB |                 3.50 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-G7I2D3LF.js     | active-sessions-component    |   7.91 kB |                 2.58 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 chunk-O7GJOLBH.js     | cashier-assignment-component |   7.81 kB |                 2.54 kB
+2025-Nov-25 13:30:26.003954
+#22 50.42 ...and 1 more lazy chunks files. Use "--verbose" to show all the files.
+2025-Nov-25 13:30:26.003954
+#22 50.42
+2025-Nov-25 13:30:26.003954
+#22 50.42 Application bundle generation failed. [48.593 seconds] - 2025-11-25T13:30:25.640Z
+2025-Nov-25 13:30:26.003954
+#22 50.42
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] bundle initial exceeded maximum budget. Budget 500.00 kB was not met by 1.06 MB with a total of 1.56 MB.
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] src/app/features/public/public-menu.component.css exceeded maximum budget. Budget 10.00 kB was not met by 929 bytes with a total of 10.93 kB.
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.promise.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.match.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.replace.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.starts-with.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.array.iterator.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/web.dom-collections.iterator.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.array.reduce.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.ends-with.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.split.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'raf' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.trim.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'rgbcolor' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.array.index-of.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.string.includes.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.array.reverse.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'core-js/modules/es.regexp.to-string.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43 ▲ [WARNING] Module 'html2canvas' used by 'node_modules/jspdf/dist/jspdf.es.min.js' is not ESM
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+#22 50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.43
+2025-Nov-25 13:30:26.003954
+#22 50.44 ✘ [ERROR] bundle initial exceeded maximum budget. Budget 1.00 MB was not met by 563.50 kB with a total of 1.56 MB.
+2025-Nov-25 13:30:26.003954
+#22 50.44
+2025-Nov-25 13:30:26.003954
+#22 50.44
+2025-Nov-25 13:30:26.003954
+#22 ERROR: process "/bin/sh -c npm run build -- --configuration production" did not complete successfully: exit code: 1
+2025-Nov-25 13:30:26.003954
 ------
-2025-Nov-25 13:06:54.454738
-> [frontend-builder 4/6] RUN npm ci:
-2025-Nov-25 13:06:54.454738
-1.860 npm error
-2025-Nov-25 13:06:54.454738
-1.860 npm error
-2025-Nov-25 13:06:54.454738
-1.860 npm error For a full report see:
-2025-Nov-25 13:06:54.454738
-1.860 npm error /root/.npm/_logs/2025-11-25T13_06_52_470Z-eresolve-report.txt
-2025-Nov-25 13:06:54.454738
-1.863 npm notice
-2025-Nov-25 13:06:54.454738
-1.863 npm notice New major version of npm available! 10.8.2 -> 11.6.3
-2025-Nov-25 13:06:54.454738
-1.863 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.3
-2025-Nov-25 13:06:54.454738
-1.863 npm notice To update run: npm install -g npm@11.6.3
-2025-Nov-25 13:06:54.454738
-1.863 npm notice
-2025-Nov-25 13:06:54.454738
-1.864 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-25T13_06_52_470Z-debug-0.log
-2025-Nov-25 13:06:54.454738
+2025-Nov-25 13:30:26.003954
+> [frontend-builder 6/6] RUN npm run build -- --configuration production:
+2025-Nov-25 13:30:26.003954
+50.43
+2025-Nov-25 13:30:26.003954
+50.43 ▲ [WARNING] Module 'html2canvas' used by 'node_modules/jspdf/dist/jspdf.es.min.js' is not ESM
+2025-Nov-25 13:30:26.003954
+50.43
+2025-Nov-25 13:30:26.003954
+50.43   CommonJS or AMD dependencies can cause optimization bailouts.
+2025-Nov-25 13:30:26.003954
+50.43   For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+2025-Nov-25 13:30:26.003954
+50.43
+2025-Nov-25 13:30:26.003954
+50.43
+2025-Nov-25 13:30:26.003954
+50.44 ✘ [ERROR] bundle initial exceeded maximum budget. Budget 1.00 MB was not met by 563.50 kB with a total of 1.56 MB.
+2025-Nov-25 13:30:26.003954
+50.44
+2025-Nov-25 13:30:26.003954
+50.44
+2025-Nov-25 13:30:26.003954
 ------
-2025-Nov-25 13:06:54.454738
-Dockerfile:31
-2025-Nov-25 13:06:54.454738
+2025-Nov-25 13:30:26.003954
+Dockerfile:37
+2025-Nov-25 13:30:26.003954
 --------------------
-2025-Nov-25 13:06:54.454738
-29 |
-2025-Nov-25 13:06:54.454738
-30 |     # Install dependencies
-2025-Nov-25 13:06:54.454738
-31 | >>> RUN npm ci
-2025-Nov-25 13:06:54.454738
-32 |
-2025-Nov-25 13:06:54.454738
-33 |     # Copy frontend source
-2025-Nov-25 13:06:54.454738
+2025-Nov-25 13:30:26.003954
+35 |
+2025-Nov-25 13:30:26.003954
+36 |     # Build Angular app for production
+2025-Nov-25 13:30:26.003954
+37 | >>> RUN npm run build -- --configuration production
+2025-Nov-25 13:30:26.003954
+38 |
+2025-Nov-25 13:30:26.003954
+39 |     # ========================================
+2025-Nov-25 13:30:26.003954
 --------------------
-2025-Nov-25 13:06:54.454738
-ERROR: failed to build: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
-2025-Nov-25 13:06:54.454738
+2025-Nov-25 13:30:26.003954
+ERROR: failed to build: failed to solve: process "/bin/sh -c npm run build -- --configuration production" did not complete successfully: exit code: 1
+2025-Nov-25 13:30:26.003954
 exit status 1
-2025-Nov-25 13:06:54.468354
+2025-Nov-25 13:30:26.042228
 Deployment failed. Removing the new version of your application.
