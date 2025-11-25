@@ -870,4 +870,36 @@ export class ApiService {
   getAuditStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/audit-logs/stats`);
   }
+
+  searchAuditLogs(
+    userEmail: string | null,
+    entityType: string | null,
+    status: string | null,
+    startDate: string | null,
+    endDate: string | null,
+    page: number = 0,
+    size: number = 100
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (userEmail && userEmail.trim()) {
+      params = params.set('userEmail', userEmail.trim());
+    }
+    if (entityType) {
+      params = params.set('entityType', entityType);
+    }
+    if (status) {
+      params = params.set('status', status);
+    }
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/audit-logs/search`, { params });
+  }
 }

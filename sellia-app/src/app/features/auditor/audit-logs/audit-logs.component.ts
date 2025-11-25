@@ -351,22 +351,22 @@ export class AuditLogsComponent implements OnInit {
   loadLogs(): void {
     this.loading.set(true);
 
-    let request;
+    // Use the flexible search endpoint that supports multiple filters
+    const userEmail = this.filterUser.trim() || null;
+    const entityType = this.filterEntityType || null;
+    const status = this.filterStatus || null;
+    const startDate = this.filterStartDate || null;
+    const endDate = this.filterEndDate || null;
 
-    // Priority: Date range > User > Entity Type > Status > All
-    if (this.filterStartDate && this.filterEndDate) {
-      request = this.apiService.getAuditLogsByDateRange(this.filterStartDate, this.filterEndDate, this.currentPage(), this.pageSize);
-    } else if (this.filterUser.trim()) {
-      request = this.apiService.getAuditLogsByUser(this.filterUser.trim(), this.currentPage(), this.pageSize);
-    } else if (this.filterEntityType) {
-      request = this.apiService.getAuditLogsByEntityType(this.filterEntityType, this.currentPage(), this.pageSize);
-    } else if (this.filterStatus) {
-      request = this.apiService.getAuditLogsByStatus(this.filterStatus, this.currentPage(), this.pageSize);
-    } else {
-      request = this.apiService.getAuditLogs(this.currentPage(), this.pageSize);
-    }
-
-    request.subscribe({
+    this.apiService.searchAuditLogs(
+      userEmail,
+      entityType,
+      status,
+      startDate,
+      endDate,
+      this.currentPage(),
+      this.pageSize
+    ).subscribe({
       next: (data) => {
         this.logs.set(data.content || []);
         this.totalPages.set(data.totalPages || 0);

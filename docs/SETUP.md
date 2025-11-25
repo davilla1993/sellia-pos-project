@@ -33,7 +33,7 @@ SELECT
     'admin',
     'Adote Laurent',
     'AGBOSSOU',
-    'admin@sella.com',
+    'admin@sellia.com',
     '$2a$12$Zy1r0bJ05317oQ80VTodseXEp1SCG5fWl3WqJHUQ9siOp9O3aL84C',
     r.id,
     true,

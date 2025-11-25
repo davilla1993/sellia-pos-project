@@ -4,6 +4,7 @@ import com.follysitou.sellia_backend.model.AuditLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
+public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSpecificationExecutor<AuditLog> {
 
     @Query("SELECT al FROM AuditLog al WHERE al.userEmail = :userEmail AND al.deleted = false ORDER BY al.actionDate DESC")
     Page<AuditLog> findByUserEmail(@Param("userEmail") String userEmail, Pageable pageable);

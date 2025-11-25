@@ -63,6 +63,7 @@ public class OrderService {
     private final StockRepository stockRepository;
     private final CashierSessionRepository cashierSessionRepository;
     private final InvoiceService invoiceService;
+    private final AuditLogService auditLogService;
 
     public OrderResponse createOrder(OrderCreateRequest request) {
         // Validate based on order type
@@ -169,7 +170,7 @@ public class OrderService {
                 if (itemRequest.getProductPublicId() != null && !itemRequest.getProductPublicId().isBlank()) {
                     product = productRepository.findByPublicId(itemRequest.getProductPublicId())
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.getProductPublicId()));
-                } else if (menuItem != null && !menuItem.getProducts().isEmpty()) {
+                } else if (!menuItem.getProducts().isEmpty()) {
                     product = menuItem.getProducts().stream().findFirst().orElse(null);
                 }
             }
@@ -229,6 +230,20 @@ public class OrderService {
 
         // Notify kitchen and cashier
         notificationService.notifyNewOrder(savedOrder);
+
+        // Audit log - Order creation
+        try {
+            String currentUserEmail = SecurityUtil.getCurrentUsername();
+            String orderDetails = String.format("Order %s created - Type: %s, Items: %d, Total: %d FCFA, Customer: %s",
+                    savedOrder.getOrderNumber(),
+                    savedOrder.getOrderType(),
+                    savedOrder.getItems().size(),
+                    savedOrder.getTotalAmount(),
+                    savedOrder.getCustomerName() != null ? savedOrder.getCustomerName() : "N/A");
+            auditLogService.logSuccess(currentUserEmail, "CREATE_ORDER", "Order", savedOrder.getPublicId(), orderDetails);
+        } catch (Exception e) {
+            log.error("Failed to create audit log for order creation: {}", savedOrder.getOrderNumber(), e);
+        }
 
         return orderMapper.toResponse(savedOrder);
     }
@@ -409,6 +424,33 @@ public class OrderService {
         // Send notification
         notificationService.notifyOrderStatusChange(updated);
 
+        // Audit log - Order payment
+        try {
+            String currentUserEmail = SecurityUtil.getCurrentUsername();
+            long finalAmount = updated.getTotalAmount();
+            if (updated.getDiscountAmount() != null) {
+                finalAmount -= updated.getDiscountAmount();
+            }
+            finalAmount = Math.max(0, finalAmount);
+
+            StringBuilder paymentDetails = new StringBuilder();
+            paymentDetails.append(String.format("Order %s PAID - Method: %s, ", updated.getOrderNumber(), paymentMethod));
+            paymentDetails.append(String.format("Total: %d FCFA, ", updated.getTotalAmount()));
+            if (updated.getDiscountAmount() != null && updated.getDiscountAmount() > 0) {
+                paymentDetails.append(String.format("Discount: %d FCFA, ", updated.getDiscountAmount()));
+            }
+            paymentDetails.append(String.format("Final Amount: %d FCFA, ", finalAmount));
+            paymentDetails.append(String.format("Items: %d, ", updated.getItems().size()));
+            if (cashierSession != null) {
+                paymentDetails.append(String.format("Cashier Session: %s, ", cashierSession.getPublicId()));
+            }
+            paymentDetails.append(String.format("Customer: %s", updated.getCustomerName() != null ? updated.getCustomerName() : "N/A"));
+
+            auditLogService.logSuccess(currentUserEmail, "PAY_ORDER", "Order", updated.getPublicId(), paymentDetails.toString());
+        } catch (Exception e) {
+            log.error("Failed to create audit log for order payment: {}", publicId, e);
+        }
+
         return orderMapper.toResponse(updated);
     }
 
@@ -462,17 +504,10 @@ public class OrderService {
         return orderNumber;
     }
 
-    /**
-     * Ajouter des items à une commande EN_ATTENTE
-     * Utilisé quand le caissier ajoute des produits à une commande
-     * qui n'a pas encore été acceptée
-     */
     public OrderResponse addItemsToOrder(String orderId, List<OrderCreateRequest.OrderItemRequest> newItems) {
         Order order = orderRepository.findByPublicId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Règle métier: Le caissier peut ajouter des items tant que le client n'a pas payé
-        // Peu importe le statut de la commande (EN_ATTENTE, EN_PREPARATION, PRETE, LIVREE)
         if (order.getIsPaid()) {
             throw new BusinessException("Impossible d'ajouter des produits à une commande déjà payée");
         }
@@ -534,10 +569,6 @@ public class OrderService {
         return orderMapper.toResponse(updated);
     }
 
-    /**
-     * Récupérer toutes les commandes non payées d'une CustomerSession
-     * Utilisé pour afficher le récapitulatif avant le paiement
-     */
     public List<OrderResponse> getSessionUnpaidOrders(String customerSessionPublicId) {
         CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
@@ -552,9 +583,6 @@ public class OrderService {
                 .toList();
     }
 
-    /**
-     * Récupérer toutes les commandes d'une CustomerSession (paginated)
-     */
     public PagedResponse<OrderResponse> getSessionOrders(String customerSessionPublicId, Pageable pageable) {
         customerSessionRepository.findByPublicId(customerSessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
@@ -563,10 +591,6 @@ public class OrderService {
         return PagedResponse.of(orders.map(orderMapper::toResponse));
     }
 
-    /**
-     * Payer toutes les commandes d'une session (checkout)
-     * Crée une facture consolidée et marque toutes les orders comme payées
-     */
     public OrderResponse checkoutAndPaySession(String customerSessionPublicId, String paymentMethod) {
         CustomerSession session = customerSessionRepository.findByPublicId(customerSessionPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer session not found"));
@@ -643,6 +667,31 @@ public class OrderService {
 
         log.info("Session checkout completed: {} - Invoice: {} - Amount: {} FCFA - Orders count: {}",
                 customerSessionPublicId, invoice.getInvoiceNumber(), totalAmount, orders.size());
+
+        // Audit log - Session checkout payment
+        try {
+            String currentUserEmail = SecurityUtil.getCurrentUsername();
+            StringBuilder sessionPaymentDetails = new StringBuilder();
+            sessionPaymentDetails.append(String.format("Session %s CHECKOUT - Method: %s, ", customerSessionPublicId, paymentMethod));
+            sessionPaymentDetails.append(String.format("Invoice: %s, ", invoice.getInvoiceNumber()));
+            sessionPaymentDetails.append(String.format("Total Amount: %d FCFA, ", totalAmount));
+            sessionPaymentDetails.append(String.format("Orders Count: %d, ", orders.size()));
+
+            // Collect order numbers
+            String orderNumbers = orders.stream()
+                    .map(Order::getOrderNumber)
+                    .collect(Collectors.joining(", "));
+            sessionPaymentDetails.append(String.format("Orders: [%s], ", orderNumbers));
+
+            if (cashierSession != null) {
+                sessionPaymentDetails.append(String.format("Cashier Session: %s, ", cashierSession.getPublicId()));
+            }
+            sessionPaymentDetails.append(String.format("Customer: %s", session.getCustomerName() != null ? session.getCustomerName() : "N/A"));
+
+            auditLogService.logSuccess(currentUserEmail, "PAY_SESSION", "CustomerSession", customerSessionPublicId, sessionPaymentDetails.toString());
+        } catch (Exception e) {
+            log.error("Failed to create audit log for session checkout: {}", customerSessionPublicId, e);
+        }
 
         // Retourner la première order (ou créer une réponse consolidée)
         return orderMapper.toResponse(orders.get(0));

@@ -4,10 +4,12 @@ import com.follysitou.sellia_backend.dto.response.AuditLogResponse;
 import com.follysitou.sellia_backend.dto.response.PagedResponse;
 import com.follysitou.sellia_backend.model.AuditLog;
 import com.follysitou.sellia_backend.repository.AuditLogRepository;
+import com.follysitou.sellia_backend.specification.AuditLogSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +37,33 @@ public class AuditLogController {
 
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "actionDate"));
         Page<AuditLog> auditLogs = auditLogRepository.findAll(pageRequest);
+
+        Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
+        PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Search audit logs with multiple filters
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
+    public ResponseEntity<PagedResponse<AuditLogResponse>> searchAuditLogs(
+            @RequestParam(required = false) String userEmail,
+            @RequestParam(required = false) String entityType,
+            @RequestParam(required = false) AuditLog.ActionStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "actionDate"));
+
+        Specification<AuditLog> spec = AuditLogSpecification.searchAuditLogs(
+                userEmail, entityType, status, startDate, endDate);
+
+        Page<AuditLog> auditLogs = auditLogRepository.findAll(spec, pageRequest);
 
         Page<AuditLogResponse> responsePage = auditLogs.map(AuditLogResponse::fromEntity);
         PagedResponse<AuditLogResponse> response = PagedResponse.of(responsePage);
