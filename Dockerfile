@@ -9,7 +9,7 @@ WORKDIR /app/frontend
 COPY sellia-app/package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy frontend source
 COPY sellia-app/ ./
