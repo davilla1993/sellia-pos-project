@@ -8,28 +8,8 @@ import { Order } from '@shared/models/types';
   selector: 'app-order-tracking-simple',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  template: `
-    <div class="animate-fade-in">
-      <div class="section-header">
-        <h1 class="section-title">Order Tracking</h1>
-      </div>
-
-      <div *ngIf="order() as o" class="card">
-        <h2 class="text-2xl font-bold text-dark mb-4">Order #{{ o.orderNumber }}</h2>
-        <div class="space-y-2">
-          <div class="flex justify-between">
-            <span>Status</span>
-            <span class="font-semibold">{{ o.status }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Total</span>
-            <span class="text-primary font-bold">{{ getTotal(o) }}</span>
-          </div>
-        </div>
-        <button routerLink="/customer/menu" class="btn-primary w-full mt-6">Back to Menu</button>
-      </div>
-    </div>
-  `
+  templateUrl: './order-tracking-simple.component.html',
+  styleUrl: './order-tracking-simple.component.css'
 })
 export class OrderTrackingSimpleComponent implements OnInit {
   order = signal<Order | null>(null);
