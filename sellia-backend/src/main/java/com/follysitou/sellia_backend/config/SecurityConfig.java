@@ -4,11 +4,14 @@ import com.follysitou.sellia_backend.security.JwtAccessDeniedHandler;
 import com.follysitou.sellia_backend.security.JwtAuthenticationEntryPoint;
 import com.follysitou.sellia_backend.security.JwtAuthenticationFilter;
 import com.follysitou.sellia_backend.security.JwtTokenProvider;
+import com.follysitou.sellia_backend.security.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -34,10 +38,17 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final UserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
+    @Value("${app.security.hsts.enabled:false}")
+    private boolean hstsEnabled;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -60,14 +71,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // En production, ajoutez votre domaine ici ou via variable d'environnement
-        configuration.setAllowedOrigins(java.util.Arrays.asList(
-            "http://localhost:4200",
-            "http://localhost:3000",
-            "http://127.0.0.1:4200",
-            "http://localhost:8080"  // Pour le frontend servi par Spring Boot
-        ));
-        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        // Parse comma-separated allowed origins from environment variable
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -83,6 +90,23 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> {
+                    headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                        .xssProtection(HeadersConfigurer.XXssConfig::disable) // Disabled as modern browsers have built-in XSS protection
+                        .contentTypeOptions(HeadersConfigurer.ContentTypeOptionsConfig::disable) // Spring Boot enables this by default
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'")
+                        );
+
+                    // HSTS: Only enable if SSL/HTTPS is configured
+                    if (hstsEnabled) {
+                        headers.httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000)
+                        );
+                    }
+                })
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler)
@@ -128,6 +152,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

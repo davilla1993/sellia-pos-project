@@ -7,7 +7,6 @@ import { CheckoutSimpleComponent } from './features/customer/checkout-simple/che
 import { OrderTrackingSimpleComponent } from './features/customer/order-tracking-simple/order-tracking-simple.component';
 import { QrScannerComponent } from './features/customer/qr-scanning/qr-scanner.component';
 import { PublicMenuComponent } from './features/public/public-menu.component';
-import { DashboardComponent } from './features/admin/admin-dashboard/dashboard.component';
 import { UsersListComponent } from './features/admin/users/user-list/users-list.component';
 import { UserFormComponent } from './features/admin/users/user-form/user-form.component';
 import { ProductsListComponent } from './features/admin/products/product-list/products-list.component';
@@ -65,7 +64,10 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['ADMIN'])],
     loadComponent: () => import('./features/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
-      { path: 'dashboard', component: DashboardComponent },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/admin/admin-dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
       {
         path: 'users',
         children: [
@@ -178,7 +180,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         canActivate: [roleGuard(['ADMIN'])],
-        component: DashboardComponent
+        loadComponent: () => import('./features/admin/admin-dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
 
       // POS Routes (with Sidebar Layout)

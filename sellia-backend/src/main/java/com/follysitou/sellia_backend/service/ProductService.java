@@ -14,6 +14,8 @@ import com.follysitou.sellia_backend.repository.StockRepository;
 import com.follysitou.sellia_backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,7 @@ public class ProductService {
         return productMapper.toResponse(saved);
     }
 
+    @Cacheable(value = "products", key = "#publicId")
     public ProductResponse getProductById(String publicId) {
         Product product = productRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "publicId", publicId));
@@ -106,6 +109,7 @@ public class ProductService {
         return products.map(productMapper::toResponse);
     }
 
+    @CacheEvict(value = "products", key = "#publicId")
     @Transactional
     public ProductResponse updateProduct(String publicId, ProductUpdateRequest request) {
         Product product = productRepository.findByPublicId(publicId)
@@ -189,6 +193,7 @@ public class ProductService {
         log.info("Product deactivated: {}", publicId);
     }
 
+    @CacheEvict(value = "products", key = "#publicId")
     @Transactional
     public void deleteProduct(String publicId) {
         Product product = productRepository.findByPublicId(publicId)

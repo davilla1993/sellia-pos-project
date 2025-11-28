@@ -2,6 +2,8 @@ package com.follysitou.sellia_backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,9 @@ import java.util.UUID;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwt.secret:sellia_pos_saas_secret_key_for_jwt_token_generation_2024}")
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+
+    @Value("${app.jwt.secret}")
     private String jwtSecret;
 
     @Value("${app.jwt.access-token-expiration:900000}")
@@ -126,14 +130,19 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token);
             return true;
         } catch (SecurityException e) {
+            logger.warn("Invalid JWT signature: {}", e.getMessage());
             return false;
         } catch (MalformedJwtException e) {
+            logger.warn("Malformed JWT token: {}", e.getMessage());
             return false;
         } catch (ExpiredJwtException e) {
+            logger.debug("Expired JWT token: {}", e.getMessage());
             return false;
         } catch (UnsupportedJwtException e) {
+            logger.warn("Unsupported JWT token: {}", e.getMessage());
             return false;
         } catch (IllegalArgumentException e) {
+            logger.warn("JWT claims string is empty: {}", e.getMessage());
             return false;
         }
     }

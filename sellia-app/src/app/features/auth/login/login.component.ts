@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
   error = signal<string | null>(null);
   showPassword = signal(false);
   warningMessage = signal<string | null>(null);
+  rateLimitError = signal(false);
   restaurantService = inject(RestaurantInfoService);
 
   constructor(
@@ -56,6 +57,7 @@ export class LoginComponent implements OnInit {
 
     this.isLoading.set(true);
     this.error.set(null);
+    this.rateLimitError.set(false);
     this.loginForm.disable();
 
     const { username, password } = this.loginForm.value;
@@ -76,8 +78,18 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         this.isLoading.set(false);
         this.loginForm.enable();
-        const errorMsg = err.error?.message || 'Invalid username or password.';
-        this.error.set(errorMsg);
+
+        // Handle rate limiting (429 Too Many Requests)
+        if (err.status === 429) {
+          this.rateLimitError.set(true);
+          const retryAfter = err.error?.retryAfter || 180; // Default 2 minutes
+          const minutes = Math.floor(retryAfter / 60);
+          this.error.set(`Trop de tentatives de connexion échouées. Pour votre sécurité, veuillez réessayer dans ${minutes} minute${minutes > 1 ? 's' : ''}.`);
+        } else {
+          this.rateLimitError.set(false);
+          const errorMsg = err.error?.message || 'Nom d\'utilisateur ou mot de passe incorrect.';
+          this.error.set(errorMsg);
+        }
       }
     });
   }

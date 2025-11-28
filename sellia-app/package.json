@@ -32,7 +32,6 @@
     "jspdf-autotable": "^5.0.2",
     "ng-apexcharts": "^2.0.3",
     "ng2-charts": "^8.0.0",
-    "ngx-scanner": "^0.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
