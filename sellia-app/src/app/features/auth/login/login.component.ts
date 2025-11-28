@@ -82,7 +82,7 @@ export class LoginComponent implements OnInit {
         // Handle rate limiting (429 Too Many Requests)
         if (err.status === 429) {
           this.rateLimitError.set(true);
-          const retryAfter = err.error?.retryAfter || 180; // Default 2 minutes
+          const retryAfter = err.error?.retryAfter || 1350; // Default 15 minutes
           const minutes = Math.floor(retryAfter / 60);
           this.error.set(`Trop de tentatives de connexion échouées. Pour votre sécurité, veuillez réessayer dans ${minutes} minute${minutes > 1 ? 's' : ''}.`);
         } else {
