@@ -96,7 +96,7 @@ public class SecurityConfig {
                         .xssProtection(HeadersConfigurer.XXssConfig::disable) // Disabled as modern browsers have built-in XSS protection
                         .contentTypeOptions(HeadersConfigurer.ContentTypeOptionsConfig::disable) // Spring Boot enables this by default
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'")
+                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'")
                         );
 
                     // HSTS: Only enable if SSL/HTTPS is configured
