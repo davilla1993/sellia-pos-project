@@ -12,9 +12,20 @@
 
 /* Print Styles */
 @media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
   .session-report-container {
     max-width: 100%;
     padding: 0;
+    margin: 0;
   }
 
   .print-hide {
@@ -22,15 +33,40 @@
   }
 
   .report-content {
+    /* Permettre la division du contenu entre les pages */
+    page-break-inside: auto;
+  }
+
+  /* Éviter de couper les en-têtes et les sections importantes */
+  .report-header,
+  .mb-6 > div:not(.overflow-x-auto),
+  .bg-neutral-50,
+  .bg-blue-50,
+  .bg-orange-50,
+  .bg-green-50,
+  .bg-red-50 {
     page-break-inside: avoid;
   }
 
   h1, h2, h3 {
     page-break-after: avoid;
+    page-break-inside: avoid;
   }
 
+  /* Forcer le footer à rester ensemble */
+  .report-footer {
+    page-break-inside: avoid;
+    margin-top: 20px;
+  }
+
+  /* Gestion des tableaux */
   table {
     page-break-inside: auto;
+    width: 100%;
+  }
+
+  thead {
+    display: table-header-group;
   }
 
   tr {
@@ -38,14 +74,40 @@
     page-break-after: auto;
   }
 
-  thead {
-    display: table-header-group;
+  /* Réduire les marges pour optimiser l'espace */
+  .mb-6 {
+    margin-bottom: 16px !important;
+  }
+
+  .mb-8 {
+    margin-bottom: 20px !important;
+  }
+
+  .mt-8 {
+    margin-top: 20px !important;
+  }
+
+  .pt-6 {
+    padding-top: 16px !important;
   }
 
   /* Print black and white optimization */
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* Optimiser la taille des polices pour l'impression */
+  .text-3xl {
+    font-size: 1.5rem !important;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  .text-xl {
+    font-size: 1.125rem !important;
   }
 }
 
