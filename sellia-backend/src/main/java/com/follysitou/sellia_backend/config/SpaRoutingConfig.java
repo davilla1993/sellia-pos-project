@@ -35,32 +35,36 @@ public class SpaRoutingConfig implements WebMvcConfigurer {
 
                             // Si la ressource existe (fichier JS, CSS, images, etc.), la retourner
                             if (requestedResource.exists() && requestedResource.isReadable()) {
-                                logger.debug("✅ Serving static resource: {}", resourcePath);
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Serving static resource: " + resourcePath);
+                                }
                                 return requestedResource;
                             }
 
                             // Pour les fichiers statiques manquants (JS, CSS, etc.), retourner null (404)
                             // Ne pas rediriger vers index.html pour éviter les erreurs
                             if (isStaticResource(resourcePath)) {
-                                logger.warn("⚠️ Static resource not found: {}", resourcePath);
+                                logger.warn("Static resource not found: " + resourcePath);
                                 return null;
                             }
 
                             // Pour les routes Angular (non-API, non-statiques), retourner index.html
                             if (!resourcePath.startsWith("api/")) {
-                                logger.debug("🔀 SPA routing - redirecting to index.html: {}", resourcePath);
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("SPA routing - redirecting to index.html: " + resourcePath);
+                                }
                                 Resource indexHtml = new ClassPathResource("/static/index.html");
                                 if (indexHtml.exists()) {
                                     return indexHtml;
                                 } else {
-                                    logger.error("❌ index.html not found in classpath:/static/");
+                                    logger.error("index.html not found in classpath:/static/");
                                     return null;
                                 }
                             }
 
                             return null;
                         } catch (Exception e) {
-                            logger.error("❌ Error serving resource: {} - {}", resourcePath, e.getMessage());
+                            logger.error("Error serving resource: " + resourcePath + " - " + e.getMessage(), e);
                             // Ne pas propager l'exception, retourner null pour générer une 404
                             return null;
                         }
