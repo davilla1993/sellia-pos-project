@@ -123,18 +123,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         // Static files (uploads)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                        // Angular SPA - Allow all static resources (MUST be before /api/** rules)
-                        // Root files
+                        // Angular SPA - Root files and assets (MUST be before /api/** rules)
                         .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
-                        // JavaScript files (including Angular chunks with hashes)
-                        .requestMatchers("/**/*.js", "/**/*.js.map").permitAll()
-                        // CSS files
-                        .requestMatchers("/**/*.css", "/**/*.css.map").permitAll()
-                        // Font files
-                        .requestMatchers("/**/*.woff", "/**/*.woff2", "/**/*.ttf", "/**/*.eot").permitAll()
-                        // Image files
-                        .requestMatchers("/**/*.svg", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico", "/**/*.webp").permitAll()
-                        // Assets directory
                         .requestMatchers("/assets/**").permitAll()
                         // Public API endpoints (QR code menu, orders, health)
                         .requestMatchers("/api/public/**").permitAll()
@@ -157,7 +147,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/change-password").authenticated()
                         // All API requests require authentication
                         .requestMatchers("/api/**").authenticated()
-                        // Allow all other requests (for Angular routing)
+                        // Allow all other requests (Angular static files: JS, CSS, fonts, images, etc.)
                         .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider())
