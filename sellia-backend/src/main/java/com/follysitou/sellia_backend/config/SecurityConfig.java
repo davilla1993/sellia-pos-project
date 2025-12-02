@@ -123,9 +123,18 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         // Static files (uploads)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                        // Angular SPA - Allow all static resources
+                        // Angular SPA - Allow all static resources (MUST be before /api/** rules)
+                        // Root files
                         .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
-                        .requestMatchers("/*.js", "/*.css", "/*.woff", "/*.woff2", "/*.ttf", "/*.eot", "/*.svg", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.ico").permitAll()
+                        // JavaScript files (including Angular chunks with hashes)
+                        .requestMatchers("/**/*.js", "/**/*.js.map").permitAll()
+                        // CSS files
+                        .requestMatchers("/**/*.css", "/**/*.css.map").permitAll()
+                        // Font files
+                        .requestMatchers("/**/*.woff", "/**/*.woff2", "/**/*.ttf", "/**/*.eot").permitAll()
+                        // Image files
+                        .requestMatchers("/**/*.svg", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico", "/**/*.webp").permitAll()
+                        // Assets directory
                         .requestMatchers("/assets/**").permitAll()
                         // Public API endpoints (QR code menu, orders, health)
                         .requestMatchers("/api/public/**").permitAll()
