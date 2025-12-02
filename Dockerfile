@@ -17,6 +17,14 @@ COPY sellia-app/ ./
 # Build Angular app for production
 RUN npm run build -- --configuration production
 
+# List built files for debugging
+RUN echo "📦 Angular build output:" && \
+    ls -la dist/ && \
+    echo "📂 Contents of dist/sellia-app/:" && \
+    ls -la dist/sellia-app/ || echo "⚠️ dist/sellia-app/ not found" && \
+    echo "📂 Contents of dist/sellia-app/browser/:" && \
+    ls -la dist/sellia-app/browser/ || echo "⚠️ dist/sellia-app/browser/ not found"
+
 # ========================================
 # Stage 2: Build Backend (Spring Boot)
 # ========================================
@@ -36,7 +44,16 @@ RUN mvn dependency:go-offline -B
 COPY sellia-backend/src ./src
 
 # Copy frontend build into Spring Boot static resources
+# Angular 17+ with @angular/build:application outputs to dist/<project-name>/browser
 COPY --from=frontend-builder /app/frontend/dist/sellia-app/browser ./src/main/resources/static
+
+# Verify files were copied
+RUN echo "📦 Verifying static resources:" && \
+    ls -la src/main/resources/static/ && \
+    echo "📄 Checking for index.html:" && \
+    test -f src/main/resources/static/index.html && echo "✅ index.html found" || echo "❌ index.html NOT FOUND!" && \
+    echo "📄 JavaScript files:" && \
+    find src/main/resources/static -name "*.js" -type f | head -10
 
 # Build Spring Boot application
 RUN mvn clean package -DskipTests -B
