@@ -131,21 +131,27 @@ export class CashierPinComponent implements OnInit {
     // IMPORTANT: Re-vérifier s'il existe une session AVANT d'essayer d'ouvrir
     this.cashierSessionService.getCurrentSession().subscribe({
       next: (session) => {
-        // Une session existe ET est ouverte
+        // Une session existe ET est ouverte - NE JAMAIS demander le montant initial
         if (session && session.status === 'OPEN') {
+          console.log('Session déjà ouverte - redirection directe');
           this.sessionOpened.set(true);
           this.isLoading.set(false);
+          // Mettre à jour le service pour s'assurer que la session est chargée
+          this.cashierSessionService.loadCurrentSession();
           this.router.navigate(['/pos/order-entry']);
+          return; // Sortir immédiatement
         }
-        // Une session existe ET est verrouillée
+        // Une session existe ET est verrouillée - déverrouiller avec le PIN
         else if (session && session.status === 'LOCKED') {
+          console.log('Session verrouillée - déverrouillage en cours');
           this.cashierSessionService.unlockSession(session.publicId, pin).subscribe({
             next: (unlockedSession) => {
+              console.log('Session déverrouillée avec succès');
               this.sessionOpened.set(true);
               this.isLoading.set(false);
               setTimeout(() => {
                 this.router.navigate(['/pos/order-entry']);
-              }, 1000);
+              }, 500);
             },
             error: (err) => {
               this.isLoading.set(false);
@@ -154,47 +160,41 @@ export class CashierPinComponent implements OnInit {
               this.pinForm.reset();
             }
           });
+          return; // Sortir pour ne pas continuer vers l'étape 2
         }
-        // Pas de session (null) - passer à l'étape 2 pour demander le montant initial
+        // Pas de session (null ou status CLOSED) - passer à l'étape 2 pour demander le montant initial
         else {
-          this.validatedPin.set(pin);
-
-          // Charger le montant de fermeture de la session précédente
-          this.apiService.getLastClosedSessionFinalAmount(cashierId).subscribe({
-            next: (finalAmount) => {
-              // Pré-remplir avec le solde de fermeture de la session précédente
-              this.initialAmount.set(finalAmount || 0);
-              this.step.set(2);
-              this.isLoading.set(false);
-            },
-            error: () => {
-              // En cas d'erreur, utiliser 0 comme montant par défaut
-              this.initialAmount.set(0);
-              this.step.set(2);
-              this.isLoading.set(false);
-            }
-          });
+          console.log('Aucune session active - demande du montant initial');
+          this.proceedToInitialAmountStep(pin, cashierId);
         }
       },
       error: (err) => {
-        // Erreur réseau ou autre - passer quand même à l'étape 2
-        this.validatedPin.set(pin);
+        // Erreur 404 ou autre - pas de session, passer à l'étape 2
+        console.log('Erreur lors de la vérification de session - ouverture d\'une nouvelle session');
+        this.proceedToInitialAmountStep(pin, cashierId);
+      }
+    });
+  }
 
-        // Charger le montant de fermeture de la session précédente
-        this.apiService.getLastClosedSessionFinalAmount(cashierId).subscribe({
-          next: (finalAmount) => {
-            // Pré-remplir avec le solde de fermeture de la session précédente
-            this.initialAmount.set(finalAmount || 0);
-            this.step.set(2);
-            this.isLoading.set(false);
-          },
-          error: () => {
-            // En cas d'erreur, utiliser 0 comme montant par défaut
-            this.initialAmount.set(0);
-            this.step.set(2);
-            this.isLoading.set(false);
-          }
-        });
+  /**
+   * Procéder à l'étape 2 : demander le montant initial
+   */
+  private proceedToInitialAmountStep(pin: string, cashierId: string): void {
+    this.validatedPin.set(pin);
+
+    // Charger le montant de fermeture de la session précédente
+    this.apiService.getLastClosedSessionFinalAmount(cashierId).subscribe({
+      next: (finalAmount) => {
+        // Pré-remplir avec le solde de fermeture de la session précédente
+        this.initialAmount.set(finalAmount || 0);
+        this.step.set(2);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        // En cas d'erreur, utiliser 0 comme montant par défaut
+        this.initialAmount.set(0);
+        this.step.set(2);
+        this.isLoading.set(false);
       }
     });
   }
